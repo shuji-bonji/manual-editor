@@ -24,7 +24,7 @@
     "check:player": "npm run check -w packages/player"
   },
   "dependencies": {
-    "@shuji-bonji/experiential-manual-model": "^0.1.0"
+    "@shuji-bonji/experiential-manual-model": "^0.2.0"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.10",

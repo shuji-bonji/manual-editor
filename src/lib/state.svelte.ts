@@ -18,11 +18,12 @@ import {
   type Added
 } from './ops';
 import {
-  basename,
   canUseFilePicker,
   clearDraft,
   downloadBlob,
   downloadText,
+  embeddedData,
+  fileName,
   fileToDataUrl,
   isDataUrl,
   loadDraft,
@@ -236,7 +237,7 @@ class EditorState {
   async assignImagesByName(files: File[]): Promise<number> {
     let n = 0;
     for (const file of files) {
-      const targets = (this.manual.assets ?? []).filter((a) => basename(a.source.path) === file.name);
+      const targets = (this.manual.assets ?? []).filter((a) => fileName(a.source) === file.name);
       for (const a of targets) if (await this.attachImage(a.id, file)) n++;
     }
     if (n < files.length) this.notify('warn', t('image.assignPartial', { n, total: files.length }));
@@ -252,8 +253,9 @@ class EditorState {
     this.sizes.clear();
     for (const a of manual.assets ?? []) {
       if (a.kind !== 'image') continue;
+      const data = embeddedData(a.source);
       const path = a.source.path;
-      const url = isDataUrl(path) ? path : baseUrl ? new URL(path, baseUrl).href : undefined;
+      const url = data ?? (path !== undefined && baseUrl ? new URL(path, baseUrl).href : undefined);
       if (!url) continue;
       const size = await measureImage(url);
       if (size) this.setImage(a.id, url, size);
@@ -382,7 +384,7 @@ class EditorState {
     const asset = this.manual.assets?.find((a) => a.id === assetId);
     if (!url || !asset) return;
     const blob = await (await fetch(url)).blob();
-    downloadBlob(isDataUrl(asset.source.path) ? `${assetId}.${blob.type.split('/')[1] ?? 'png'}` : basename(asset.source.path), blob);
+    downloadBlob(fileName(asset.source) ?? `${assetId}.${blob.type.split('/')[1] ?? 'png'}`, blob);
   }
 
   // ---- 下書き -------------------------------------------------------------

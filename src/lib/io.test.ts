@@ -52,17 +52,19 @@ describe('保存した JSON が validateManual を通る', () => {
     expect(again).toEqual(m);
   });
 
-  it('画像を埋め込む保存でも通り、path に data URL が入る', () => {
+  it('画像を埋め込む保存でも通り、data に data URL が入り、path のファイル名は残る', () => {
     let m = addAsset(addTopic(loadKenbaiki(), 'description', 'x').manual, { filename: 'p.png' });
     const id = m.id;
     const out = serializeManual(m.manual, { [id]: 'data:image/png;base64,AAAA' });
     const back = parseManualText(out).manual;
     expect(back.assets?.find((a) => a.id === id)?.source).toMatchObject({
-      path: 'data:image/png;base64,AAAA',
+      path: 'p.png',
+      data: 'data:image/png;base64,AAAA',
       mediaType: 'image/png'
     });
     expect(validateManual(back).errors).toEqual([]);
-    // 埋め込まない保存では path は変わらない
+    // 埋め込まない保存では data が入らない
+    expect(serializeManual(m.manual)).not.toContain('"data"');
     expect(serializeManual(m.manual)).toContain('"path": "p.png"');
   });
 });

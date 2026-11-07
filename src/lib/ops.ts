@@ -221,7 +221,7 @@ export function removeTopic(m: Manual, topicId: string): Manual {
 
 /** 同じ path が既にあれば `name-2.png` のように番号を足して、素材の path を一意にする */
 export function uniquePath(m: Manual, filename: string): string {
-  const used = new Set((m.assets ?? []).map((a) => a.source.path));
+  const used = new Set((m.assets ?? []).flatMap((a) => (a.source.path !== undefined ? [a.source.path] : [])));
   if (!used.has(filename)) return filename;
   const dot = filename.lastIndexOf('.');
   const stem = dot > 0 ? filename.slice(0, dot) : filename;

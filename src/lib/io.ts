@@ -7,7 +7,7 @@
  * - ファイルを開く・保存する操作は、File System Access API が使えるブラウザーではそれを使い、
  *   使えなければ <input type="file"> とダウンロードで行う。
  */
-import { fromLegacyJson, type Manual } from '@shuji-bonji/experiential-manual-model';
+import { fromLegacyJson, type AssetFile, type Manual } from '@shuji-bonji/experiential-manual-model';
 
 // ---------------------------------------------------------------------------
 // JSON の読み込み・書き出し
@@ -52,8 +52,8 @@ export function parseManualText(text: string, options: { newId?: () => string; t
 
 /**
  * Manual を JSON の文字列にする。
- * embed に素材 id と data URL の対応を渡すと、その素材の source.path に data URL を入れる（画像を JSON に埋め込む選択肢）。
- * 渡さなければ source.path はファイル名のままで、画像は JSON と別に持つ。
+ * embed に素材 id と data URL の対応を渡すと、その素材の source.data に data URL を入れる（画像を JSON に埋め込む選択肢。model 0.2.0）。
+ * source.path のファイル名はそのまま残す。渡さなければ data は入らず、画像は JSON と別に持つ。
  */
 export function serializeManual(manual: Manual, embed?: Record<string, string>): string {
   const out = structuredClone(manual);
@@ -61,7 +61,7 @@ export function serializeManual(manual: Manual, embed?: Record<string, string>):
     for (const a of out.assets ?? []) {
       const url = embed[a.id];
       if (!url) continue;
-      a.source.path = url;
+      a.source.data = url;
       const media = /^data:([^;,]+)/.exec(url)?.[1];
       if (media && !a.source.mediaType) a.source.mediaType = media;
     }
@@ -70,6 +70,14 @@ export function serializeManual(manual: Manual, embed?: Record<string, string>):
 }
 
 export const isDataUrl = (s: string): boolean => s.startsWith('data:');
+
+/** 素材に埋め込まれた data URL。model 0.2.0 は source.data に、0.1.0 は source.path に入っていた */
+export const embeddedData = (f: AssetFile): string | undefined =>
+  f.data ?? (f.path !== undefined && isDataUrl(f.path) ? f.path : undefined);
+
+/** 素材のファイル名（path が data URL のときは undefined） */
+export const fileName = (f: AssetFile): string | undefined =>
+  f.path !== undefined && !isDataUrl(f.path) ? basename(f.path) : undefined;
 
 export const basename = (path: string): string => path.split(/[\\/]/).pop() ?? path;
 

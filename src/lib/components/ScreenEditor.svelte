@@ -19,6 +19,7 @@
     updateScreen
   } from '$lib/ops';
   import { t } from '$lib/i18n';
+  import { embeddedData } from '$lib/io';
   import HotspotCanvas from './HotspotCanvas.svelte';
   import ScopeRefs from './ScopeRefs.svelte';
 
@@ -161,7 +162,7 @@
             <input bind:this={assignInput} class="sr-only" type="file" accept="image/*" onchange={onAssign} />
             <button class="btn small" type="button" onclick={() => assignInput?.click()}>{t('screen.replaceImage')}</button>
             <button class="btn small" type="button" onclick={() => editor.downloadImage(screen.assetRef)}>{t('screen.saveImage')}</button>
-            <span class="muted small">{t('screen.imageNote', { path: asset?.source.path.startsWith('data:') ? t('screen.embedded') : (asset?.source.path ?? '') })}</span>
+            <span class="muted small">{t('screen.imageNote', { path: asset && embeddedData(asset.source) ? t('screen.embedded') : (asset?.source.path ?? '') })}</span>
           </div>
         {/if}
       </div>

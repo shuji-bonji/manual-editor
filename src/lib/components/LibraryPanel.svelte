@@ -10,7 +10,7 @@
     updateScope,
     usedAssetIds
   } from '$lib/ops';
-  import { basename, isDataUrl } from '$lib/io';
+  import { embeddedData, fileName } from '$lib/io';
   import { t } from '$lib/i18n';
 
   let assignInput: HTMLInputElement | undefined = $state();
@@ -111,7 +111,7 @@
             {/if}
             <div class="info">
               <div><code>{a.id}</code> <span class="badge">{a.kind}</span> {#if !used.has(a.id)}<span class="badge warn">{t('library.unused')}</span>{/if}</div>
-              <div class="small muted">{isDataUrl(a.source.path) ? t('screen.embedded') : basename(a.source.path)}</div>
+              <div class="small muted">{embeddedData(a.source) ? t('screen.embedded') : (fileName(a.source) ?? '')}</div>
               <label class="field">
                 <span class="caption">{t('library.alt')}</span>
                 <input type="text" value={a.alt ?? ''} oninput={(e) => editor.apply((x) => updateAsset(x, a.id, { alt: e.currentTarget.value }), `asset-alt:${a.id}`)} />
