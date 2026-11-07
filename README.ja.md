@@ -67,6 +67,15 @@ SvelteKit 2 と Svelte 5（runes）、TypeScript、`@sveltejs/adapter-static`、
 | `src/lib/state.svelte.ts` | `Manual` を 1 つ持つ store |
 | `src/lib/components/` | 画面のパネル |
 
+## リポジトリの構成
+
+| 場所 | 内容 |
+|---|---|
+| ルート（`src/`） | 試作 0.1.0 の作成ツール（SvelteKit）。設計書 6 節の手順 5 で組み直します |
+| `packages/player` | 閲覧部品（仮称 experiential-manual-player）。いまは Svelte に依存しない runtime（遷移・履歴・適用範囲・手順の番号・問答）だけです。`npm run test:player` / `npm run check:player` で確かめます。詳しくは [packages/player/README.ja.md](./packages/player/README.ja.md) |
+
+npm workspaces です。`npm install` はルートで 1 回だけ行います。
+
 ## ライセンス
 
 MIT

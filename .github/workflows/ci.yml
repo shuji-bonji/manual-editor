@@ -17,4 +17,6 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm test
+      - run: npm run check:player
+      - run: npm run test:player
       - run: npm run build

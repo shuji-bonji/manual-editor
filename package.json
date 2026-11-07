@@ -6,7 +6,12 @@
   "license": "MIT",
   "author": "shuji-bonji",
   "type": "module",
-  "engines": { "node": ">=20.19.0" },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
@@ -14,7 +19,9 @@
     "prepare": "svelte-kit sync || echo ''",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "test": "svelte-kit sync && vitest run"
+    "test": "svelte-kit sync && vitest run",
+    "test:player": "npm test -w packages/player",
+    "check:player": "npm run check -w packages/player"
   },
   "dependencies": {
     "@shuji-bonji/experiential-manual-model": "^0.1.0"
