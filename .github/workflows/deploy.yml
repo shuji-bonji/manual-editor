@@ -1,0 +1,41 @@
+# GitHub Pages への配備。リポジトリが Private の間は Pages が使えないため、手動実行（workflow_dispatch）だけにしてある。
+# Public にして Pages を有効にしたら、必要に応じて push のトリガーを足す。
+name: Deploy
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+        env:
+          # プロジェクトページの URL は https://<ユーザー>.github.io/<リポジトリ名>/ になる
+          BASE_PATH: /${{ github.event.repository.name }}
+      - run: touch build/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build
+      - id: deployment
+        uses: actions/deploy-pages@v4
