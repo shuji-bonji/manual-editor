@@ -2,26 +2,37 @@
   "name": "@shuji-bonji/experiential-manual-player",
   "version": "0.0.0",
   "private": true,
-  "description": "体験型の操作マニュアルを見るための部品（仮称。製品名は未定）。runtime は Svelte に依存しない TypeScript",
+  "description": "体験型の操作マニュアルを見るための部品（仮称。製品名は未定）。runtime は Svelte に依存しない TypeScript、部品は Svelte 5、Web Components のビルド付き",
   "license": "MIT",
   "author": "shuji-bonji",
   "type": "module",
   "engines": { "node": ">=20.19.0" },
+  "svelte": "./src/components/index.ts",
   "exports": {
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
-    "./runtime": { "types": "./dist/runtime/index.d.ts", "import": "./dist/runtime/index.js" }
+    "./runtime": { "types": "./dist/runtime/index.d.ts", "import": "./dist/runtime/index.js" },
+    "./components": { "svelte": "./src/components/index.ts", "default": "./src/components/index.ts" },
+    "./element": "./dist/element/experiential-manual.js"
   },
-  "files": ["dist"],
+  "files": ["dist", "src"],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "check": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json && vite build",
+    "build:element": "vite build",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest --run"
+  },
+  "peerDependencies": {
+    "svelte": "^5.0.0"
   },
   "dependencies": {
     "@shuji-bonji/experiential-manual-model": "^0.2.0"
   },
   "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^6.2.4",
+    "svelte": "^5.57.3",
+    "svelte-check": "^4.7.7",
     "typescript": "^5.9.3",
+    "vite": "^7.3.7",
     "vitest": "^4.1.12"
   }
 }

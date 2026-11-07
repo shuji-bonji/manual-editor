@@ -6,8 +6,10 @@
  * - flow: 画面遷移（P-1）。ホットスポットを押して進む、戻る、最初から
  * - procedure: 手順（P-2）。番号、1 つずつ進める、分岐
  * - troubleshooting: 困ったとき（P-4）。問いと答えの列
+ * - assets: 素材の URL と大きさ
  */
 export { createStore, type Readable, type Writable } from './store.js';
+export { assetSize, assetUrl, displayFile, fileUrl, findAsset } from './assets.js';
 export {
   applicableBlocks,
   applicableScreens,

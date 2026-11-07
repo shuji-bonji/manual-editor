@@ -72,7 +72,7 @@ SvelteKit 2 and Svelte 5 (runes), TypeScript, `@sveltejs/adapter-static`, `@vite
 | Path | Contents |
 |---|---|
 | root (`src/`) | The 0.1.0 prototype of the editor (SvelteKit). It will be rebuilt in step 5 of section 6 of the design document |
-| `packages/player` | The viewer components (working name experiential-manual-player). For now only the runtime, which does not depend on Svelte: transitions, history, scope filtering, step numbering and the troubleshooting dialogue. Check it with `npm run test:player` / `npm run check:player`. See [packages/player/README.md](./packages/player/README.md) |
+| `packages/player` | The viewer components (working name experiential-manual-player). The runtime (no Svelte dependency: transitions, history, scope filtering, step numbering, troubleshooting dialogue), the components (Stage, P-1, P-0; Svelte 5), the `<experiential-manual>` Web Component build and `demo/`. P-2 to P-4 are not there yet. Check it with `npm run test:player` / `npm run check:player`. See [packages/player/README.md](./packages/player/README.md) |
 
 This is an npm workspace. Run `npm install` once at the root.
 
