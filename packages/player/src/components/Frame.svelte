@@ -38,12 +38,15 @@
   const current = $derived(topics.find((x) => x.id === topic) ?? manual.topics.find((x) => x.id === topic) ?? topics[0]);
   const properties = $derived(listScopeProperties(manual));
   let glossaryOpen = $state(false);
+  /** 手順の Topic を開くときに最初に選ぶ手順（困ったときの対処や画面からの行き先） */
+  let startStep = $state<string | undefined>();
 
   const marks: Record<TopicKind, string> = { screenFlow: '▣', procedure: '≡', description: '¶', troubleshooting: '?' };
 
   function choose(id: string) {
     topic = id;
     screen = undefined;
+    startStep = undefined;
   }
 
   function setScope(property: string, value: string) {
@@ -57,6 +60,7 @@
     // 行き先が別の Topic の手順なら、その Topic を開く
     topic = target.topic.id;
     screen = target.kind === 'screen' ? target.screen.id : undefined;
+    startStep = target.kind === 'step' ? target.step.id : undefined;
   }
 </script>
 
@@ -107,14 +111,14 @@
         {/if}
         {#if current}
           {#key current.id}
-            <TopicView {manual} topic={current} startScreen={screen} {scope} bind:hints {baseUrl} {lang} onleave={leave} />
+            <TopicView {manual} topic={current} startScreen={screen} {startStep} {scope} bind:hints {baseUrl} {lang} onleave={leave} />
           {/key}
         {/if}
       </main>
     </div>
   {:else if current}
     {#key current.id}
-      <TopicView {manual} topic={current} startScreen={screen} {scope} bind:hints {baseUrl} {lang} onleave={leave} />
+      <TopicView {manual} topic={current} startScreen={screen} {startStep} {scope} bind:hints {baseUrl} {lang} onleave={leave} />
     {/key}
   {/if}
 </div>

@@ -5,6 +5,7 @@
 <script lang="ts">
   import type { Hotspot, Screen } from '@shuji-bonji/experiential-manual-model';
   import type { Pressable } from '../runtime/flow.js';
+  import Admonitions from './Admonitions.svelte';
   import { t, type Lang } from './text.js';
 
   interface Props {
@@ -26,12 +27,7 @@
 <aside class="em-pane">
   <h3>{screen.caption ?? screen.id}</h3>
   {#if screen.description}<p class="desc">{screen.description}</p>{/if}
-  {#each screen.admonitions ?? [] as a, i (i)}
-    <p class="adm {a.level}">
-      <strong>{a.title ?? t(lang, `level.${a.level}`)}</strong>
-      {a.text}
-    </p>
-  {/each}
+  <Admonitions items={screen.admonitions} {lang} />
   {#if pressable.length > 0}
     <h4>{t(lang, 'flow.pressable')}（{pressable.length}）</h4>
     <ul>
@@ -69,21 +65,6 @@
   .desc {
     margin: 0 0 0.5rem;
     white-space: pre-wrap;
-  }
-  .adm {
-    margin: 0.4rem 0;
-    padding: 0.4rem 0.6rem;
-    border-radius: var(--em-radius, 6px);
-    background: var(--em-surface-2, #eef1f5);
-  }
-  .adm strong {
-    margin-right: 0.4em;
-  }
-  .adm.warning {
-    background: var(--em-danger-soft, #fde4e2);
-  }
-  .adm.caution {
-    background: var(--em-warn-soft, #fff1d1);
   }
   ul {
     list-style: none;

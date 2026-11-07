@@ -8,7 +8,7 @@ Components for viewing an experiential operation manual (the JSON of [`@shuji-bo
 
 ### Runtime (`src/runtime/`)
 
- It reads a `Manual` and keeps track of "where the reader is". It is plain TypeScript with no dependency on Svelte, so the CLI `build` and a future WebMCP can run the same state transitions without rendering anything.
+It reads a `Manual` and keeps track of "where the reader is". It is plain TypeScript with no dependency on Svelte, so the CLI `build` and a future WebMCP can run the same state transitions without rendering anything.
 
 | Module | Role |
 |---|---|
@@ -38,7 +38,12 @@ flow.back();                   // STEP1
 | `Stage` | The screen image with its hotspots. The SVG viewBox matches the image pixels, so `coords` are drawn as they are. Outlines are hidden by default and appear on hover or focus; `hints` shows all of them. Tab moves between hotspots, Enter or Space presses one. For the editor it offers `overlay` (a layer in the same coordinate system), `toImage(x, y)` / `toScreen(x, y)` and `mode="edit"` (pressing selects instead of navigating, via `onselect`) |
 | `ScreenPane` | The side pane of P-1: caption, description, admonitions and the list of places to press (buttons) |
 | `ScreenFlow` | P-1: breadcrumb of visited screens, Stage, ScreenPane, back / restart / hints. The state lives in the runtime's `createFlow`. When a target is a step, `onleave` reports it |
-| `TopicView` | Switches on the topic `kind`. Only `screenFlow` is rendered for now; other kinds show a "not displayed yet" note (step 4) |
+| `TopicView` | Switches on the topic `kind`: `screenFlow` → ScreenFlow, `procedure` → ProcedureView, `description` → BlockView, `troubleshooting` → FaultTree |
+| `ProcedureView` | P-2. A numbered list and a one-at-a-time mode. `expected` is shown with "→", admonitions and figures right under the step. `Step.next` branches appear as choices under the current step; a target in another topic is reported through `onleave`. State lives in the runtime's `createProcedure` |
+| `BlockView` | P-3. Renders `blocks` as headings, paragraphs, lists, tables, figures and admonitions, top to bottom. `section` children recurse. Blocks hidden by the scope are removed first with `applicableBlocks` |
+| `FaultTree` | P-4. Walks questions and answers top to bottom, keeping answered questions dimmed. At a resolution it shows the text and figures; if the target is another topic it offers a button to open it. State lives in the runtime's `createTroubleshooting` |
+| `Figure` | A figure (`assetRef`). Images start small and enlarge on click; when the id points to a `Screen`, that screen opens in a `Stage` (linking procedures with screen flows). Other asset kinds show only their kind and file name |
+| `Admonitions` | Warnings, cautions and notes (shared by P-1, P-2 and P-3) |
 | `Frame` | P-0: header with title, version, scope selectors and glossary; the table of contents; the selected topic. `chrome="none"` renders only the content. The default `--em-*` color tokens (light and dark) are defined here and can be overridden from outside |
 
 Texts live in `text.ts` in Japanese and English under the same keys (`lang`).
@@ -64,11 +69,11 @@ Texts live in `text.ts` in Japanese and English under the same keys (`lang`).
 
 From JavaScript, `element.manual = manualObject` passes a manual directly (it takes precedence over `src`).
 
-`demo/index.html` places the ticket-machine example with three sets of attributes. After `npm run build -w packages/player`, serve `packages/player` statically and open `/demo/` (for example `npx serve packages/player`).
+`demo/index.html` places the ticket-machine example in several ways (with frame, content only, procedure / description / troubleshooting, English with an initial scope). After `npm run build -w packages/player`, serve `packages/player` statically and open `/demo/` (for example `npx serve packages/player`).
 
 ## Not here yet
 
-P-2 (procedure), P-3 (description) and P-4 (troubleshooting) views, and the search in P-0. The order is in section 6 of [docs/design/player-and-editor.md](../../docs/design/player-and-editor.md).
+The search in P-0, the sample input field for `input` hotspots in P-1, and rendering of 3D and video assets. The order is in section 6 of [docs/design/player-and-editor.md](../../docs/design/player-and-editor.md).
 
 ## Commands
 

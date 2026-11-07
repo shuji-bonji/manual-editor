@@ -38,7 +38,12 @@ flow.back();                   // STEP1
 | `Stage` | 画面の画像と、その上のホットスポット。SVG の viewBox を画像の画素に合わせるので、`coords` をそのまま描けます。既定では枠は見えず、ホバーかフォーカスで出ます。`hints` で全部の枠を出します。Tab で順に移り、Enter か Space で押せます。editor 向けに `overlay`（同じ座標系で描く層）、`toImage(x, y)` / `toScreen(x, y)`、`mode="edit"`（押すと遷移ではなく `onselect`）を持ちます |
 | `ScreenPane` | P-1 の右の欄。画面の名前・説明・注意と「押せる場所」の一覧（ボタン） |
 | `ScreenFlow` | P-1。通った画面の列、Stage、ScreenPane、戻る・最初から・ヒント。状態は runtime の `createFlow` が持ちます。行き先が手順のときは `onleave` で外に知らせます |
-| `TopicView` | Topic の `kind` で表示を切り替えます。いまは `screenFlow` だけで、ほかは「まだ表示できません」と出します（手順 4 で足します） |
+| `TopicView` | Topic の `kind` で表示を切り替えます。`screenFlow` → ScreenFlow、`procedure` → ProcedureView、`description` → BlockView、`troubleshooting` → FaultTree |
+| `ProcedureView` | P-2。番号付きの一覧と「1 つずつ」の 2 つのモード。`expected` は「→」、注意と図は手順の直下。`Step.next` の分岐は今の手順の末尾に選択肢で出し、別の Topic への行き先は `onleave` で外に知らせます。状態は runtime の `createProcedure` |
+| `BlockView` | P-3。`blocks` を見出し・段落・箇条書き・表・図・注意として上から出します。`section` の `children` は再帰。適用範囲で消える block は `applicableBlocks` で先に取り除きます |
+| `FaultTree` | P-4。問いと答えを上から順に追い、答えた問いは薄く残します。対処に着いたらその文と図を出し、別の Topic が行き先なら開くボタンを出します。状態は runtime の `createTroubleshooting` |
+| `Figure` | 図（`assetRef`）。画像は小さく出して押すと大きく、`Screen` の id を指すときはその画面を `Stage` で開きます（手順と画面遷移をつなぐ）。画像以外の素材は種類とファイル名だけ出します |
+| `Admonitions` | 警告・注意・備考（P-1・P-2・P-3 で共通） |
 | `Frame` | P-0 の外枠。題名・版・適用範囲のプルダウン・用語集のヘッダー、目次、選んだ Topic の中身。`chrome="none"` で中身だけを出します。色のトークン `--em-*` の既定（明暗）はここで定義し、外から同じ名前で上書きできます |
 
 文言は `text.ts` に日本語と英語を同じキーで持ちます（`lang` で切り替え）。
@@ -64,11 +69,11 @@ flow.back();                   // STEP1
 
 JavaScript からは `element.manual = manualObject` のように Manual を直接渡せます（`src` より優先）。
 
-`demo/index.html` が券売機の例を 3 通りの属性で置いたページです。`npm run build -w packages/player` の後、`packages/player` を静的に配信して `/demo/` を開きます（例: `npx serve packages/player`）。
+`demo/index.html` が券売機の例を置いたページです（外枠つき、中身だけ、手順・説明・困ったとき、英語と適用範囲の初期値）。`npm run build -w packages/player` の後、`packages/player` を静的に配信して `/demo/` を開きます（例: `npx serve packages/player`）。
 
 ## まだ無いもの
 
-P-2（手順）・P-3（説明）・P-4（困ったとき）の表示と、P-0 の検索です。順序は [docs/design/player-and-editor.md](../../docs/design/player-and-editor.md) の 6 節にあります。
+P-0 の検索、P-1 の `input` の入力欄の見本、3D・動画の素材の表示です。順序は [docs/design/player-and-editor.md](../../docs/design/player-and-editor.md) の 6 節にあります。
 
 ## コマンド
 

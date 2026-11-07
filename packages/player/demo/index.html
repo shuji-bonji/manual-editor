@@ -58,7 +58,20 @@
     </section>
 
     <section>
-      <h2>3. 英語の文言、適用範囲の初期値</h2>
+      <h2>3. 手順（P-2）・説明（P-3）・困ったとき（P-4）</h2>
+      <p>
+        <code>topic="topic-open-door"</code>（手順。一覧と「1 つずつ」。1 の図は画像と 3D の素材、1.2 は MV-60 だけ、1.3 は屋外設置だけ）、
+        <code>topic="topic-overview"</code>（説明。見出し・段落・箇条書き・図・表・備考）、<code>topic="topic-no-ticket"</code>（困ったとき。問いに答えて対処へ）
+      </p>
+      <experiential-manual src="./kenbaiki.manual.json" topic="topic-open-door" chrome="none" id="proc"></experiential-manual>
+      <br />
+      <experiential-manual src="./kenbaiki.manual.json" topic="topic-overview" chrome="none" id="desc"></experiential-manual>
+      <br />
+      <experiential-manual src="./kenbaiki.manual.json" topic="topic-no-ticket" chrome="none" id="ts"></experiential-manual>
+    </section>
+
+    <section>
+      <h2>4. 英語の文言、適用範囲の初期値</h2>
       <p><code>&lt;experiential-manual src="./kenbaiki.manual.json" lang="en" scope="model=MV-60"&gt;</code></p>
       <experiential-manual src="./kenbaiki.manual.json" lang="en" scope="model=MV-60"></experiential-manual>
     </section>
