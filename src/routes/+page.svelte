@@ -43,10 +43,26 @@
     return () => window.removeEventListener('beforeunload', handler);
   });
 
-  // 最初の Topic を選んでおく
+  // 最初の Topic を選んでおく（マニュアル自体や素材を選んでいるときは変えない）
   $effect(() => {
-    if (!editor.selection.topicId && editor.manual.topics.length > 0) editor.selectTopic(editor.manual.topics[0].id);
+    const s = editor.selection;
+    if (!s.topicId && editor.manual.topics.length > 0) {
+      const first = editor.manual.topics[0];
+      editor.select({ ...s, topicId: first.id, screenId: first.screens?.length ? (first.startScreenRef ?? first.screens[0].id) : undefined });
+    }
   });
+
+  /** クリップボードの画像（スクリーンショット）を受け取る（E-6）。文字を入力中の欄では、ブラウザー標準の貼り付けに任せる */
+  async function onPaste(e: ClipboardEvent) {
+    const target = e.target as HTMLElement | null;
+    if (target && (/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName) || target.isContentEditable)) return;
+    const items = [...(e.clipboardData?.items ?? [])];
+    const image = items.find((x) => x.kind === 'file' && x.type.startsWith('image/'));
+    const file = image?.getAsFile();
+    if (!file) return;
+    e.preventDefault();
+    await editor.pasteImage(file);
+  }
 
   const topic = $derived(editor.topic);
 
@@ -80,7 +96,7 @@
 <svelte:head>
   <title>{t('app.title')}</title>
 </svelte:head>
-<svelte:window onkeydown={onKey} />
+<svelte:window onkeydown={onKey} onpaste={onPaste} />
 
 <div class="app">
   <TopBar />
@@ -147,21 +163,31 @@
 </div>
 
 <style>
+  /* 画面全体を 1 画面に収め、3 列はそれぞれの中でスクロールする。下の引き出し（素材・地図・検査）が常に見える */
   .app {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh;
+    height: 100dvh;
   }
   .columns {
     flex: 1;
+    min-height: 0;
     display: grid;
     grid-template-columns: minmax(13rem, 17rem) minmax(0, 1fr) minmax(16rem, 20rem);
     gap: 0;
     align-items: stretch;
   }
   @media (max-width: 1000px) {
+    .app {
+      height: auto;
+      min-height: 100vh;
+    }
     .columns {
       grid-template-columns: minmax(0, 1fr);
+    }
+    .columns .col {
+      overflow: visible;
     }
     .col.tree,
     .col.right {
@@ -172,6 +198,8 @@
   .col {
     padding: var(--gap);
     min-width: 0;
+    min-height: 0;
+    overflow: auto;
   }
   .col.tree {
     border-right: 1px solid var(--border);

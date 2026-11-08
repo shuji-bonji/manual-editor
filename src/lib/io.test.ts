@@ -110,9 +110,21 @@ describe('検査の場所から画面上の場所を求める', () => {
       stepId: m.topics[2].steps![0].children![1].id
     });
   });
-  it('適用範囲・素材は library', () => {
-    expect(locateIssue(m, '/scopes').area).toBe('library');
-    expect(locateIssue(m, '/assets/0/source').area).toBe('library');
-    expect(locateIssue(m, '').area).toBe('library');
+  it('適用範囲とマニュアル自体は manual、素材は assets（素材の id も分かる）', () => {
+    expect(locateIssue(m, '/scopes').area).toBe('manual');
+    expect(locateIssue(m, '/scopes', 'scope "sc-mv50" is not used')).toMatchObject({ area: 'manual', scopeId: 'sc-mv50' });
+    expect(locateIssue(m, '/assets/0/source')).toEqual({ area: 'assets', assetId: m.assets![0].id });
+    expect(locateIssue(m, '/assets', 'asset "img-top" is not used')).toEqual({ area: 'assets', assetId: 'img-top' });
+    expect(locateIssue(m, '').area).toBe('manual');
+  });
+  it('到達できない画面の警告（/topics/N/screens）は、文の中の id から画面を求める', () => {
+    const topicIndex = m.topics.findIndex((t) => t.kind === 'screenFlow');
+    const topic = m.topics[topicIndex];
+    const last = topic.screens![topic.screens!.length - 1];
+    expect(locateIssue(m, `/topics/${topicIndex}/screens`, `screen "${last.id}" cannot be reached from "${topic.startScreenRef}"`)).toEqual({
+      area: 'topic',
+      topicId: topic.id,
+      screenId: last.id
+    });
   });
 });

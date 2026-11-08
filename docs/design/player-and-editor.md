@@ -334,5 +334,26 @@ player の `runtime` は `Manual` を読むだけで書き換えません。編�
 | player の置き場所 | **決定（2026-11-08）**: 別リポジトリにせず、`manual-editor` の `packages/player`（npm workspaces）に置く。D-29 で製品を s1000d-stack の外に出したので、`s1000d-stack/lib/` には置かない。npm に出すのは `packages/player` だけ（名前は U-05 の製品名が決まってから。それまで `private: true`）。製品名が決まったらリポジトリ名を変える（GitHub のリポジトリ名は転送されるので変えてよい） |
 | editor の作り直し方 | 同じリポジトリ `manual-editor` で、`src/lib/components` を空にして組み直す（`ops` / `io` / `i18n` は残す）。履歴を切らない |
 | Web Components のビルド | Svelte 5 の `customElement` で `<experiential-manual>` を出す。スタイルは Shadow DOM の中に閉じ、色は CSS カスタムプロパティで外から変えられるようにする |
-| 遷移の地図の配置計算 | 自前の簡単な階層配置から始め、足りなければ `elkjs` などを検討する。Mermaid は実行時の依存が大きいので使わない |
+| 遷移の地図の配置計算 | **決定（2026-11-08、手順 6）**: 自前の階層配置（`src/lib/flowmap.ts`）。`elkjs` は要らなかった。Mermaid は実行時の依存が大きいので使わない |
+| マニュアルの情報と適用範囲の置き場所 | **決定（2026-11-08、手順 6）**: 下の引き出しは設計どおり「素材 / 遷移の地図 / 検査」の 3 つにし、試作の「適用範囲・素材」タブにあったマニュアルの題名・版・説明と `Scope` の作成は、構成ツリーの先頭に足した「マニュアル」の行を選んだときのインスペクター（`ManualPanel`）に移した |
 | 画面の文言 | 日本語を先に書き、英語は `i18n.ts` に同じキーで足す（D-22 の README と同じく英語をルートにするかは、公開時に決める） |
+
+## 9. 実装の記録（手順 6: E-6 素材、E-7 検査、E-5 遷移の地図。2026-11-08）
+
+設計と違えた点、設計に書いていなかった点だけを書きます。
+
+| 項目 | 実装 |
+|---|---|
+| E-5 の配置 | `src/lib/flowmap.ts` の `buildFlowMap(manual, topic)`（Svelte 非依存、Vitest 10 件）。開始画面からの幅優先探索で階層を決め、同じ階層の中は 1 つ左の階層にある遷移元の行の平均で並べ替える（2 回）。到達できない画面は到達できる画面の右にまとめて置き `unreachable`。他の Topic への遷移先は `external` のノード、見つからない遷移先は `missing` のノードとして遷移元の 1 つ右に置く |
+| E-5 の戻る遷移 | 2021 年の JSON は全画面に「とりけし → STEP1」があり、線にすると 22 本の弧が 1 つのノードに集まって読めなかった。同じ画面へ戻る遷移が 3 つ以上あるとき（`JUMP_THRESHOLD`）は線を引かず、遷移元のノードの上に「とりけし → STEP1」の名札（`kind: 'jump'`）を出す。名札を押すと行き先の画面を選ぶ。それ以外の戻る遷移は点線の弧で、図の下を通す |
+| E-5 の辺のまとめ | 同じ 2 画面の間の遷移は 1 本にまとめ、ラベルは「180円 +1」のように先頭と残りの数で出す（`title` に全部） |
+| E-5 の矢印 | marker の `fill: context-stroke` は古いブラウザーで使えないので、通常・強調・参照切れの 3 つの marker を用意し CSS の `marker-end` で切り替える |
+| E-6 の素材の追加 | `editor.addAssetFromFile` が 1 か所で、画像の幅・高さを読んで `addAsset` に渡す（`AssetFile.width` / `height`）。画面を足す `addScreensFromFiles`・差し替え `replaceScreenImage` もこれを通る。`attachImage`（開いた後の割り当て）も幅・高さが違えば `updateAssetSource` で書く |
+| E-6 の貼り付け | `+page.svelte` の `onpaste`（入力欄では標準の貼り付けに任せる）→ `editor.pasteImage`。画面の流れの Topic を編集中なら新しい画面に、そうでなければ素材だけ足して素材の引き出しで選ぶ。ファイル名は `paste-YYYYMMDD-HHMMSS.png` |
+| E-6 のドロップ | 素材の引き出し（`AssetsPanel`）に落とすと素材、ステージ（`EditStage`。画面が無いときの案内の枠も）に落とすとその Topic の画面 |
+| E-6 のマスク（U-16） | `MaskDialog`（`<dialog>`）。矩形をドラッグで囲み、「適用」で `<canvas>` に描いて黒で塗り、PNG の Blob を `editor.maskAsset` に渡す。同じ素材 id のまま画像を置き換え、`source.path` を `.png` に（元が png ならそのまま）、`hash`・`mediaType`・`width`・`height` を更新し、埋め込んであった `data` は外す。元の画像は残さない |
+| E-6 の素材のインスペクター | 素材を選ぶと `selection.assetId` が立ち、インスペクターが `AssetInspector` を出す。Topic と画面の選択は残すので中央のステージは変わらない。使っている場所の一覧から画面・手順へ飛べる。素材を削除しても参照は消さない（検査が参照切れとして出す） |
+| E-6 の E-2 への備え | 素材のカードは `draggable` で、`dataTransfer` に `application/x-manual-asset` として素材 id を入れる。受け手（手順の図）は手順 7 で作る |
+| E-7 の文 | `src/lib/issues.ts` の `glossIssue` が validateManual の英語の文のうちよく出るものを日本語にし、`describeLocation` が場所を「Topic › 画面 › ホットスポット」の名前にする。`locateIssue` は文の中の `screen "…"` / `asset "…"` / `scope "…"` も読む（到達不可の警告は `/topics/N/screens` を指すので、文から画面を求める） |
+| E-7 の保存時 | `editor.validation` は `$derived` で常に最新。保存（`saveDownload` / `saveWithPicker`）の後に errors があれば警告の通知を出す。保存は止めない |
+| 画面の枠 | 3 列と下の引き出しを 1 画面（`100dvh`）に収め、3 列はそれぞれの中でスクロールする。以前は構成ツリーが長いとページ全体が伸び、引き出しが画面の外に出ていた。幅 1000 px 以下では従来どおり縦に並べる |

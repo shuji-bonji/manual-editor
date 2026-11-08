@@ -32,7 +32,9 @@ To build for GitHub Pages, set the repository name: `BASE_PATH=/manual-editor np
 - **Topics**: add, rename, reorder, delete, and choose the kind (`description` / `procedure` / `screenFlow` / `troubleshooting`).
 - **Screen editing** (`screenFlow`): three columns, with the structure tree on the left, the stage of the viewer components (player) in the middle and the inspector on the right. Add screenshots and drag on the image to draw rectangle, circle or polygon hotspots. A selected hotspot can be moved by dragging, reshaped with its handles and nudged with the arrow keys (1 px, 10 px with Shift). Set the label, the action (press / input / read), the target (a screen or a step; "add a new screen as the target" is available) and the condition. When a replaced image has a different size, the editor asks whether to scale the coordinates. Coordinates are stored in pixels of the original image.
 - **Steps, admonitions, scopes** (`procedure`): nested steps, expected results, warning / caution / note, and `Scope` with `scopeRefs`.
-- **Check**: lists the errors and warnings of `validateManual`. Selecting an item moves to the Topic, screen or step.
+- **Assets** (bottom drawer): lists `Manual.assets` as thumbnails with the number of screens and steps that use each one, and marks unused assets and assets without an image. Add images by choosing files, by adding a folder, by dropping them on the drawer or the stage, or by pasting a screenshot (Ctrl/⌘+V; it becomes a new screen when a screen-flow Topic is selected). The image width and height are read when an image is added and written to `AssetFile.width` / `height`. Selecting an asset opens it in the inspector: alt text, credit, where it is used, replace, mask (fills the rectangles you draw and does not keep the original image) and delete.
+- **Transition map** (bottom drawer): the screens of a Topic as nodes and `Hotspot.transition` as edges. The layout is a layered layout of our own, from a breadth-first search starting at the start screen; unreachable screens and transitions without a target are shown in red. Transitions from many screens back to the same screen ("cancel → STEP1") are shown as labels instead of lines. Clicking a node selects that screen.
+- **Check** (bottom drawer): lists the errors and warnings of `validateManual` grouped by Topic, with the location as names ("screen › hotspot") and the common messages in Japanese. Selecting an item moves to the Topic, screen, step or asset; unreachable screens have a "show on map" button. Saving reports remaining errors without blocking the save.
 - **Edit | Play**: switched on the same stage. Play is the viewer component itself (`packages/player`): pressing a hotspot moves to its target, with back and restart. The screen reached while playing is selected when you switch back to edit. Procedure, description and troubleshooting topics can be played too.
 - **Undo / redo** and an automatic draft in `localStorage`.
 
@@ -43,12 +45,12 @@ To build for GitHub Pages, set the repository name: `BASE_PATH=/manual-editor np
 
 - Editing the body blocks of `description` Topics (the loaded blocks are kept as they are).
 - Editing `answers` of `troubleshooting` steps.
-- The transition map (only its place in the bottom drawer exists), reordering the tree by dragging (use the ↑↓ buttons), and masking parts of an image.
+- Reordering the tree by dragging (use the ↑↓ buttons), and saving node positions in the transition map (the layout is computed every time).
 - AI assistance, login, sharing and server-side storage.
 
 ## How images are stored
 
-The JSON does not contain image data by default. `Asset.source.path` holds only the file name, and the image files are kept separately. After opening a JSON, assign the image files in the "Scopes and assets" tab ("Assign images in bulk" matches them by file name). The "Embed images in JSON" option writes each image as a data URL into `source.path` instead; this makes the JSON large.
+The JSON does not contain image data by default. `Asset.source.path` holds only the file name, and the image files are kept separately. After opening a JSON, assign the image files in the "Assets" drawer at the bottom ("Assign images in bulk" matches them by file name). The manual's title, version and scopes (`Scope`) are edited in the inspector after selecting "Manual" at the top of the structure tree. The "Embed images in JSON" option writes each image as a data URL into `source.path` instead; this makes the JSON large.
 
 ## Data stays in your browser
 

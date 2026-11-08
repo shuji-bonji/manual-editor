@@ -1,5 +1,5 @@
 <!--
-  E-0 の構成ツリー: Topic › 画面（または手順）の 2 段。
+  E-0 の構成ツリー: 先頭に「マニュアル」（題名・版・適用範囲をインスペクターで編集する）、その下に Topic › 画面（または手順）の 2 段。
   印: ● 開始画面、⚠ 問題あり、◀ 選択中。ツリー・ステージ・インスペクターの選択は editor.selection の 1 つを指す。
   並べ替えは ↑↓（ドラッグは後の版）。Topic の題名・種類の編集はインスペクターで行う。
 -->
@@ -18,6 +18,8 @@
   let collapsed = $state(new Set<string>());
 
   const sel = $derived(editor.selection);
+  /** マニュアル自体や素材を選んでいるときは、Topic・画面・手順の行に選択の印を付けない */
+  const plain = $derived(!sel.root && !sel.assetId);
 
   /** 問題のある Topic・画面・手順の id */
   const flagged = $derived.by(() => {
@@ -25,7 +27,7 @@
     const screens = new Set<string>();
     const steps = new Set<string>();
     for (const issue of [...editor.validation.errors, ...editor.validation.warnings]) {
-      const loc = locateIssue(editor.manual, issue.path);
+      const loc = locateIssue(editor.manual, issue.path, issue.message);
       if (loc.topicId) topics.add(loc.topicId);
       if (loc.screenId) screens.add(loc.screenId);
       if (loc.stepId) steps.add(loc.stepId);
@@ -56,6 +58,13 @@
 
 <nav class="tree" aria-label={t('tree.heading')}>
   <h2>{t('tree.heading')}</h2>
+  <div class="row-item root" class:selected={sel.root === true}>
+    <button type="button" class="label" onclick={() => editor.selectRoot()} data-testid="tree-root" title={t('tree.rootHelp')}>
+      <span class="mark">▤</span>
+      <span class="text">{editor.manual.title || t('tree.root')}</span>
+      <span class="muted small">{t('tree.root')}</span>
+    </button>
+  </div>
   {#if editor.manual.topics.length === 0}
     <p class="muted small">{t('topic.empty')}</p>
   {/if}
@@ -64,7 +73,7 @@
       {@const open = !collapsed.has(topic.id)}
       {@const isTopic = sel.topicId === topic.id}
       <li>
-        <div class="row-item topic" class:selected={isTopic && !sel.screenId && !sel.stepId} class:in={isTopic}>
+        <div class="row-item topic" class:selected={plain && isTopic && !sel.screenId && !sel.stepId} class:in={isTopic}>
           <button type="button" class="twisty" aria-expanded={open} onclick={() => toggle(topic.id)} aria-label={topic.title}>{open ? '▾' : '▸'}</button>
           <button type="button" class="label" onclick={() => editor.select({ topicId: topic.id })} data-testid="tree-topic">
             <span class="mark" title={t(`kind.${topic.kind}`)}>{marks[topic.kind]}</span>
@@ -84,7 +93,7 @@
             <ul class="children">
               {#each screens as s, j (s.id)}
                 {@const isScreen = isTopic && sel.screenId === s.id}
-                <li class="row-item child" class:selected={isScreen}>
+                <li class="row-item child" class:selected={plain && isScreen}>
                   <button type="button" class="label" onclick={() => editor.select({ topicId: topic.id, screenId: s.id })} data-testid="tree-screen">
                     <span class="text">{s.caption || s.id}</span>
                     {#if s.id === topic.startScreenRef}<span class="start" title={t('tree.start')}>●</span>{/if}
@@ -110,7 +119,7 @@
           {:else if topic.kind === 'procedure' || topic.kind === 'troubleshooting'}
             <ul class="children">
               {#each flattenSteps(topic.steps) as { step, depth } (step.id)}
-                <li class="row-item child depth-{Math.min(depth, 3)}" class:selected={isTopic && sel.stepId === step.id}>
+                <li class="row-item child depth-{Math.min(depth, 3)}" class:selected={plain && isTopic && sel.stepId === step.id}>
                   <button type="button" class="label" onclick={() => editor.select({ topicId: topic.id, stepId: step.id })}>
                     <span class="text">{step.text || step.id}</span>
                     {#if flagged.steps.has(step.id)}<span class="flag" title={t('tree.issue')}>⚠</span>{/if}
@@ -162,6 +171,15 @@
     padding-right: 0.2rem;
   }
   .row-item.in > .label {
+    font-weight: 600;
+  }
+  .row-item.root {
+    margin-bottom: 0.3rem;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    padding-bottom: 0.2rem;
+  }
+  .row-item.root .label {
     font-weight: 600;
   }
   .row-item.selected {

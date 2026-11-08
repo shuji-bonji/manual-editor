@@ -251,14 +251,35 @@
   const pts = (c: number[]) => c.join(' ');
 
   const owner = $derived(screen ? ({ kind: 'screen', topicId: topic.id, screenId: screen.id } as const) : undefined);
+
+  // ---- 画像のドロップ（E-6）: ステージに画像ファイルを落とすと、この Topic の画面として足す ----------------------
+  let dropping = $state(false);
+  function onDragOver(e: DragEvent) {
+    if (!e.dataTransfer?.types.includes('Files')) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    dropping = true;
+  }
+  async function onDrop(e: DragEvent) {
+    dropping = false;
+    const files = [...(e.dataTransfer?.files ?? [])].filter((f) => f.type.startsWith('image/'));
+    if (files.length === 0) return;
+    e.preventDefault();
+    await editor.addScreensFromFiles(topic.id, files);
+  }
 </script>
 
 <svelte:window onkeydown={onKey} />
 
 {#if !screen}
-  <div class="panel muted">{t('stage.noScreen')}</div>
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div class="panel muted drop" class:dropping ondragover={onDragOver} ondragleave={() => (dropping = false)} ondrop={onDrop} data-testid="edit-stage-empty">
+    {t('stage.noScreen')}
+    <span class="small">{t('assets.dropScreens')}</span>
+  </div>
 {:else}
-  <div class="edit-stage" data-testid="edit-stage">
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div class="edit-stage drop" class:dropping data-testid="edit-stage" ondragover={onDragOver} ondragleave={() => (dropping = false)} ondrop={onDrop}>
     <div class="row spread toolbar">
       <div class="row tools" role="toolbar" aria-label={t('tool.label')}>
         {#each tools as x (x.id)}
@@ -374,6 +395,15 @@
 {/if}
 
 <style>
+  .drop.dropping {
+    outline: 2px dashed var(--accent);
+    outline-offset: -2px;
+    border-radius: var(--radius);
+  }
+  .panel.drop {
+    display: grid;
+    gap: 0.4rem;
+  }
   .edit-stage {
     display: grid;
     gap: 0.5rem;

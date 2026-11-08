@@ -1,6 +1,7 @@
 <!--
-  E-0 のインスペクター: 選んでいるもの（Topic / 画面 / ホットスポット）に応じて欄が変わる。
+  E-0 のインスペクター: 選んでいるもの（マニュアル / Topic / 画面 / ホットスポット / 素材）に応じて欄が変わる。
   手順（procedure / troubleshooting）の中身は中央の ProcedureEditor で編集するので、ここでは Topic の欄を出す。
+  マニュアル（題名・版・適用範囲）は構成ツリーの「マニュアル」を選ぶと出る。素材は下の「素材」の引き出しで選ぶと出る。
 -->
 <script lang="ts">
   import type { HotspotAction, TopicKind } from '@shuji-bonji/experiential-manual-model';
@@ -9,6 +10,8 @@
   import { embeddedData } from '$lib/io';
   import { t } from '$lib/i18n';
   import ScopeRefs from './ScopeRefs.svelte';
+  import ManualPanel from './ManualPanel.svelte';
+  import AssetInspector from './AssetInspector.svelte';
 
   const kinds: TopicKind[] = ['screenFlow', 'procedure', 'description', 'troubleshooting'];
   const actions: HotspotAction[] = ['press', 'input', 'read'];
@@ -86,7 +89,13 @@
 </script>
 
 <aside class="inspector" aria-label={t('inspector.heading')}>
-  {#if !topic}
+  {#if sel.root}
+    <h2>{t('inspector.manual')}</h2>
+    <ManualPanel />
+  {:else if sel.assetId}
+    <h2>{t('inspector.asset')}</h2>
+    <AssetInspector assetId={sel.assetId} />
+  {:else if !topic}
     <p class="muted small">{t('inspector.none')}</p>
   {:else if hotspot && screen}
     <h2>{t('inspector.hotspot')} <span class="badge">{t(`shape.${hotspot.shape}`)}</span></h2>

@@ -231,14 +231,18 @@ export function uniquePath(m: Manual, filename: string): string {
   return `${stem}-${n}${ext}`;
 }
 
+/**
+ * 素材を足す。画像の幅・高さ（画素）が分かっていれば AssetFile.width / height に書く（model 0.2.0。
+ * 表示の縮尺に合わせて coords を変換するときに使う）。
+ */
 export function addAsset(
   m: Manual,
-  input: { filename: string; mediaType?: string; alt?: string; hash?: string }
+  input: { filename: string; mediaType?: string; alt?: string; hash?: string; width?: number; height?: number }
 ): Added {
   const id = nextId(m, 'asset');
   const d = clone(m);
   const asset: Asset = { id, kind: 'image', source: { path: uniquePath(m, input.filename) } };
-  assign(asset.source, { mediaType: input.mediaType, hash: input.hash });
+  assign(asset.source, { mediaType: input.mediaType, hash: input.hash, width: input.width, height: input.height });
   assign(asset, { alt: input.alt });
   (d.assets ??= []).push(asset);
   return { manual: d, id };
@@ -252,25 +256,73 @@ export function updateAsset(m: Manual, assetId: string, patch: { alt?: string; c
   return d;
 }
 
-/** Manual の中で参照されている素材の id（画面の assetRef、Block の assetRef、手順の assetRefs） */
-export function usedAssetIds(m: Manual): Set<string> {
-  const used = new Set<string>();
-  const blocks = (list?: Block[]) =>
-    list?.forEach((b) => {
-      if (b.assetRef) used.add(b.assetRef);
-      blocks(b.children);
-    });
-  const steps = (list?: Step[]) =>
-    list?.forEach((s) => {
-      s.assetRefs?.forEach((r) => used.add(r));
-      steps(s.children);
-    });
+/**
+ * 素材の原本（source）の項目を直す。画像を読んで分かった幅・高さを書く、マスクしたあとに hash とファイル名を更新する、などに使う。
+ * `data: null` を渡すと、埋め込んであった data URL を外す（マスクで中身が変わったとき）。
+ */
+export function updateAssetSource(
+  m: Manual,
+  assetId: string,
+  patch: { path?: string; mediaType?: string; hash?: string; width?: number; height?: number; data?: string | null }
+): Manual {
+  const d = clone(m);
+  const a = d.assets?.find((x) => x.id === assetId);
+  if (!a) throw new OpError(`素材 "${assetId}" が見つかりません`);
+  const { data, ...rest } = patch;
+  assign(a.source, rest);
+  if (data === null) delete a.source.data;
+  else if (data !== undefined) a.source.data = data;
+  return d;
+}
+
+/** 素材を 1 つ取り除く。参照している画面・手順・Block はそのままにする（参照切れは validateManual が検出する） */
+export function removeAsset(m: Manual, assetId: string): Manual {
+  const d = clone(m);
+  if (!d.assets?.some((a) => a.id === assetId)) throw new OpError(`素材 "${assetId}" が見つかりません`);
+  d.assets = d.assets.filter((a) => a.id !== assetId);
+  if (d.assets.length === 0) delete d.assets;
+  return d;
+}
+
+/** 素材 1 つを使っている場所 */
+export interface AssetUsage {
+  /** assetRef に持つ画面 */
+  screens: Array<{ topicId: string; screenId: string }>;
+  /** assetRefs に持つ手順 */
+  steps: Array<{ topicId: string; stepId: string }>;
+  /** assetRef に持つ Block（id の無い Block は Topic だけ分かる） */
+  blocks: Array<{ topicId: string; blockId?: string }>;
+}
+
+/** 素材 id ごとに、使っている画面・手順・Block を集める。どこからも使われていない素材は Map に入らない */
+export function assetUsage(m: Manual): Map<string, AssetUsage> {
+  const map = new Map<string, AssetUsage>();
+  const of = (id: string): AssetUsage => {
+    let u = map.get(id);
+    if (!u) map.set(id, (u = { screens: [], steps: [], blocks: [] }));
+    return u;
+  };
   for (const t of m.topics) {
+    const blocks = (list?: Block[]) =>
+      list?.forEach((b) => {
+        if (b.assetRef) of(b.assetRef).blocks.push({ topicId: t.id, blockId: b.id });
+        blocks(b.children);
+      });
+    const steps = (list?: Step[]) =>
+      list?.forEach((s) => {
+        s.assetRefs?.forEach((r) => of(r).steps.push({ topicId: t.id, stepId: s.id }));
+        steps(s.children);
+      });
     blocks(t.blocks);
     steps(t.steps);
-    t.screens?.forEach((s) => used.add(s.assetRef));
+    t.screens?.forEach((s) => of(s.assetRef).screens.push({ topicId: t.id, screenId: s.id }));
   }
-  return used;
+  return map;
+}
+
+/** Manual の中で参照されている素材の id（画面の assetRef、Block の assetRef、手順の assetRefs） */
+export function usedAssetIds(m: Manual): Set<string> {
+  return new Set(assetUsage(m).keys());
 }
 
 /** どこからも参照されていない素材を取り除く */

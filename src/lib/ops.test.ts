@@ -6,6 +6,9 @@ import {
   OpError,
   addAdmonition,
   addAsset,
+  assetUsage,
+  removeAsset,
+  updateAssetSource,
   addHotspot,
   addScope,
   addScreen,
@@ -352,5 +355,41 @@ describe('moveHotspot / scaleHotspots', () => {
     h = s2.hotspots.find((x) => x.id === added.id)!;
     expect(h.coords).toEqual([53, 190, 25]);
     expect(() => scaleHotspots(m, topic.id, screen.id, 0, 1)).toThrow(OpError);
+  });
+});
+
+describe('素材の原本と使用箇所（E-6）', () => {
+  it('addAsset は幅・高さを AssetFile.width / height に書き、updateAssetSource で直せる', () => {
+    let m = newManual('m', 't');
+    const a = addAsset(m, { filename: 'shot.png', mediaType: 'image/png', width: 1280, height: 1024, hash: 'sha256:abc' });
+    m = a.manual;
+    expect(m.assets![0].source).toEqual({ path: 'shot.png', mediaType: 'image/png', hash: 'sha256:abc', width: 1280, height: 1024 });
+    expect(validateManual(m).errors).toEqual([]);
+    m = updateAssetSource(m, a.id, { width: 640, height: 512, hash: 'sha256:def' });
+    expect(m.assets![0].source).toMatchObject({ width: 640, height: 512, hash: 'sha256:def', path: 'shot.png' });
+    expect(() => updateAssetSource(m, 'nope', { width: 1 })).toThrow(OpError);
+  });
+
+  it('updateAssetSource の data: null は埋め込みの data URL を外し、path を .png に変えられる（マスク）', () => {
+    let m = newManual('m', 't');
+    const a = addAsset(m, { filename: 'shot.jpg', mediaType: 'image/jpeg' });
+    m = a.manual;
+    m.assets![0].source.data = 'data:image/jpeg;base64,AAAA';
+    m = updateAssetSource(m, a.id, { path: 'shot.png', mediaType: 'image/png', data: null });
+    expect(m.assets![0].source.data).toBeUndefined();
+    expect(m.assets![0].source).toMatchObject({ path: 'shot.png', mediaType: 'image/png' });
+  });
+
+  it('assetUsage は画面・手順・Block ごとに使っている場所を返し、removeAsset は参照をそのままに素材だけ消す', () => {
+    const m0 = small();
+    const usage = assetUsage(m0);
+    const topic = m0.topics[0];
+    const first = topic.screens![0];
+    expect(usage.get(first.assetRef)?.screens).toEqual([{ topicId: topic.id, screenId: first.id }]);
+    const m1 = removeAsset(m0, first.assetRef);
+    expect(m1.assets?.some((a) => a.id === first.assetRef)).toBe(false);
+    expect(m1.topics[0].screens![0].assetRef).toBe(first.assetRef);
+    expect(validateManual(m1).errors.some((e) => e.message.includes(`asset "${first.assetRef}" is not defined`))).toBe(true);
+    expect(() => removeAsset(m1, first.assetRef)).toThrow(OpError);
   });
 });
