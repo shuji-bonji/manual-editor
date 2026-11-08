@@ -12,6 +12,7 @@ import type {
   AdmonitionLevel,
   Asset,
   Block,
+  BlockKind,
   Hotspot,
   HotspotAction,
   HotspotShape,
@@ -20,7 +21,8 @@ import type {
   Screen,
   Step,
   Topic,
-  TopicKind
+  TopicKind,
+  Transition
 } from '@shuji-bonji/experiential-manual-model';
 
 export class OpError extends Error {
@@ -604,6 +606,221 @@ export function outdentStep(m: Manual, topicId: string, stepId: string): Manual 
   return d;
 }
 
+/** 手順の直後に兄弟の手順を足す（アウトライナーの Enter）。stepId の手順と同じ親の、次の位置に入る */
+export function insertStepAfter(m: Manual, topicId: string, stepId: string, text = ''): Added {
+  const id = nextId(m, 'step');
+  const d = clone(m);
+  const loc = stepOf(d, topicId, stepId);
+  loc.list.splice(loc.index + 1, 0, { id, text });
+  return { manual: d, id };
+}
+
+/** 手順の図（assetRefs）を丸ごと置き換える。空なら項目を消す */
+export function setStepAssets(m: Manual, topicId: string, stepId: string, assetRefs: string[]): Manual {
+  const d = clone(m);
+  const { step } = stepOf(d, topicId, stepId);
+  const refs = [...new Set(assetRefs)];
+  if (refs.length === 0) delete step.assetRefs;
+  else step.assetRefs = refs;
+  return d;
+}
+
+/** 手順に図を 1 つ足す（既にあれば何もしない）。素材が無ければ OpError */
+export function addStepAsset(m: Manual, topicId: string, stepId: string, assetId: string): Manual {
+  if (!m.assets?.some((a) => a.id === assetId)) throw new OpError(`素材 "${assetId}" が見つかりません`);
+  const { step } = stepOf(m, topicId, stepId);
+  return setStepAssets(m, topicId, stepId, [...(step.assetRefs ?? []), assetId]);
+}
+
+// ---- 分岐（Step.next）: 手順の末尾の「◇ 汚れがひどいとき → 手順 5 へ」 ----
+
+export function addStepBranch(m: Manual, topicId: string, stepId: string, to: string, condition?: string): Manual {
+  const d = clone(m);
+  const { step } = stepOf(d, topicId, stepId);
+  const tr: Transition = { to };
+  assign(tr, { condition });
+  (step.next ??= []).push(tr);
+  return d;
+}
+
+export function updateStepBranch(
+  m: Manual,
+  topicId: string,
+  stepId: string,
+  index: number,
+  patch: { to?: string; condition?: string }
+): Manual {
+  const d = clone(m);
+  const tr = stepOf(d, topicId, stepId).step.next?.[index];
+  if (!tr) throw new OpError('分岐が見つかりません');
+  if (patch.to !== undefined) tr.to = patch.to;
+  if ('condition' in patch) assign(tr, { condition: patch.condition });
+  return d;
+}
+
+export function removeStepBranch(m: Manual, topicId: string, stepId: string, index: number): Manual {
+  const d = clone(m);
+  const { step } = stepOf(d, topicId, stepId);
+  if (!step.next?.[index]) throw new OpError('分岐が見つかりません');
+  step.next.splice(index, 1);
+  if (step.next.length === 0) delete step.next;
+  return d;
+}
+
+// ---- 答え（Step.answers）: 困ったときの「Q. 〜ですか？ [はい] [いいえ]」 ----
+
+export function addAnswer(m: Manual, topicId: string, stepId: string, text: string, to: string): Manual {
+  const d = clone(m);
+  const { step } = stepOf(d, topicId, stepId);
+  (step.answers ??= []).push({ text, next: { to } });
+  return d;
+}
+
+export function updateAnswer(
+  m: Manual,
+  topicId: string,
+  stepId: string,
+  index: number,
+  patch: { text?: string; to?: string; condition?: string }
+): Manual {
+  const d = clone(m);
+  const a = stepOf(d, topicId, stepId).step.answers?.[index];
+  if (!a) throw new OpError('答えが見つかりません');
+  if (patch.text !== undefined) a.text = patch.text;
+  if (patch.to !== undefined) a.next.to = patch.to;
+  if ('condition' in patch) assign(a.next, { condition: patch.condition });
+  return d;
+}
+
+export function removeAnswer(m: Manual, topicId: string, stepId: string, index: number): Manual {
+  const d = clone(m);
+  const { step } = stepOf(d, topicId, stepId);
+  if (!step.answers?.[index]) throw new OpError('答えが見つかりません');
+  step.answers.splice(index, 1);
+  if (step.answers.length === 0) delete step.answers;
+  return d;
+}
+
+export function moveAnswer(m: Manual, topicId: string, stepId: string, index: number, delta: number): Manual {
+  const d = clone(m);
+  const { step } = stepOf(d, topicId, stepId);
+  if (!step.answers) throw new OpError('答えが見つかりません');
+  moveInArray(step.answers, index, delta);
+  return d;
+}
+
+// ---------------------------------------------------------------------------
+// 説明の Block（E-3）。Block は id が無いことがあるので、木の中の位置（BlockPath: 添字の列）で指す
+// ---------------------------------------------------------------------------
+
+/** 例: [1, 0] は topic.blocks[1].children[0] */
+export type BlockPath = number[];
+
+interface BlockLocation {
+  list: Block[];
+  index: number;
+  block: Block;
+  parent?: Block;
+}
+
+function blockOf(d: Manual, topicId: string, path: BlockPath): BlockLocation {
+  const t = topicOf(d, topicId);
+  let list: Block[] | undefined = t.blocks;
+  let parent: Block | undefined;
+  let loc: BlockLocation | undefined;
+  for (const i of path) {
+    const block: Block | undefined = list?.[i];
+    if (!block) throw new OpError(`Block [${path.join(', ')}] が見つかりません`);
+    loc = { list: list!, index: i, block, parent };
+    parent = block;
+    list = block.children;
+  }
+  if (!loc) throw new OpError('Block の位置が空です');
+  return loc;
+}
+
+/** 親の Block の children、または Topic の blocks を返す（無ければ作る） */
+function blockListOf(d: Manual, topicId: string, parentPath: BlockPath | undefined): Block[] {
+  if (!parentPath || parentPath.length === 0) return (topicOf(d, topicId).blocks ??= []);
+  const { block } = blockOf(d, topicId, parentPath);
+  return (block.children ??= []);
+}
+
+/**
+ * Block を足す。parentPath を渡すとその Block（section）の中に、index を渡すとその位置に入る（省くと末尾）。
+ * 新しい Block には `block-N` の id を付ける（scopeRefs・targetRef で指せるように）。足した Block の id を返す
+ */
+export function addBlock(
+  m: Manual,
+  topicId: string,
+  kind: BlockKind,
+  options: { parentPath?: BlockPath; index?: number } = {}
+): Added {
+  const id = nextId(m, 'block');
+  const d = clone(m);
+  const list = blockListOf(d, topicId, options.parentPath);
+  const block: Block = { kind, id };
+  if (kind === 'list') {
+    block.items = [];
+    block.ordered = false;
+  } else if (kind === 'table') block.rows = [['', ''], ['', '']];
+  else if (kind === 'admonition') {
+    block.level = 'note';
+    block.text = '';
+  } else if (kind === 'para') block.text = '';
+  else if (kind === 'section') block.title = '';
+  const at = options.index === undefined ? list.length : Math.min(Math.max(0, options.index), list.length);
+  list.splice(at, 0, block);
+  return { manual: d, id };
+}
+
+export function updateBlock(
+  m: Manual,
+  topicId: string,
+  path: BlockPath,
+  patch: { title?: string; text?: string; items?: string[]; ordered?: boolean; rows?: string[][]; assetRef?: string; level?: AdmonitionLevel }
+): Manual {
+  const d = clone(m);
+  const { block } = blockOf(d, topicId, path);
+  for (const k of ['title', 'text', 'assetRef'] as const) if (k in patch) assign(block, { [k]: patch[k] });
+  if (patch.items !== undefined) block.items = patch.items;
+  if (patch.ordered !== undefined) block.ordered = patch.ordered;
+  if (patch.rows !== undefined) block.rows = patch.rows;
+  if (patch.level !== undefined) block.level = patch.level;
+  return d;
+}
+
+export function removeBlock(m: Manual, topicId: string, path: BlockPath): Manual {
+  const d = clone(m);
+  const loc = blockOf(d, topicId, path);
+  loc.list.splice(loc.index, 1);
+  if (loc.parent && loc.list.length === 0) delete loc.parent.children;
+  const t = topicOf(d, topicId);
+  if (t.blocks && t.blocks.length === 0) delete t.blocks;
+  return d;
+}
+
+/** 同じ親の中で上下に動かす */
+export function moveBlock(m: Manual, topicId: string, path: BlockPath, delta: number): Manual {
+  const d = clone(m);
+  const loc = blockOf(d, topicId, path);
+  moveInArray(loc.list, loc.index, delta);
+  return d;
+}
+
+/** Block の位置から、Topic の blocks の中の添字の列を引く（id で探す。id の無い Block は見つからない） */
+export function findBlockPath(topic: Topic, blockId: string): BlockPath | undefined {
+  const walk = (list: Block[] | undefined, prefix: BlockPath): BlockPath | undefined => {
+    for (const [i, b] of (list ?? []).entries()) {
+      if (b.id === blockId) return [...prefix, i];
+      const found = walk(b.children, [...prefix, i]);
+      if (found) return found;
+    }
+    return undefined;
+  };
+  return walk(topic.blocks, []);
+}
+
 // ---------------------------------------------------------------------------
 // 注意書き（手順または画面に付く）
 // ---------------------------------------------------------------------------
@@ -705,11 +922,13 @@ export function removeScope(m: Manual, scopeId: string): Manual {
 export type ScopeTarget =
   | { kind: 'topic'; topicId: string }
   | { kind: 'step'; topicId: string; stepId: string }
-  | { kind: 'screen'; topicId: string; screenId: string };
+  | { kind: 'screen'; topicId: string; screenId: string }
+  | { kind: 'block'; topicId: string; path: BlockPath };
 
 function scopeHolder(d: Manual, t: ScopeTarget): { scopeRefs?: string[] } {
   if (t.kind === 'topic') return topicOf(d, t.topicId);
   if (t.kind === 'step') return stepOf(d, t.topicId, t.stepId).step;
+  if (t.kind === 'block') return blockOf(d, t.topicId, t.path).block;
   return screenOf(d, t.topicId, t.screenId);
 }
 

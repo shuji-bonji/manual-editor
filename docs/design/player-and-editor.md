@@ -357,3 +357,18 @@ player の `runtime` は `Manual` を読むだけで書き換えません。編�
 | E-7 の文 | `src/lib/issues.ts` の `glossIssue` が validateManual の英語の文のうちよく出るものを日本語にし、`describeLocation` が場所を「Topic › 画面 › ホットスポット」の名前にする。`locateIssue` は文の中の `screen "…"` / `asset "…"` / `scope "…"` も読む（到達不可の警告は `/topics/N/screens` を指すので、文から画面を求める） |
 | E-7 の保存時 | `editor.validation` は `$derived` で常に最新。保存（`saveDownload` / `saveWithPicker`）の後に errors があれば警告の通知を出す。保存は止めない |
 | 画面の枠 | 3 列と下の引き出しを 1 画面（`100dvh`）に収め、3 列はそれぞれの中でスクロールする。以前は構成ツリーが長いとページ全体が伸び、引き出しが画面の外に出ていた。幅 1000 px 以下では従来どおり縦に並べる |
+
+## 10. 実装の記録（手順 7: E-2 / E-3 / E-4。2026-11-08）
+
+| 項目 | 実装 |
+|---|---|
+| E-2 の形 | `ProcedureEditor` を作り直した。`numberSteps` で平らにした行の列（番号・深さ）を 1 つの `<ol>` に出し、深さは左の余白で表す。文・結果（→）・注意（⚠）・図・分岐の要約を行の中に出す。操作対象・図の一覧・分岐の編集・適用範囲・削除は右の `StepInspector`（選んだ手順は `selection.stepId`） |
+| E-2 のキー操作 | Enter = 直後に兄弟を足す（`insertStepAfter`。設計の「Enter で次の手順を足し」を末尾ではなく直後にした）、Tab / Shift+Tab = `indentStep` / `outdentStep`、空の手順で Backspace = 削除して前の手順へ、↑↓ = 前後の手順へ、Alt+↑↓ = 並べ替え。IME の変換中（`isComposing`）は何もしない。フォーカスは `tick()` の後に `data-step-id` で引く |
+| E-2 の図 | 素材のカード（`application/x-manual-asset`）と画像ファイルのドロップを行で受け、`addStepAsset`。インスペクターからはプルダウンで足す。`Screen` を図に指すこと（設計 E-2 の「図が Screen を指す」）は model の `assetRefs` が素材 id だけを取るため未対応。要るなら model 側に要望を出す |
+| E-2 の分岐 | `Step.next`（`Transition[]`）を `addStepBranch` / `updateStepBranch` / `removeStepBranch` で編集。行き先は `TargetSelect`（この Topic の手順 → 画面 → 他の手順の Topic。参照切れは「（参照切れ）」で残す）。中央には「◇ 条件 → 手順 N」の要約だけ出す |
+| E-3 の形 | `DescriptionEditor` を作り直した。Block は id が無いことがあるので、木の中の位置 `BlockPath`（添字の列）で指す（`addBlock` / `updateBlock` / `moveBlock` / `removeBlock`）。新しい Block には `block-N` の id を付ける。入れ子は section の 1 段だけ（section の中に section は置かない。足す段を増やすと表示が読めなくなるため） |
+| E-3 の種類ごとの欄 | para = textarea、list = 1 行 1 項目の textarea（blur で空行を落とす）＋「番号付き」、table = セルの input の表（先頭行が見出し。＋行・＋列・×）、figure = 素材のプルダウン＋題＋ドロップ、admonition = 種類・見出し（model 0.2.0 の `title`）・文。Block ごとの適用範囲は `ScopeRefs` の `compact` 表示（1 行の小さなチェック） |
+| E-4 の形 | `ProcedureEditor` を `kind: troubleshooting` で使い回す。行の先頭に「Q. 問い」の欄、下に答え（文 → 行き先）の列と「＋ 答え」。問いの無い手順は「対処」と表示 |
+| E-4 の `text` | `Step.text` は validateManual で必須なので、問いを書いたとき文が空（または前の問いと同じ）なら問いを文にも写す（`editQuestion`）。利用者が文を別に書けば写さない |
+| 行き先の選択 | `TargetSelect.svelte` を足した。`Step.answers[].next.to`・`Step.next[].to` で使う。ホットスポットの遷移先（`Inspector` の既存のプルダウン）は「新しい画面を追加して遷移先にする」があるのでそのまま |
+| 見送ったもの | Markdown の貼り付けからの分解（設計 E-3 のとおり後の版）、構成ツリーのドラッグ、図に `Screen` を指すこと |

@@ -6,6 +6,21 @@ import {
   OpError,
   addAdmonition,
   addAsset,
+  addAnswer,
+  addBlock,
+  addStepAsset,
+  addStepBranch,
+  findBlockPath,
+  insertStepAfter,
+  moveAnswer,
+  moveBlock,
+  removeAnswer,
+  removeBlock,
+  removeStepBranch,
+  setStepAssets,
+  updateAnswer,
+  updateBlock,
+  updateStepBranch,
   assetUsage,
   removeAsset,
   updateAssetSource,
@@ -391,5 +406,119 @@ describe('素材の原本と使用箇所（E-6）', () => {
     expect(m1.topics[0].screens![0].assetRef).toBe(first.assetRef);
     expect(validateManual(m1).errors.some((e) => e.message.includes(`asset "${first.assetRef}" is not defined`))).toBe(true);
     expect(() => removeAsset(m1, first.assetRef)).toThrow(OpError);
+  });
+});
+
+describe('手順のアウトライナー・分岐・答え・図（手順 7）', () => {
+  function proc(): { m: Manual; topicId: string; ids: string[] } {
+    let m = newManual('m', 't');
+    const tp = addTopic(m, 'procedure', '手順');
+    m = tp.manual;
+    const ids: string[] = [];
+    for (const text of ['電源を切る', 'カバーを外す', 'フィルターを引き出す']) {
+      const a = addStep(m, tp.id, text);
+      m = a.manual;
+      ids.push(a.id);
+    }
+    return { m, topicId: tp.id, ids };
+  }
+
+  it('insertStepAfter は同じ親の直後に入る（最上位でも子の中でも）', () => {
+    const { m: m0, topicId, ids } = proc();
+    let m = insertStepAfter(m0, topicId, ids[0], '表示が消えるのを待つ').manual;
+    expect(m.topics[0].steps!.map((s) => s.text)).toEqual(['電源を切る', '表示が消えるのを待つ', 'カバーを外す', 'フィルターを引き出す']);
+    const child = addStep(m, topicId, 'ネジを緩める', ids[1]);
+    m = child.manual;
+    const r = insertStepAfter(m, topicId, child.id, 'カバーを引く');
+    expect(r.manual.topics[0].steps![2].children!.map((s) => s.text)).toEqual(['ネジを緩める', 'カバーを引く']);
+    expect(() => insertStepAfter(m, topicId, 'nope')).toThrow(OpError);
+  });
+
+  it('分岐（next）の追加・更新・削除', () => {
+    const { m: m0, topicId, ids } = proc();
+    let m = addStepBranch(m0, topicId, ids[2], ids[0], '汚れがひどいとき');
+    m = addStepBranch(m, topicId, ids[2], ids[1]);
+    expect(m.topics[0].steps![2].next).toEqual([{ to: ids[0], condition: '汚れがひどいとき' }, { to: ids[1] }]);
+    m = updateStepBranch(m, topicId, ids[2], 1, { condition: 'それ以外' });
+    expect(m.topics[0].steps![2].next![1]).toEqual({ to: ids[1], condition: 'それ以外' });
+    m = updateStepBranch(m, topicId, ids[2], 1, { condition: '' });
+    expect(m.topics[0].steps![2].next![1]).toEqual({ to: ids[1] });
+    m = removeStepBranch(m, topicId, ids[2], 0);
+    m = removeStepBranch(m, topicId, ids[2], 0);
+    expect(m.topics[0].steps![2].next).toBeUndefined();
+    expect(validateManual(m).errors).toEqual([]);
+    expect(() => removeStepBranch(m, topicId, ids[2], 0)).toThrow(OpError);
+  });
+
+  it('答え（answers）の追加・更新・並べ替え・削除と、行き先の参照切れの検出', () => {
+    const { m: m0, topicId, ids } = proc();
+    let m = updateStep(m0, topicId, ids[0], { question: '電源ランプは点いていますか？' });
+    m = addAnswer(m, topicId, ids[0], 'はい', ids[1]);
+    m = addAnswer(m, topicId, ids[0], 'いいえ', ids[2]);
+    expect(m.topics[0].steps![0].answers).toEqual([
+      { text: 'はい', next: { to: ids[1] } },
+      { text: 'いいえ', next: { to: ids[2] } }
+    ]);
+    m = moveAnswer(m, topicId, ids[0], 1, -1);
+    expect(m.topics[0].steps![0].answers![0].text).toBe('いいえ');
+    m = updateAnswer(m, topicId, ids[0], 0, { text: '点いていない', to: 'nowhere' });
+    expect(validateManual(m).errors.some((e) => e.message.includes('"nowhere"'))).toBe(true);
+    m = removeAnswer(m, topicId, ids[0], 0);
+    m = removeAnswer(m, topicId, ids[0], 0);
+    expect(m.topics[0].steps![0].answers).toBeUndefined();
+  });
+
+  it('図（assetRefs）は重複せず、無い素材は足せない', () => {
+    const { m: m0, topicId, ids } = proc();
+    const a = addAsset(m0, { filename: 'fig.png' });
+    let m = addStepAsset(a.manual, topicId, ids[0], a.id);
+    m = addStepAsset(m, topicId, ids[0], a.id);
+    expect(m.topics[0].steps![0].assetRefs).toEqual([a.id]);
+    expect(() => addStepAsset(m, topicId, ids[0], 'nope')).toThrow(OpError);
+    m = setStepAssets(m, topicId, ids[0], []);
+    expect(m.topics[0].steps![0].assetRefs).toBeUndefined();
+  });
+});
+
+describe('説明の Block（手順 7、E-3）', () => {
+  it('addBlock は末尾・指定の位置・section の中に足し、id を付ける', () => {
+    let m = newManual('m', 't');
+    const tp = addTopic(m, 'description', '説明');
+    m = tp.manual;
+    const sec = addBlock(m, tp.id, 'section');
+    m = sec.manual;
+    const para = addBlock(m, tp.id, 'para', { parentPath: [0] });
+    m = para.manual;
+    const list = addBlock(m, tp.id, 'list', { parentPath: [0], index: 0 });
+    m = list.manual;
+    const table = addBlock(m, tp.id, 'table', { index: 0 });
+    m = table.manual;
+    const blocks = m.topics[0].blocks!;
+    expect(blocks.map((b) => b.kind)).toEqual(['table', 'section']);
+    expect(blocks[1].children!.map((b) => b.kind)).toEqual(['list', 'para']);
+    expect(blocks[0].rows).toEqual([['', ''], ['', '']]);
+    expect(new Set([sec.id, para.id, list.id, table.id]).size).toBe(4);
+    expect(validateManual(m).errors).toEqual([]);
+  });
+
+  it('updateBlock・moveBlock・removeBlock と、Block の scopeRefs', () => {
+    let m = newManual('m', 't');
+    const tp = addTopic(m, 'description', '説明');
+    m = tp.manual;
+    m = addBlock(m, tp.id, 'para').manual;
+    m = addBlock(m, tp.id, 'admonition').manual;
+    m = updateBlock(m, tp.id, [0], { text: '本文です。' });
+    m = updateBlock(m, tp.id, [1], { level: 'warning', title: '危険', text: '触らない。' });
+    expect(m.topics[0].blocks![1]).toMatchObject({ kind: 'admonition', level: 'warning', title: '危険', text: '触らない。' });
+    m = moveBlock(m, tp.id, [1], -1);
+    expect(m.topics[0].blocks![0].kind).toBe('admonition');
+    const sc = addScope(m, { property: 'model', values: ['A'], displayText: 'A 型' });
+    m = setScopeRef(sc.manual, { kind: 'block', topicId: tp.id, path: [1] }, sc.id, true);
+    expect(m.topics[0].blocks![1].scopeRefs).toEqual([sc.id]);
+    expect(findBlockPath(m.topics[0], m.topics[0].blocks![1].id!)).toEqual([1]);
+    m = removeBlock(m, tp.id, [0]);
+    m = removeBlock(m, tp.id, [0]);
+    expect(m.topics[0].blocks).toBeUndefined();
+    expect(() => removeBlock(m, tp.id, [0])).toThrow(OpError);
   });
 });

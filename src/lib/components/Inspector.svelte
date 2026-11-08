@@ -12,6 +12,8 @@
   import ScopeRefs from './ScopeRefs.svelte';
   import ManualPanel from './ManualPanel.svelte';
   import AssetInspector from './AssetInspector.svelte';
+  import StepInspector from './StepInspector.svelte';
+  import { flattenSteps } from '$lib/ops';
 
   const kinds: TopicKind[] = ['screenFlow', 'procedure', 'description', 'troubleshooting'];
   const actions: HotspotAction[] = ['press', 'input', 'read'];
@@ -21,6 +23,7 @@
   const screens = $derived(topic?.screens ?? []);
   const screen = $derived(screens.find((s) => s.id === sel.screenId));
   const hotspot = $derived(screen?.hotspots.find((h) => h.id === sel.hotspotId));
+  const step = $derived(sel.stepId && topic ? flattenSteps(topic.steps).find((x) => x.step.id === sel.stepId)?.step : undefined);
   const asset = $derived(screen ? editor.manual.assets?.find((a) => a.id === screen.assetRef) : undefined);
   const imageUrl = $derived(screen ? editor.images.get(screen.assetRef) : undefined);
 
@@ -97,6 +100,9 @@
     <AssetInspector assetId={sel.assetId} />
   {:else if !topic}
     <p class="muted small">{t('inspector.none')}</p>
+  {:else if step}
+    <h2>{t('inspector.step')}</h2>
+    <StepInspector {topic} {step} />
   {:else if hotspot && screen}
     <h2>{t('inspector.hotspot')} <span class="badge">{t(`shape.${hotspot.shape}`)}</span></h2>
     <div class="stack" data-testid="hotspot-form">

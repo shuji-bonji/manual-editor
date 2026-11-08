@@ -70,8 +70,6 @@ const ja = {
   'kind.procedure': '手順',
   'kind.screenFlow': '画面の流れ',
   'kind.troubleshooting': '困ったとき',
-  'description.notSupported':
-    '説明（description）の本文 Block の編集は試作では見送りました。読み込んだ Block（{n} 件）はそのまま保存されます。',
 
   // 画面エディター
   'screen.heading': '画面',
@@ -336,7 +334,70 @@ const ja = {
   'check.msg.noSource': '素材に path も data もありません。',
   'check.msg.coords': '{shape}の座標は {need} が必要ですが、{got} 個です。',
   'check.msg.required': '{key} が空です。',
-  'save.withErrors': '保存しました。検査でエラーが {n} 件あります。下の「検査」で確かめてください。'
+  'save.withErrors': '保存しました。検査でエラーが {n} 件あります。下の「検査」で確かめてください。',
+
+  // 手順の編集（E-2）・困ったときの編集（E-4）
+  'inspector.step': '手順',
+  'step.number': '手順 {n}',
+  'step.select': 'この手順を選ぶ',
+  'step.keys': 'Enter で次の手順、Tab で一段深く、Shift+Tab で一段浅く、空の手順で Backspace すると消えます。↑↓ で前後の手順へ、Alt+↑↓ で並べ替え。図は下の「素材」からドラッグして手順に落とします。',
+  'step.keysTs': '問いを書き、答えごとに行き先を選びます。問いの無い手順は「対処」です。Enter で次の手順、Tab で一段深く、Shift+Tab で一段浅く。',
+  'step.emptyTs': '問いがありません。「問いを追加」で最初の問いを作ってください。',
+  'step.addTs': '問いを追加',
+  'step.textPlaceholder': '手順の文を書く',
+  'step.textPlaceholderTs': '文（対処の内容。問いがあるときは、空のままだと問いと同じ文が入ります）',
+  'step.expectedPlaceholder': '結果を書く（任意）',
+  'step.questionPlaceholder': '問いを書く（空なら対処）',
+  'step.answerText': '答え',
+  'step.answerTarget': '答えの行き先',
+  'step.answerDefault': '答え {n}',
+  'step.addAnswer': '＋ 答え',
+  'step.resolutionNote': '対処（この手順に着くと問答が終わります）',
+  'step.targetStep': '手順 {n}',
+  'step.branchAny': 'それ以外',
+  'step.figures': '図',
+  'step.addFigure': '＋ 図を足す（素材から選ぶ）',
+  'step.noAssets': '素材がありません。下の「素材」の引き出しで追加してください。',
+  'step.figureHint': '下の「素材」のカードをこの手順にドラッグしても足せます。',
+  'step.branches': '分岐（この手順の後の行き先）',
+  'step.branchCondition': '条件（例: 汚れがひどいとき）',
+  'step.branchTarget': '行き先',
+  'step.addBranch': '＋ 行き先',
+  'step.branchHint': '分岐が無ければ次の手順へ進みます。条件の無い分岐は「それ以外」として最後に出ます。',
+  'step.remove': 'この手順を削除',
+  'step.confirmRemove': '手順 {n} を削除します。子の手順も消えます。よろしいですか。',
+
+  // 説明の編集（E-3）
+  'block.add': 'ブロックを追加:',
+  'block.addInside': 'この見出しの中に追加:',
+  'block.empty': '本文がありません。下の「ブロックを追加」から見出し・段落・箇条書き・表・図・注意を足してください。',
+  'block.kind.section': '見出し',
+  'block.kind.para': '段落',
+  'block.kind.list': '箇条書き',
+  'block.kind.table': '表',
+  'block.kind.figure': '図',
+  'block.kind.admonition': '注意',
+  'block.titlePlaceholder': '見出しの文',
+  'block.textPlaceholder': '段落の文',
+  'block.ordered': '番号付き',
+  'block.itemsPlaceholder': '1 行に 1 項目',
+  'block.addRow': '＋ 行',
+  'block.addCol': '＋ 列',
+  'block.removeRow': 'この行を消す',
+  'block.removeCol': 'この列を消す',
+  'block.tableHint': '先頭の行が見出しになります。',
+  'block.figureDrop': '素材を選ぶか、下の「素材」のカードや画像ファイルをここに落とします。',
+  'block.figureAsset': '図の素材',
+  'block.figureNone': '（素材を選ぶ）',
+  'block.figureTitle': '図の題（任意）',
+  'block.admTitle': '見出し（任意）',
+
+  // 行き先のプルダウン
+  'target.label': '行き先',
+  'target.none': '（なし）',
+  'target.ownSteps': 'この Topic の手順',
+  'target.screens': '画面',
+  'target.steps': '手順'
 } as const;
 
 export type Locale = 'ja';

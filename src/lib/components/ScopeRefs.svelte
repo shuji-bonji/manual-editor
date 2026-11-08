@@ -4,7 +4,8 @@
   import { getScopeRefs, setScopeRef, type ScopeTarget } from '$lib/ops';
   import { t } from '$lib/i18n';
 
-  let { target }: { target: ScopeTarget } = $props();
+  /** quiet: 適用範囲が 1 つも無いときは何も出さない（本文の中に置くとき）。compact: 1 行の小さな表示（Block ごとに置くとき） */
+  let { target, quiet = false, compact = false }: { target: ScopeTarget; quiet?: boolean; compact?: boolean } = $props();
 
   const scopes = $derived(editor.manual.scopes ?? []);
   const refs = $derived.by(() => {
@@ -16,7 +17,8 @@
   });
 </script>
 
-<fieldset class="scopes">
+{#if !(quiet && scopes.length === 0)}
+<fieldset class="scopes" class:compact>
   <legend>{t('scope.refs')}</legend>
   {#if scopes.length === 0}
     <span class="muted small">{t('scope.noneDefined')}</span>
@@ -33,6 +35,7 @@
     </label>
   {/each}
 </fieldset>
+{/if}
 
 <style>
   .scopes {
@@ -51,5 +54,27 @@
     gap: 0.3rem;
     align-items: center;
     margin-right: 0.8rem;
+  }
+  .scopes.compact {
+    border: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.6rem;
+    align-items: center;
+  }
+  .scopes.compact legend {
+    float: left;
+    padding: 0;
+    margin-right: 0.4rem;
+  }
+  .scopes.compact .chip {
+    margin-right: 0;
+  }
+  .scopes.compact .chip .muted {
+    display: none;
   }
 </style>
