@@ -21,6 +21,7 @@ npm install && npm run dev
 |---|---|
 | `npm run check` | svelte-check による型の検査 |
 | `npm test` | Vitest による単体テスト |
+| `npm run test:e2e` | ビルドしてから Playwright（Chromium）で主な流れを通します（`e2e/editor.spec.ts`。開く → 描く → つなぐ → 体験 → 保存、2021 年の JSON の地図・検査・素材、手順・困ったとき・説明の書き足し）。初回は `npx playwright install chromium` が要ります |
 | `npm run build` | `build/` に静的ファイルを出力します（adapter-static、SPA、PWA） |
 | `npm run preview` | `build/` を手元で配信します |
 
@@ -75,7 +76,7 @@ SvelteKit 2 と Svelte 5（runes）、TypeScript、`@sveltejs/adapter-static`、
 | 場所 | 内容 |
 |---|---|
 | ルート（`src/`） | 作成ツール（SvelteKit）。`packages/player` の `Stage` の上に作図の層を重ね、体験は `ScreenFlow` をそのまま置いています（設計書 3 節の E-0・E-1） |
-| `packages/player` | 閲覧部品（仮称 experiential-manual-player）。runtime（Svelte 非依存。遷移・履歴・適用範囲・手順の番号・問答）、部品（Stage・P-1・P-0。Svelte 5）、Web Components `<experiential-manual>` のビルドと `demo/`。P-2〜P-4 はまだです。`npm run test:player` / `npm run check:player` で確かめます。詳しくは [packages/player/README.ja.md](./packages/player/README.ja.md) |
+| `packages/player` | 閲覧部品（仮称 experiential-manual-player）。runtime（Svelte 非依存。遷移・履歴・適用範囲・手順の番号・問答）、部品（Stage・P-1・P-0。Svelte 5）、Web Components `<experiential-manual>` のビルドと `demo/`。P-2〜P-4 も入っています。`npm run test:player` / `npm run check:player` で確かめます。詳しくは [packages/player/README.ja.md](./packages/player/README.ja.md) |
 
 npm workspaces です。`npm install` はルートで 1 回だけ行います。
 

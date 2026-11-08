@@ -21,6 +21,7 @@ Other commands:
 |---|---|
 | `npm run check` | Type check with svelte-check |
 | `npm test` | Unit tests with Vitest |
+| `npm run test:e2e` | Builds, then runs the main flows in Playwright (Chromium) from `e2e/editor.spec.ts`: open → draw → connect → play → save, the map / check / assets drawers on the 2021 JSON, and adding a step, a question and a block. Run `npx playwright install chromium` once first |
 | `npm run build` | Static build into `build/` (adapter-static, SPA, PWA) |
 | `npm run preview` | Serves `build/` locally |
 
@@ -75,7 +76,7 @@ SvelteKit 2 and Svelte 5 (runes), TypeScript, `@sveltejs/adapter-static`, `@vite
 | Path | Contents |
 |---|---|
 | root (`src/`) | The editor (SvelteKit). It draws on top of the `Stage` of `packages/player` and uses `ScreenFlow` as is for the play mode (E-0 and E-1 of section 3 of the design document) |
-| `packages/player` | The viewer components (working name experiential-manual-player). The runtime (no Svelte dependency: transitions, history, scope filtering, step numbering, troubleshooting dialogue), the components (Stage, P-1, P-0; Svelte 5), the `<experiential-manual>` Web Component build and `demo/`. P-2 to P-4 are not there yet. Check it with `npm run test:player` / `npm run check:player`. See [packages/player/README.md](./packages/player/README.md) |
+| `packages/player` | The viewer components (working name experiential-manual-player). The runtime (no Svelte dependency: transitions, history, scope filtering, step numbering, troubleshooting dialogue), the components (Stage, P-1, P-0; Svelte 5), the `<experiential-manual>` Web Component build and `demo/`. P-2 to P-4 are included. Check it with `npm run test:player` / `npm run check:player`. See [packages/player/README.md](./packages/player/README.md) |
 
 This is an npm workspace. Run `npm install` once at the root.
 

@@ -372,3 +372,14 @@ player の `runtime` は `Manual` を読むだけで書き換えません。編�
 | E-4 の `text` | `Step.text` は validateManual で必須なので、問いを書いたとき文が空（または前の問いと同じ）なら問いを文にも写す（`editQuestion`）。利用者が文を別に書けば写さない |
 | 行き先の選択 | `TargetSelect.svelte` を足した。`Step.answers[].next.to`・`Step.next[].to` で使う。ホットスポットの遷移先（`Inspector` の既存のプルダウン）は「新しい画面を追加して遷移先にする」があるのでそのまま |
 | 見送ったもの | Markdown の貼り付けからの分解（設計 E-3 のとおり後の版）、構成ツリーのドラッグ、図に `Screen` を指すこと |
+
+## 11. 実装の記録（手順 8: Playwright。2026-11-08）
+
+| 項目 | 実装 |
+|---|---|
+| 置き場所 | `e2e/editor.spec.ts`（3 本）と `e2e/png.ts`（テスト用の PNG を Node だけで作る）。設定は `playwright.config.ts`（`testDir: 'e2e'`、Chromium だけ、`webServer` は `vite preview --port 4173`。先に `npm run build` が要る） |
+| 1 本目 | 設計の「開く → 描く → 体験 → 保存」。新規 → Topic → 画像 2 枚で画面 2 枚 → 矩形を描く → ラベル → 遷移先 STEP2 → 体験で押して STEP2 → 編集に戻すと STEP2 が選ばれている → ダウンロードした JSON が `validateManual` に通り、`AssetFile.width` / `height` が入っている |
+| 2 本目 | 2021 年の JSON（79 画面）を開き、地図の 14 ノード、ノードを押すと画面が選ばれる、画面を消すと到達不可・参照切れ、検査の「地図で見る」、素材の一覧（60 件以上） |
+| 3 本目 | 券売機の例で、手順の Enter / Tab と分岐、困ったときの問いと答え、説明の段落と表を足し、保存した JSON が検査に通る |
+| CI | `ci.yml` の build の後に `npx playwright install --with-deps chromium` → `npx playwright test`。失敗したときだけ `playwright-report/` を artifact に残す。`CI=true` のときは再試行 1 回 |
+| 版 | `@playwright/test` 1.63.0（devDependencies）。クラウド側の Linux に入っている Playwright と同じ版に合わせた |
