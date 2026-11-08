@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { validateManual, type Manual } from '@shuji-bonji/experiential-manual-model';
 import {
+  scaleHotspots,
+  moveHotspot,
   OpError,
   addAdmonition,
   addAsset,
@@ -329,5 +331,26 @@ describe('Manual の情報', () => {
     const m = updateManual(newManual('m', 'x'), { title: '新題', language: 'en', versionNumber: '2.0', versionDate: '2026-10-28' });
     expect(m).toMatchObject({ title: '新題', language: 'en', version: { number: '2.0', date: '2026-10-28' } });
     expect(updateManual(m, { versionDate: '' }).version.date).toBeUndefined();
+  });
+});
+
+describe('moveHotspot / scaleHotspots', () => {
+  it('矩形と円を動かし、縮尺で変換する', () => {
+    let m = loadKenbaiki();
+    const topic = m.topics.find((t) => t.kind === 'screenFlow')!;
+    const screen = topic.screens![0];
+    const added = addHotspot(m, topic.id, screen.id, { shape: 'circle', coords: [100, 100, 20] });
+    m = added.manual;
+    m = moveHotspot(m, topic.id, screen.id, added.id, 5, -5);
+    let h = m.topics.find((t) => t.id === topic.id)!.screens![0].hotspots.find((x) => x.id === added.id)!;
+    expect(h.coords).toEqual([105, 95, 20]);
+    const rectId = screen.hotspots[0].id;
+    const before = screen.hotspots[0].coords;
+    m = scaleHotspots(m, topic.id, screen.id, 0.5, 2);
+    const s2 = m.topics.find((t) => t.id === topic.id)!.screens![0];
+    expect(s2.hotspots.find((x) => x.id === rectId)!.coords).toEqual([before[0] * 0.5, before[1] * 2, before[2] * 0.5, before[3] * 2].map(Math.round));
+    h = s2.hotspots.find((x) => x.id === added.id)!;
+    expect(h.coords).toEqual([53, 190, 25]);
+    expect(() => scaleHotspots(m, topic.id, screen.id, 0, 1)).toThrow(OpError);
   });
 });

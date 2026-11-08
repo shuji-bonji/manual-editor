@@ -1,15 +1,23 @@
+<!--
+  E-0 共通の枠: 上の帯（TopBar）、左の構成ツリー、中央のステージ（編集 | 体験）、右のインスペクター、下の引き出し。
+  中央は Topic の kind と editor.mode で切り替える。
+  - screenFlow: 編集は EditStage（player の Stage の上に作図を重ねる）、体験は player の ScreenFlow をそのまま置く。
+    体験中に画面が変わると selection.screenId を追いかけるので、編集に戻すとその画面が選ばれている。
+  - procedure / troubleshooting / description: 編集は試作の ProcedureEditor / DescriptionEditor（E-2〜E-4 で組み直す）、体験は player の TopicView。
+-->
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { editor, type Tab } from '$lib/state.svelte';
+  import { ScreenFlow, TopicView } from '@shuji-bonji/experiential-manual-player/components';
+  import type { Target } from '@shuji-bonji/experiential-manual-player/runtime';
+  import { editor } from '$lib/state.svelte';
   import { t } from '$lib/i18n';
-  import FileBar from '$lib/components/FileBar.svelte';
-  import TopicList from '$lib/components/TopicList.svelte';
-  import ScreenEditor from '$lib/components/ScreenEditor.svelte';
+  import TopBar from '$lib/components/TopBar.svelte';
+  import StructureTree from '$lib/components/StructureTree.svelte';
+  import EditStage from '$lib/components/EditStage.svelte';
+  import Inspector from '$lib/components/Inspector.svelte';
+  import Drawer from '$lib/components/Drawer.svelte';
   import ProcedureEditor from '$lib/components/ProcedureEditor.svelte';
   import DescriptionEditor from '$lib/components/DescriptionEditor.svelte';
-  import LibraryPanel from '$lib/components/LibraryPanel.svelte';
-  import IssuesPanel from '$lib/components/IssuesPanel.svelte';
-  import Player from '$lib/components/Player.svelte';
 
   let ready = $state(false);
 
@@ -40,8 +48,18 @@
     if (!editor.selection.topicId && editor.manual.topics.length > 0) editor.selectTopic(editor.manual.topics[0].id);
   });
 
-  const tabs: Tab[] = ['edit', 'library', 'check', 'play'];
   const topic = $derived(editor.topic);
+
+  function resolveAsset(ref: string) {
+    const url = editor.images.get(ref);
+    const s = editor.sizes.get(ref);
+    return { url, width: s?.w, height: s?.h };
+  }
+
+  /** 体験中に別の Topic の手順や画面へ行くとき */
+  function leave(target: Target) {
+    editor.select(target.kind === 'screen' ? { topicId: target.topic.id, screenId: target.screen.id } : { topicId: target.topic.id, stepId: target.step.id });
+  }
 
   function onKey(e: KeyboardEvent) {
     const mod = e.metaKey || e.ctrlKey;
@@ -64,9 +82,9 @@
 </svelte:head>
 <svelte:window onkeydown={onKey} />
 
-<FileBar />
+<div class="app">
+  <TopBar />
 
-<main>
   {#if editor.pendingDraft}
     <div class="banner" role="alert" data-testid="draft-banner">
       <span>{t('draft.found', { time: new Date(editor.pendingDraft.savedAt).toLocaleString('ja-JP') })}</span>
@@ -76,7 +94,6 @@
       </span>
     </div>
   {/if}
-
   {#each editor.notices as n (n.id)}
     <div class="banner {n.kind}" role={n.kind === 'error' ? 'alert' : 'status'}>
       <span>{n.text}</span>
@@ -84,108 +101,114 @@
     </div>
   {/each}
 
-  <div class="layout">
-    <aside class="side">
-      <TopicList />
-    </aside>
+  <div class="columns">
+    <aside class="col tree"><StructureTree /></aside>
 
-    <div class="content">
-      <div class="tabs" role="tablist" aria-label={t('tabs.label')}>
-        {#each tabs as tab (tab)}
-          <button
-            role="tab"
-            type="button"
-            class="tab"
-            aria-selected={editor.tab === tab}
-            data-testid="tab-{tab}"
-            onclick={() => (editor.tab = tab)}
-          >
-            {t(`tab.${tab}`)}
-            {#if tab === 'check'}
-              {#if editor.validation.errors.length > 0}<span class="badge err">{editor.validation.errors.length}</span>{/if}
-              {#if editor.validation.warnings.length > 0}<span class="badge warn">{editor.validation.warnings.length}</span>{/if}
-            {/if}
-          </button>
-        {/each}
-      </div>
-
-      <div class="tabpanel" role="tabpanel">
-        {#if editor.tab === 'edit'}
-          {#if !topic}
-            <div class="panel muted">{t('edit.noTopic')}</div>
-          {:else}
-            <h2 class="topic-title">{topic.title} <span class="badge">{t(`kind.${topic.kind}`)}</span></h2>
-            {#if topic.kind === 'screenFlow'}
-              <div class="topic-meta"><DescriptionEditor {topic} compact /></div>
-              <ScreenEditor {topic} />
-            {:else if topic.kind === 'description'}
-              <DescriptionEditor {topic} />
-            {:else}
-              <ProcedureEditor {topic} />
-            {/if}
-          {/if}
-        {:else if editor.tab === 'library'}
-          <LibraryPanel />
-        {:else if editor.tab === 'check'}
-          <IssuesPanel />
+    <main class="col center" aria-label={t('screen.editorLabel')}>
+      {#if !topic}
+        <div class="panel muted">{t('edit.noTopic')}</div>
+      {:else if topic.kind === 'screenFlow'}
+        {#if editor.mode === 'edit'}
+          <EditStage {topic} />
         {:else}
-          <Player />
+          {#key topic.id}
+            <div class="play em-root" data-testid="play">
+              <ScreenFlow
+                manual={editor.manual}
+                topicId={topic.id}
+                startScreen={editor.selection.screenId}
+                {resolveAsset}
+                onchange={(s) => editor.select({ topicId: topic.id, screenId: s.screen?.id })}
+                onleave={leave}
+              />
+            </div>
+          {/key}
         {/if}
-      </div>
-    </div>
+      {:else if editor.mode === 'play'}
+        {#key topic.id}
+          <div class="play em-root" data-testid="play">
+            <TopicView manual={editor.manual} {topic} startStep={editor.selection.stepId} onleave={leave} />
+          </div>
+        {/key}
+      {:else}
+        <h2 class="topic-title">{topic.title} <span class="badge">{t(`kind.${topic.kind}`)}</span></h2>
+        {#if topic.kind === 'description'}
+          <DescriptionEditor {topic} />
+        {:else}
+          <ProcedureEditor {topic} />
+        {/if}
+      {/if}
+    </main>
+
+    <aside class="col right"><Inspector /></aside>
   </div>
-</main>
+
+  <Drawer />
+</div>
 
 <style>
-  main {
-    padding: var(--gap);
-    max-width: 90rem;
-    margin: 0 auto;
+  .app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
   }
-  .layout {
+  .columns {
+    flex: 1;
     display: grid;
-    grid-template-columns: minmax(15rem, 20rem) 1fr;
-    gap: var(--gap);
-    align-items: start;
+    grid-template-columns: minmax(13rem, 17rem) minmax(0, 1fr) minmax(16rem, 20rem);
+    gap: 0;
+    align-items: stretch;
   }
-  @media (max-width: 900px) {
-    .layout {
-      grid-template-columns: 1fr;
+  @media (max-width: 1000px) {
+    .columns {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .col.tree,
+    .col.right {
+      border: none !important;
+      border-bottom: 1px solid var(--border) !important;
     }
   }
-  .content {
+  .col {
+    padding: var(--gap);
     min-width: 0;
   }
-  .tabs {
-    display: flex;
-    gap: 0.25rem;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: var(--gap);
-    flex-wrap: wrap;
-  }
-  .tab {
-    padding: 0.4rem 0.9rem;
-    border: 1px solid transparent;
-    border-bottom: 0;
-    border-radius: var(--radius) var(--radius) 0 0;
-    background: none;
-    cursor: pointer;
-    display: inline-flex;
-    gap: 0.3rem;
-    align-items: center;
-  }
-  .tab[aria-selected='true'] {
+  .col.tree {
+    border-right: 1px solid var(--border);
     background: var(--surface);
-    border-color: var(--border);
-    font-weight: 600;
-    margin-bottom: -1px;
-    border-bottom: 1px solid var(--surface);
   }
-  .topic-meta {
-    margin-bottom: var(--gap);
+  .col.right {
+    border-left: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .play {
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  /* player の色トークンを editor のトークンに合わせる */
+  .em-root {
+    --em-bg: var(--bg);
+    --em-surface: var(--surface);
+    --em-surface-2: var(--surface-2);
+    --em-text: var(--text);
+    --em-muted: var(--muted);
+    --em-border: var(--border);
+    --em-accent: var(--accent);
+    --em-accent-soft: var(--accent-soft);
+    --em-danger-soft: var(--danger-soft);
+    --em-warn: var(--warn);
+    --em-warn-soft: var(--warn-soft);
+    --em-hotspot-fill: var(--hotspot-fill);
+    --em-hotspot-stroke: var(--hotspot-stroke);
+    --em-hotspot-selected: var(--hotspot-selected);
+    --em-radius: var(--radius);
+    --em-font: var(--font);
   }
   .topic-title {
     font-size: 1.15rem;
+    margin: 0 0 var(--gap);
   }
   .banner {
     display: flex;
@@ -194,8 +217,8 @@
     align-items: center;
     flex-wrap: wrap;
     padding: 0.5rem 0.75rem;
+    margin: 0.5rem var(--gap) 0;
     border-radius: var(--radius);
-    margin-bottom: 0.5rem;
     background: var(--accent-soft);
     border: 1px solid var(--accent);
   }

@@ -11,12 +11,12 @@
   function go(issue: ValidationIssue) {
     const loc = locateIssue(editor.manual, issue.path);
     if (loc.area === 'library' || !loc.topicId) {
-      editor.tab = 'library';
+      editor.drawer = 'library';
       return;
     }
     editor.select({ topicId: loc.topicId, screenId: loc.screenId, hotspotId: loc.hotspotId, stepId: loc.stepId });
     if (!loc.screenId) editor.fixSelection();
-    editor.tab = 'edit';
+    editor.mode = 'edit';
   }
 
   function dropBroken() {

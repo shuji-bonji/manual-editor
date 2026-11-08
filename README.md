@@ -30,10 +30,10 @@ To build for GitHub Pages, set the repository name: `BASE_PATH=/manual-editor np
 
 - **Open / save**: opens a manual-model JSON and saves it (File System Access API where available, otherwise file input and download). A 2021 JSON is converted with `fromLegacyJson`, and its warnings are shown.
 - **Topics**: add, rename, reorder, delete, and choose the kind (`description` / `procedure` / `screenFlow` / `troubleshooting`).
-- **Screen editor** (`screenFlow`): add screenshots, drag on the image to draw rectangle or circle hotspots, set the label, the action (press / input / read) and the target screen. Coordinates are stored in pixels of the original image.
+- **Screen editing** (`screenFlow`): three columns, with the structure tree on the left, the stage of the viewer components (player) in the middle and the inspector on the right. Add screenshots and drag on the image to draw rectangle, circle or polygon hotspots. A selected hotspot can be moved by dragging, reshaped with its handles and nudged with the arrow keys (1 px, 10 px with Shift). Set the label, the action (press / input / read), the target (a screen or a step; "add a new screen as the target" is available) and the condition. When a replaced image has a different size, the editor asks whether to scale the coordinates. Coordinates are stored in pixels of the original image.
 - **Steps, admonitions, scopes** (`procedure`): nested steps, expected results, warning / caution / note, and `Scope` with `scopeRefs`.
 - **Check**: lists the errors and warnings of `validateManual`. Selecting an item moves to the Topic, screen or step.
-- **Experience view**: runs a `screenFlow` from its start screen. Pressing a hotspot moves to its target; back and restart are available.
+- **Edit | Play**: switched on the same stage. Play is the viewer component itself (`packages/player`): pressing a hotspot moves to its target, with back and restart. The screen reached while playing is selected when you switch back to edit. Procedure, description and troubleshooting topics can be played too.
 - **Undo / redo** and an automatic draft in `localStorage`.
 
 ## What it does not do
@@ -42,8 +42,8 @@ To build for GitHub Pages, set the repository name: `BASE_PATH=/manual-editor np
 > The app does not export S1000D. Pass the saved JSON to the Skill `experience-to-s1000d` or to the `convert_manual` tool of writer-mcp.
 
 - Editing the body blocks of `description` Topics (the loaded blocks are kept as they are).
-- Editing `answers` of `troubleshooting` steps, and moving or reshaping existing hotspots by dragging (delete and redraw, or edit the numbers).
-- Drawing polygons (polygons read from a JSON are shown and kept).
+- Editing `answers` of `troubleshooting` steps.
+- The transition map (only its place in the bottom drawer exists), reordering the tree by dragging (use the ↑↓ buttons), and masking parts of an image.
 - AI assistance, login, sharing and server-side storage.
 
 ## How images are stored
@@ -71,7 +71,7 @@ SvelteKit 2 and Svelte 5 (runes), TypeScript, `@sveltejs/adapter-static`, `@vite
 
 | Path | Contents |
 |---|---|
-| root (`src/`) | The 0.1.0 prototype of the editor (SvelteKit). It will be rebuilt in step 5 of section 6 of the design document |
+| root (`src/`) | The editor (SvelteKit). It draws on top of the `Stage` of `packages/player` and uses `ScreenFlow` as is for the play mode (E-0 and E-1 of section 3 of the design document) |
 | `packages/player` | The viewer components (working name experiential-manual-player). The runtime (no Svelte dependency: transitions, history, scope filtering, step numbering, troubleshooting dialogue), the components (Stage, P-1, P-0; Svelte 5), the `<experiential-manual>` Web Component build and `demo/`. P-2 to P-4 are not there yet. Check it with `npm run test:player` / `npm run check:player`. See [packages/player/README.md](./packages/player/README.md) |
 
 This is an npm workspace. Run `npm install` once at the root.

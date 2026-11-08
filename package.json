@@ -17,14 +17,15 @@
     "build": "vite build",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check": "npm run build:runtime -w packages/player && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "test": "svelte-kit sync && vitest run",
     "test:player": "npm test -w packages/player",
     "check:player": "npm run check -w packages/player"
   },
   "dependencies": {
-    "@shuji-bonji/experiential-manual-model": "^0.2.0"
+    "@shuji-bonji/experiential-manual-model": "^0.2.0",
+    "@shuji-bonji/experiential-manual-player": "0.0.0"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.10",

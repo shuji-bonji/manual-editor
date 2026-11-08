@@ -6,16 +6,32 @@
   "license": "MIT",
   "author": "shuji-bonji",
   "type": "module",
-  "engines": { "node": ">=20.19.0" },
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "svelte": "./src/components/index.ts",
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
-    "./runtime": { "types": "./dist/runtime/index.d.ts", "import": "./dist/runtime/index.js" },
-    "./components": { "svelte": "./src/components/index.ts", "default": "./src/components/index.ts" },
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./runtime": {
+      "types": "./dist/runtime/index.d.ts",
+      "import": "./dist/runtime/index.js"
+    },
+    "./components": {
+      "svelte": "./src/components/index.ts",
+      "default": "./src/components/index.ts"
+    },
     "./element": "./dist/element/experiential-manual.js"
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
+    "prepare": "tsc -p tsconfig.build.json",
+    "build:runtime": "tsc -p tsconfig.build.json",
     "build": "tsc -p tsconfig.build.json && vite build",
     "build:element": "vite build",
     "check": "svelte-check --tsconfig ./tsconfig.json",

@@ -421,6 +421,30 @@ export function removeHotspot(m: Manual, topicId: string, screenId: string, hots
   return d;
 }
 
+/** ホットスポットを dx, dy（画像の画素）だけ動かす */
+export function moveHotspot(m: Manual, topicId: string, screenId: string, hotspotId: string, dx: number, dy: number): Manual {
+  const d = clone(m);
+  const h = hotspotOf(d, topicId, screenId, hotspotId);
+  if (h.shape === 'circle') h.coords = normalizeCoords('circle', [h.coords[0] + dx, h.coords[1] + dy, h.coords[2]]);
+  else h.coords = normalizeCoords(h.shape, h.coords.map((v, i) => v + (i % 2 === 0 ? dx : dy)));
+  return d;
+}
+
+/**
+ * 画像を差し替えて大きさが変わったとき、その画面のホットスポットの座標を縮尺（sx, sy）で変換する。
+ * 円の半径は sx と sy の平均で変える。
+ */
+export function scaleHotspots(m: Manual, topicId: string, screenId: string, sx: number, sy: number): Manual {
+  if (!(sx > 0 && sy > 0)) throw new OpError('縮尺は 0 より大きい数です');
+  const d = clone(m);
+  const s = screenOf(d, topicId, screenId);
+  for (const h of s.hotspots) {
+    if (h.shape === 'circle') h.coords = normalizeCoords('circle', [h.coords[0] * sx, h.coords[1] * sy, h.coords[2] * ((sx + sy) / 2)]);
+    else h.coords = normalizeCoords(h.shape, h.coords.map((v, i) => v * (i % 2 === 0 ? sx : sy)));
+  }
+  return d;
+}
+
 /** 遷移先（Screen.id または Step.id）を付ける。to が null なら遷移を外す */
 export function setTransition(
   m: Manual,

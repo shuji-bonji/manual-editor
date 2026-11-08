@@ -9,14 +9,7 @@
 import { SvelteMap } from 'svelte/reactivity';
 import { validateManual, type Manual, type TopicKind } from '@shuji-bonji/experiential-manual-model';
 import { base } from '$app/paths';
-import {
-  OpError,
-  addAsset,
-  addScreen,
-  addTopic,
-  newManual,
-  type Added
-} from './ops';
+import { OpError, addAsset, addScreen, addTopic, newManual, scaleHotspots, updateScreen, type Added } from './ops';
 import {
   canUseFilePicker,
   clearDraft,
@@ -40,7 +33,12 @@ import {
 } from './io';
 import { t } from './i18n';
 
-export type Tab = 'edit' | 'library' | 'check' | 'play';
+/** 中央のステージの状態。edit は作図・選択、play は体験（player の ScreenFlow） */
+export type Mode = 'edit' | 'play';
+/** 下の引き出し。1 つだけ開く */
+export type Drawer = 'library' | 'map' | 'check';
+/** 作図の道具 */
+export type Tool = 'select' | 'rect' | 'circle' | 'poly' | 'pan';
 
 export interface Notice {
   id: number;
@@ -61,7 +59,11 @@ class EditorState {
   manual = $state.raw<Manual>(newManual(crypto.randomUUID(), t('manual.untitled')));
   fileName = $state('manual.json');
   dirty = $state(false);
-  tab = $state<Tab>('edit');
+  mode = $state<Mode>('edit');
+  drawer = $state<Drawer | undefined>(undefined);
+  tool = $state<Tool>('select');
+  /** 描き終えたときに 1 増やす。インスペクターが「ラベル」にフォーカスを移す合図 */
+  focusLabel = $state(0);
   selection = $state<Selection>({});
   notices = $state.raw<Notice[]>([]);
   /** 保存時に画像を data URL にして JSON に埋め込むか */
@@ -183,7 +185,7 @@ class EditorState {
   createTopic(kind: TopicKind): void {
     const id = this.apply((m) => addTopic(m, kind, t('topic.newTitle', { n: m.topics.length + 1 })));
     this.selectTopic(id);
-    this.tab = 'edit';
+    this.mode = 'edit';
   }
 
   // ---- 画像 ---------------------------------------------------------------
@@ -231,6 +233,41 @@ class EditorState {
       );
       if (screenId) this.selection = { topicId, screenId };
     }
+  }
+
+  /**
+   * 画面の画像を差し替える。新しい画像の大きさが違うときは、ホットスポットの座標を縮尺で変換するかを尋ねる（「直す」工程）。
+   * 素材は新しく作り、画面の assetRef を付け替える（元の素材は他の画面が使っているかもしれないので残す）。
+   */
+  async replaceScreenImage(topicId: string, screenId: string, file: File): Promise<void> {
+    const screen = this.manual.topics.find((x) => x.id === topicId)?.screens?.find((s) => s.id === screenId);
+    if (!screen) return;
+    if (!file.type.startsWith('image/')) {
+      this.notify('warn', t('image.notImage', { name: file.name }));
+      return;
+    }
+    const before = this.sizes.get(screen.assetRef);
+    const hash = await sha256Of(file);
+    const assetId = this.apply((m) =>
+      addAsset(m, { filename: file.name, mediaType: file.type, alt: file.name.replace(/\.[^.]+$/, ''), hash })
+    );
+    if (!assetId) return;
+    if (!(await this.attachImage(assetId, file))) return;
+    const after = this.sizes.get(assetId);
+    this.apply((m) => updateScreen(m, topicId, screenId, { assetRef: assetId }));
+    if (before && after && (before.w !== after.w || before.h !== after.h) && screen.hotspots.length > 0) {
+      if (confirm(t('screen.confirmScale', { w0: before.w, h0: before.h, w1: after.w, h1: after.h }))) {
+        this.apply((m) => scaleHotspots(m, topicId, screenId, after.w / before.w, after.h / before.h));
+      }
+    }
+  }
+
+  /** 画像を決めずに画面を足す（遷移先を先に作るため）。素材は名前だけで、画像は後から差し替える */
+  addBlankScreen(topicId: string, caption?: string): string | undefined {
+    const n = (this.manual.topics.find((x) => x.id === topicId)?.screens?.length ?? 0) + 1;
+    const assetId = this.apply((m) => addAsset(m, { filename: `screen-${n}.png`, mediaType: 'image/png' }));
+    if (!assetId) return undefined;
+    return this.apply((m) => addScreen(m, topicId, assetId, caption ?? t('screen.defaultCaption', { n })));
   }
 
   /** 複数の画像ファイルを、Asset.source.path のファイル名で照合して割り当てる。割り当てた件数を返す */
@@ -283,7 +320,7 @@ class EditorState {
       for (const w of parsed.warnings) this.notify('warn', w);
     }
     this.selectTopic(this.manual.topics[0]?.id);
-    this.tab = 'edit';
+    this.mode = 'edit';
     await this.resolveImages(this.manual, baseUrl);
     const missing = (this.manual.assets ?? []).filter((a) => a.kind === 'image' && !this.images.has(a.id)).length;
     if (missing > 0) this.notify('warn', t('open.missingImages', { n: missing }));
@@ -333,7 +370,7 @@ class EditorState {
     this.images.clear();
     this.sizes.clear();
     this.selection = {};
-    this.tab = 'edit';
+    this.mode = 'edit';
   }
 
   private async serialize(): Promise<string> {

@@ -25,12 +25,25 @@
     onselect?: (hotspot: Hotspot | undefined) => void;
     /** 画像と同じ座標系（viewBox）で描く層。引数は画像の大きさ */
     overlay?: Snippet<[{ width: number; height: number }]>;
+    /** 素材の URL と大きさを外から与える（editor は画像を Manual の外に持つ）。無ければ Manual の assets から求める */
+    resolveAsset?: (assetRef: string) => { url?: string; width?: number; height?: number } | undefined;
   }
 
-  let { manual, screen, baseUrl, hints = false, mode = 'play', selected, onpress, onselect, overlay }: Props = $props();
+  let { manual, screen, baseUrl, hints = false, mode = 'play', selected, onpress, onselect, overlay, resolveAsset }: Props = $props();
 
-  const url = $derived(assetUrl(manual, screen.assetRef, baseUrl));
-  const declared = $derived(assetSize(manual, screen.assetRef));
+  const resolved = $derived(resolveAsset?.(screen.assetRef));
+  // resolveAsset が与えられたときは、その結果だけを使う（editor は画像を Manual の外に持ち、無いときは無い）
+  const url = $derived(resolveAsset ? resolved?.url : assetUrl(manual, screen.assetRef, baseUrl));
+  let failed = $state(false);
+  $effect(() => {
+    void url;
+    failed = false;
+  });
+  const declared = $derived(
+    resolved?.width !== undefined && resolved?.height !== undefined
+      ? { width: resolved.width, height: resolved.height }
+      : assetSize(manual, screen.assetRef)
+  );
   let natural = $state<{ width: number; height: number } | undefined>();
   /** 画像の大きさ。素材の width / height（model 0.2.0）、無ければ読み込んだ画像の naturalWidth / naturalHeight */
   const size = $derived(declared ?? natural ?? { width: 1280, height: 1024 });
@@ -76,7 +89,7 @@
   }
 
   function onbackground(e: PointerEvent) {
-    if (mode === 'edit' && e.target === svg) onselect?.(undefined);
+    if (mode === 'edit' && e.target === svg && e.button === 0) onselect?.(undefined);
   }
 
   const label = (h: Hotspot) => h.label || h.id;
@@ -89,8 +102,8 @@
 </script>
 
 <div class="em-stage" data-screen={screen.id}>
-  {#if url}
-    <img src={url} alt={screen.caption ?? screen.id} draggable="false" {onload} />
+  {#if url && !failed}
+    <img src={url} alt={screen.caption ?? screen.id} draggable="false" style="aspect-ratio: auto {size.width} / {size.height}" {onload} onerror={() => (failed = true)} />
   {:else}
     <div class="missing" style="aspect-ratio: {size.width} / {size.height}">{screen.assetRef}</div>
   {/if}

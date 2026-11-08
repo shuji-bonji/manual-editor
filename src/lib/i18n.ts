@@ -201,7 +201,47 @@ const ja = {
   'play.noTransition': '「{label}」には遷移先が付いていません。',
   'play.notScreen': '遷移先「{to}」は画面ではないため、進めません。',
   'play.condition': '条件: {text}',
-  'play.end': 'この画面にはホットスポットがありません（流れの終わりです）。'
+  'play.end': 'この画面にはホットスポットがありません（流れの終わりです）。',
+
+  // 枠（E-0）
+  'mode.edit': '編集',
+  'mode.play': '体験',
+  'mode.label': '編集と体験の切り替え',
+  'issues.count': '問題 {n} 件',
+  'issues.none': '問題なし',
+  'drawer.library': '素材・適用範囲',
+  'drawer.map': '遷移の地図',
+  'drawer.check': '検査',
+  'drawer.close': '引き出しを閉じる',
+  'drawer.mapNotYet': '遷移の地図は次の版で足します。',
+  'tree.heading': '構成',
+  'tree.screens': '画面 ({n})',
+  'tree.steps': '手順 ({n})',
+  'tree.start': '開始画面',
+  'tree.issue': '問題あり',
+  'tree.selected': '選択中',
+  'tree.addScreenBlank': '画面を追加（画像は後で）',
+  'inspector.heading': 'インスペクター',
+  'inspector.none': '構成ツリーかステージで、Topic・画面・ホットスポットを選んでください。',
+  'inspector.topic': 'Topic',
+  'inspector.screen': '画面',
+  'inspector.hotspot': 'ホットスポット',
+
+  // 作図（E-1）
+  'tool.poly': '多角形',
+  'tool.pan': '手のひら',
+  'tool.helpPoly': '点を順に置き、最初の点を押すか Enter で閉じます。Esc で取り消します。',
+  'tool.helpPan': 'ホイールで拡大縮小、ドラッグで移動します。',
+  'tool.helpSelectFull': '押して選びます。中をドラッグで移動、ハンドルで変形、矢印キーで 1 px（Shift で 10 px）、Delete で削除します。',
+  'stage.zoom': '表示 {pct}%',
+  'stage.fit': '全体を表示',
+  'stage.noScreen': '画面がありません。「画面を追加」で画像を選ぶか、「画面を追加（画像は後で）」で枠だけ作ります。',
+  'hotspot.transitionNew': '＋ 新しい画面を追加して遷移先にする',
+  'hotspot.transitionStep': '手順',
+  'hotspot.transitionLabel': '遷移の見出し（任意）',
+  'screen.confirmScale':
+    '画像の大きさが {w0}×{h0} から {w1}×{h1} に変わりました。ホットスポットの座標を同じ縮尺で変換しますか？（「キャンセル」で座標はそのまま）',
+  'screen.index': '{n} 枚目'
 } as const;
 
 export type Locale = 'ja';

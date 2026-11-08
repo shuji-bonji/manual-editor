@@ -30,10 +30,10 @@ GitHub Pages 用にビルドするときは、リポジトリ名を環境変数�
 
 - **開く・保存する**: manual-model の JSON を開いて保存します（File System Access API が使えるブラウザーではそれを使い、使えなければファイル選択とダウンロードで行います）。2021 年の JSON は `fromLegacyJson` で変換して開き、警告を表示します。
 - **Topic**: 追加、題名の編集、並べ替え、削除、種類（`description` / `procedure` / `screenFlow` / `troubleshooting`）の選択ができます。
-- **画面エディター**（`screenFlow`）: スクリーンショットを追加し、画像の上でドラッグして矩形・円のホットスポットを描きます。ラベル、操作の種類（押す・入力・読む）、遷移先の画面を付けます。座標は元の画像の画素で持ちます。
+- **画面の編集**（`screenFlow`）: 左に構成ツリー、中央に閲覧部品（player）のステージ、右にインスペクターの 3 列です。スクリーンショットを追加し、画像の上でドラッグして矩形・円・多角形のホットスポットを描きます。選んだホットスポットは中をドラッグで移動、ハンドルで変形、矢印キーで 1 px（Shift で 10 px）動かせます。ラベル、操作の種類（押す・入力・読む）、遷移先（画面か手順。「新しい画面を追加して遷移先にする」もできます）、条件を付けます。画像を差し替えて大きさが変わったときは、座標を同じ縮尺で変換するかを尋ねます。座標は元の画像の画素で持ちます。
 - **手順・注意・適用範囲**（`procedure`）: 入れ子の手順、期待される結果、警告・注意・備考、適用範囲（`Scope`）と `scopeRefs` の付け外しができます。
 - **検査**: `validateManual` の errors と warnings を一覧にします。項目を押すと、該当の Topic・画面・手順へ移ります。
-- **体験表示**: `screenFlow` を開始画面から試します。ホットスポットを押すと遷移先へ進み、戻る・最初からもできます。
+- **編集 ｜ 体験**: 同じステージで切り替えます。体験は閲覧部品（`packages/player`）そのもので、ホットスポットを押すと遷移先へ進み、戻る・最初からもできます。体験中に進んだ画面は、編集に戻したときに選ばれています。手順・説明・困ったときの Topic も体験で表示できます。
 - **元に戻す・やり直し**と、`localStorage` への下書きの自動保存です。
 
 ## できないこと
@@ -42,8 +42,8 @@ GitHub Pages 用にビルドするときは、リポジトリ名を環境変数�
 > このアプリは S1000D への出力をしません。保存した JSON を、Skill `experience-to-s1000d` か writer-mcp の `convert_manual` に渡してください。
 
 - `description` の本文 Block の編集（読み込んだ Block はそのまま保存します）。
-- `troubleshooting` の手順の `answers` の編集。既存のホットスポットのドラッグでの移動・変形（削除して描き直すか、数値を直します）。
-- 多角形の作図（JSON にある多角形は表示し、そのまま保ちます）。
+- `troubleshooting` の手順の `answers` の編集。
+- 遷移の地図（下の引き出しに場所だけあります）、構成ツリーのドラッグでの並べ替え（↑↓ で動かします）、画像の一部を塗りつぶすマスク。
 - AI の支援、ログイン、共有、サーバー側の保存。
 
 ## 画像の持ち方
@@ -71,7 +71,7 @@ SvelteKit 2 と Svelte 5（runes）、TypeScript、`@sveltejs/adapter-static`、
 
 | 場所 | 内容 |
 |---|---|
-| ルート（`src/`） | 試作 0.1.0 の作成ツール（SvelteKit）。設計書 6 節の手順 5 で組み直します |
+| ルート（`src/`） | 作成ツール（SvelteKit）。`packages/player` の `Stage` の上に作図の層を重ね、体験は `ScreenFlow` をそのまま置いています（設計書 3 節の E-0・E-1） |
 | `packages/player` | 閲覧部品（仮称 experiential-manual-player）。runtime（Svelte 非依存。遷移・履歴・適用範囲・手順の番号・問答）、部品（Stage・P-1・P-0。Svelte 5）、Web Components `<experiential-manual>` のビルドと `demo/`。P-2〜P-4 はまだです。`npm run test:player` / `npm run check:player` で確かめます。詳しくは [packages/player/README.ja.md](./packages/player/README.ja.md) |
 
 npm workspaces です。`npm install` はルートで 1 回だけ行います。

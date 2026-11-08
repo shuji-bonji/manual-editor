@@ -25,10 +25,22 @@
     onleave?: (target: Target) => void;
     /** 画面が変わったとき */
     onchange?: (state: FlowState) => void;
+    /** 素材の URL と大きさを外から与える（Stage に渡す） */
+    resolveAsset?: (assetRef: string) => { url?: string; width?: number; height?: number } | undefined;
   }
 
-  let { manual, topicId, startScreen, scope = {}, hints = $bindable(false), baseUrl, lang = 'ja', onleave, onchange }: Props =
-    $props();
+  let {
+    manual,
+    topicId,
+    startScreen,
+    scope = {},
+    hints = $bindable(false),
+    baseUrl,
+    lang = 'ja',
+    onleave,
+    onchange,
+    resolveAsset
+  }: Props = $props();
 
   const flow = $derived.by(() => {
     const options = startScreen !== undefined ? { startScreen, scope } : { scope };
@@ -107,7 +119,7 @@
     </header>
     <div class="body">
       <div class="stage">
-        <Stage {manual} screen={view.screen} {baseUrl} {hints} onpress={press} />
+        <Stage {manual} screen={view.screen} {baseUrl} {hints} onpress={press} {resolveAsset} />
         {#if message}<p class="msg" role="status">{message}</p>{/if}
       </div>
       <ScreenPane screen={view.screen} pressable={view.pressable} {lang} onpress={press} />
