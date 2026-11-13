@@ -5,6 +5,9 @@
 <script lang="ts">
   import { editor } from '$lib/state.svelte';
   import { t } from '$lib/i18n';
+  import HelpDialog from './HelpDialog.svelte';
+
+  let helpOpen = $state(false);
 
   let openInput: HTMLInputElement | undefined = $state();
 
@@ -66,8 +69,12 @@
       <input type="checkbox" bind:checked={editor.embedImages} />
       {t('file.embed')}
     </label>
+    <button type="button" class="btn small" onclick={() => (helpOpen = true)} data-testid="help">{t('help.button')}</button>
   </div>
 </header>
+{#if helpOpen}
+  <HelpDialog onclose={() => (helpOpen = false)} />
+{/if}
 
 <style>
   .bar {

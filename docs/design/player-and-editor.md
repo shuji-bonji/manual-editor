@@ -383,3 +383,17 @@ player の `runtime` は `Manual` を読むだけで書き換えません。編�
 | 3 本目 | 券売機の例で、手順の Enter / Tab と分岐、困ったときの問いと答え、説明の段落と表を足し、保存した JSON が検査に通る |
 | CI | `ci.yml` の build の後に `npx playwright install --with-deps chromium` → `npx playwright test`。失敗したときだけ `playwright-report/` を artifact に残す。`CI=true` のときは再試行 1 回 |
 | 版 | `@playwright/test` 1.63.0（devDependencies）。クラウド側の Linux に入っている Playwright と同じ版に合わせた |
+
+## 12. ヘルプ: editor 自身の体験型マニュアル（2026-11-14）
+
+試作の券売機の例は仮の画像で、「開いた瞬間に体験型マニュアルとは何かが分かる」例になっていなかった。そこで editor の使い方（ヘルプ）を editor 自身で作り、実例の 1 冊目にした。
+
+| 項目 | 内容 |
+|---|---|
+| 生成 | `scripts/make-help.mjs`（`npm run make:help`）。build/ を vite preview で配り、Playwright で editor を操作して各画面を撮り（1120×720、2 倍）、`data-testid` の要素の `boundingBox` をそのまま `Hotspot.coords` に書く。`Hotspot.capture.selector` と `Screen.capture`（URL・viewport・日時）も書く（model 0.2.0 の項目をここで初めて使った）。手で撮ったスクリーンショットは UI の変更ですぐ古くなるので、手では作らない |
+| 出力 | `static/help/help.manual.json`（画面 13・ホットスポット 42）と `static/help/img/*.png`（13 枚、約 5 MB）。PWA の事前の保存からは外す（`globIgnores`） |
+| 中身 | 画面の流れ「画面の見かた」（起動 → 例を開く → 画面の流れ → ホットスポット → 体験 → 地図 → 検査 → 素材 → 素材の欄 → マニュアルの情報 → 手順 → 困ったとき）、手順「画面の流れを作る」（図は撮った画面、分岐あり）、説明「保存されるもの」（section・list・figure・table・admonition）、困ったとき（問い 3 つと対処 4 つ） |
+| 出し方 | 上の帯の「ヘルプ」→ `HelpDialog`（`<dialog>`）の中に player の `Frame`（P-0 の外枠）を置く。色のトークンは体験と同じ対応。「例として開く」で `editor.openFromUrl` に同じ JSON を読ませる |
+| 確かめ | `src/lib/help.test.ts`（validateManual に通り警告 0、画面の流れは全部到達できる、画像が揃い幅・高さ・hash がある、座標が画像の中、`capture.selector` がある）と、E2E の 4 本目（開いて押して進む、目次、例として開く） |
+| 気づいたこと | (1) Topic の行を押しただけでは画面が無くステージが空だったので、EditStage は画面を選んでいなければ開始画面を出すようにした。(2) スクロールの先にある要素はそのままでは画像の外に出る。撮る前に `scrollIntoViewIfNeeded` するが、別の列の要素を 2 つ以上入れると互いに押し出すので、1 画面に入れるホットスポットは「見えている範囲」に限る。(3) 1400 px で撮ると player の中で縮んで文字が読めない。editor の 3 列が収まる最小に近い幅（1120 px）で撮る |
+| 次 | 同じ JSON を `experience-to-s1000d` に渡せば「ソフトウェアのヘルプを S1000D にする」実演になる（説明 DM・手順 DM・故障探求 DM）。英語の文言を足すときはヘルプも `lang` ごとに生成する |

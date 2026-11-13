@@ -21,7 +21,12 @@
   type Pt = { x: number; y: number };
   type Instance = { toImage(x: number, y: number): Pt; toScreen(x: number, y: number): Pt; imageSize(): { width: number; height: number } };
 
-  const screen = $derived(topic.screens?.find((s) => s.id === editor.selection.screenId));
+  /** 選んでいる画面。Topic だけを選んでいるとき（構成ツリーで Topic の行を押したとき）は開始画面を出す */
+  const screen = $derived(
+    topic.screens?.find((s) => s.id === editor.selection.screenId) ??
+      topic.screens?.find((s) => s.id === topic.startScreenRef) ??
+      topic.screens?.[0]
+  );
   const hotspot = $derived(screen?.hotspots.find((h) => h.id === editor.selection.hotspotId));
   const tool = $derived(editor.tool);
   const size = $derived(screen ? editor.sizes.get(screen.assetRef) : undefined);

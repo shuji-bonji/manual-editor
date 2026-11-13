@@ -452,12 +452,16 @@ class EditorState {
 
   /** 同梱のサンプル（券売機の例）を開く */
   async openExample(): Promise<void> {
+    await this.openFromUrl(new URL(`${base}/examples/kenbaiki.manual.json`, location.href).href, 'kenbaiki.manual.json', t('open.exampleNote'));
+  }
+
+  /** URL の JSON を開く（同梱の例・ヘルプ）。画像は JSON の場所からの相対パスで読む */
+  async openFromUrl(url: string, name: string, note?: string): Promise<void> {
     try {
-      const baseUrl = new URL(`${base}/examples/kenbaiki.manual.json`, location.href).href;
-      const res = await fetch(baseUrl);
+      const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      await this.load(await res.text(), 'kenbaiki.manual.json', undefined, baseUrl);
-      this.notify('info', t('open.exampleNote'));
+      await this.load(await res.text(), name, undefined, url);
+      if (note) this.notify('info', note);
     } catch (e) {
       this.notify('error', t('open.exampleFailed', { reason: e instanceof Error ? e.message : String(e) }));
     }

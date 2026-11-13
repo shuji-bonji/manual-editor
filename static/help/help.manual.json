@@ -1,0 +1,1339 @@
+{
+  "id": "manual-editor-help",
+  "title": "manual-editor の使い方",
+  "language": "ja",
+  "version": {
+    "number": "0.1.0",
+    "date": "2026-11-14"
+  },
+  "description": "体験型マニュアルの作成ツール manual-editor のヘルプです。このヘルプ自体が manual-editor で開ける体験型マニュアル（experiential-manual-model の JSON）で、画面と押せる場所の座標は scripts/make-help.mjs が editor の画面から生成しています。",
+  "scopes": [],
+  "assets": [
+    {
+      "id": "img-start",
+      "kind": "image",
+      "source": {
+        "path": "img/01-start.png",
+        "mediaType": "image/png",
+        "hash": "sha256:9ac37e0d44f24dd0528373812d2fe05e72a9fc6daceb7e94393f0cbd4f929ae2",
+        "width": 2240,
+        "height": 1440
+      },
+      "alt": "起動した直後"
+    },
+    {
+      "id": "img-example",
+      "kind": "image",
+      "source": {
+        "path": "img/02-example.png",
+        "mediaType": "image/png",
+        "hash": "sha256:c36e99d6f718781a8ca785a045dca5d06908c635b42d78dc44ff0c533801bdc7",
+        "width": 2240,
+        "height": 1440
+      },
+      "alt": "例を開いたところ（説明の Topic）"
+    },
+    {
+      "id": "img-screenflow",
+      "kind": "image",
+      "source": {
+        "path": "img/03-screenflow.png",
+        "mediaType": "image/png",
+        "hash": "sha256:4c0b6e16e782a284c0e13d2ff8b58fe2bfd41abf3a72e3044de5fae32ae2b62a",
+        "width": 2240,
+        "height": 1440
+      },
+      "alt": "画面の流れの Topic（ステージ）"
+    },
+    {
+      "id": "img-hotspot",
+      "kind": "image",
+      "source": {
+        "path": "img/04-hotspot.png",
+        "mediaType": "image/png",
+        "hash": "sha256:e8b21e787a16546b19d7a0bb143a4fe51b92ba0e4b0c405a298bea90c9fda7f6",
+        "width": 2240,
+        "height": 1440
+      },
+      "alt": "ホットスポットを選んだところ"
+    },
+    {
+      "id": "img-play",
+      "kind": "image",
+      "source": {
+        "path": "img/05-play.png",
+        "mediaType": "image/png",
+        "hash": "sha256:e8324732b94561399ff454fb4db038b14fbe97a3047b472c3ca85993039f8814",
+        "width": 2240,
+        "height": 1440
+      },
+      "alt": "体験（利用者が見る形）"
+    },
+    {
+      "id": "img-map",
+      "kind": "image",
+      "source": {
+        "path": "img/06-map.png",
+        "mediaType": "image/png",
+        "hash": "sha256:e427ef9b0ef25cf059ab336cb0b412ebf9ba8805d13defa512370703747f5321",
+        "width": 2240,
+        "height": 1440
+      },
+      "alt": "遷移の地図"
+    },
+    {
+      "id": "img-check",
+      "kind": "image",
+      "source": {
+        "path": "img/07-check.png",
+        "mediaType": "image/png",
+        "hash": "sha256:f70fd7b2bc5ec9edf01984f0b355c8d22fb5a0499eb87e9eb457ea36073f206f",
+        "width": 2240,
+        "height": 1440
+      },
+      "alt": "検査"
+    },
+    {
+      "id": "img-assets",
+      "kind": "image",
+      "source": {
+        "path": "img/08-assets.png",
+        "mediaType": "image/png",
+        "hash": "sha256:e6f29e91dc77835bdd98c583cd7b2eaff80e0a5d233409b197fe48f7dadbf9bc",
+        "width": 2240,
+        "height": 1440
+      },
+      "alt": "素材"
+    },
+    {
+      "id": "img-asset",
+      "kind": "image",
+      "source": {
+        "path": "img/09-asset.png",
+        "mediaType": "image/png",
+        "hash": "sha256:e9ac20f82563d3b64c8232a12b64cbe465f2034f4cb68e8dc02f320d0efd3c70",
+        "width": 2240,
+        "height": 1440
+      },
+      "alt": "素材を選んだところ"
+    },
+    {
+      "id": "img-root",
+      "kind": "image",
+      "source": {
+        "path": "img/10-root.png",
+        "mediaType": "image/png",
+        "hash": "sha256:6ac8bb5a5ac77500a93b59bf9bd59535bc090298a70e6db62e40fc2e2d5fbf05",
+        "width": 2240,
+        "height": 1440
+      },
+      "alt": "マニュアルの情報と適用範囲"
+    },
+    {
+      "id": "img-procedure",
+      "kind": "image",
+      "source": {
+        "path": "img/11-procedure.png",
+        "mediaType": "image/png",
+        "hash": "sha256:9396fbaf1e5217d41f9ed1def1e0ddecc44d11f56ea44ebef56d1c2a91b90310",
+        "width": 2240,
+        "height": 1440
+      },
+      "alt": "手順の Topic"
+    },
+    {
+      "id": "img-troubleshooting",
+      "kind": "image",
+      "source": {
+        "path": "img/12-troubleshooting.png",
+        "mediaType": "image/png",
+        "hash": "sha256:44beb617c6d05caaff03172471c53d277300586d2003f56ed023fe7016cce9ea",
+        "width": 2240,
+        "height": 1440
+      },
+      "alt": "困ったときの Topic"
+    },
+    {
+      "id": "img-bigmap",
+      "kind": "image",
+      "source": {
+        "path": "img/13-bigmap.png",
+        "mediaType": "image/png",
+        "hash": "sha256:ba4c51e6f4c017ed9566f15e214aa9bb30a27a25ef7042a0bfcf12cc88aba46b",
+        "width": 2240,
+        "height": 1440
+      },
+      "alt": "23 画面の Topic の遷移の地図"
+    }
+  ],
+  "topics": [
+    {
+      "id": "topic-screens",
+      "kind": "screenFlow",
+      "title": "画面の見かた",
+      "summary": "起動から保存までの画面を、押しながらたどります。",
+      "startScreenRef": "scr-start",
+      "screens": [
+        {
+          "id": "scr-start",
+          "caption": "起動した直後",
+          "assetRef": "img-start",
+          "hotspots": [
+            {
+              "id": "hs-start-1",
+              "label": "例を開く（同梱の券売機の例）",
+              "shape": "rect",
+              "coords": [
+                546,
+                8,
+                789,
+                66
+              ],
+              "transition": {
+                "to": "scr-example"
+              },
+              "capture": {
+                "selector": "[data-testid=\"open-example\"]"
+              }
+            },
+            {
+              "id": "hs-start-2",
+              "label": "Topic を追加（種類は左のプルダウンで選ぶ）",
+              "shape": "rect",
+              "coords": [
+                301,
+                346,
+                490,
+                404
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"add-topic\"]"
+              }
+            },
+            {
+              "id": "hs-start-3",
+              "label": "マニュアルの題名・版・適用範囲を編集する",
+              "shape": "rect",
+              "coords": [
+                19,
+                211,
+                484,
+                276
+              ],
+              "transition": {
+                "to": "scr-root"
+              },
+              "capture": {
+                "selector": "[data-testid=\"tree-root\"]"
+              }
+            },
+            {
+              "id": "hs-start-4",
+              "label": "保存（開いたファイルに上書き、または保存先を選ぶ）",
+              "shape": "rect",
+              "coords": [
+                790,
+                8,
+                880,
+                66
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"save\"]"
+              }
+            },
+            {
+              "id": "hs-start-5",
+              "label": "ダウンロード（ブラウザーの保存先に JSON を落とす）",
+              "shape": "rect",
+              "coords": [
+                1125,
+                8,
+                1317,
+                66
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"download\"]"
+              }
+            }
+          ],
+          "description": "上の帯にファイルの操作、左に構成ツリー、中央にステージ、右にインスペクター、下に引き出し（素材・遷移の地図・検査）があります。まずは「例を開く」で同梱の例を開くか、「Topic を追加」で作り始めます。",
+          "capture": {
+            "url": "http://127.0.0.1:4174/",
+            "viewport": {
+              "width": 1120,
+              "height": 720
+            },
+            "capturedAt": "2026-11-13T23:26:53.916Z"
+          }
+        },
+        {
+          "id": "scr-example",
+          "caption": "例を開いたところ（説明の Topic）",
+          "assetRef": "img-example",
+          "hotspots": [
+            {
+              "id": "hs-example-1",
+              "label": "画面の流れの Topic を開く",
+              "shape": "rect",
+              "coords": [
+                61,
+                477,
+                484,
+                542
+              ],
+              "transition": {
+                "to": "scr-screenflow"
+              },
+              "capture": {
+                "selector": "[data-testid=\"tree-topic\"]:nth-of-type(2)"
+              }
+            },
+            {
+              "id": "hs-example-2",
+              "label": "手順の Topic を開く",
+              "shape": "rect",
+              "coords": [
+                61,
+                761,
+                484,
+                826
+              ],
+              "transition": {
+                "to": "scr-procedure"
+              },
+              "capture": {
+                "selector": "[data-testid=\"tree-topic\"]:nth-of-type(3)"
+              }
+            },
+            {
+              "id": "hs-example-3",
+              "label": "困ったときの Topic を開く",
+              "shape": "rect",
+              "coords": [
+                61,
+                1159,
+                484,
+                1224
+              ],
+              "transition": {
+                "to": "scr-troubleshooting"
+              },
+              "capture": {
+                "selector": "[data-testid=\"tree-topic\"]:nth-of-type(4)"
+              }
+            },
+            {
+              "id": "hs-example-4",
+              "label": "素材の引き出しを開く",
+              "shape": "rect",
+              "coords": [
+                19,
+                1370,
+                188,
+                1437
+              ],
+              "transition": {
+                "to": "scr-assets"
+              },
+              "capture": {
+                "selector": "[data-testid=\"drawer-assets\"]"
+              }
+            }
+          ],
+          "description": "構成ツリーに 4 つの Topic が並びます。印は種類を表します（▣ 画面の流れ、≡ 手順、¶ 説明、? 困ったとき）。選んだ Topic の中身が中央に出ます。説明の Topic は、見出し・段落・箇条書き・表・図・注意のブロックをその場で書きます。",
+          "capture": {
+            "url": "http://127.0.0.1:4174/",
+            "viewport": {
+              "width": 1120,
+              "height": 720
+            },
+            "capturedAt": "2026-11-13T23:26:54.573Z"
+          }
+        },
+        {
+          "id": "scr-screenflow",
+          "caption": "画面の流れの Topic（ステージ）",
+          "assetRef": "img-screenflow",
+          "hotspots": [
+            {
+              "id": "hs-screenflow-1",
+              "label": "作図ツール（↖ 選択、□ 矩形、○ 円、⬠ 多角形、✋ 手のひら）",
+              "shape": "rect",
+              "coords": [
+                596,
+                266,
+                667,
+                337
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"tool-rect\"]"
+              }
+            },
+            {
+              "id": "hs-screenflow-2",
+              "label": "ホットスポットを押して選ぶ",
+              "shape": "rect",
+              "coords": [
+                1079,
+                577,
+                1557,
+                749
+              ],
+              "transition": {
+                "to": "scr-hotspot"
+              },
+              "capture": {
+                "selector": "[data-testid=\"edit-stage\"] [data-hotspot]"
+              }
+            },
+            {
+              "id": "hs-screenflow-3",
+              "label": "体験に切り替える",
+              "shape": "rect",
+              "coords": [
+                1454,
+                72,
+                1567,
+                137
+              ],
+              "transition": {
+                "to": "scr-play"
+              },
+              "capture": {
+                "selector": "[data-testid=\"mode-play\"]"
+              }
+            },
+            {
+              "id": "hs-screenflow-4",
+              "label": "構成ツリーの画面を選ぶ（● は開始画面）",
+              "shape": "rect",
+              "coords": [
+                63,
+                534,
+                484,
+                599
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"tree-screen\"]"
+              }
+            },
+            {
+              "id": "hs-screenflow-5",
+              "label": "遷移の地図を開く",
+              "shape": "rect",
+              "coords": [
+                188,
+                1371,
+                379,
+                1436
+              ],
+              "transition": {
+                "to": "scr-map"
+              },
+              "capture": {
+                "selector": "[data-testid=\"drawer-map\"]"
+              }
+            },
+            {
+              "id": "hs-screenflow-6",
+              "label": "検査を開く",
+              "shape": "rect",
+              "coords": [
+                379,
+                1371,
+                494,
+                1436
+              ],
+              "transition": {
+                "to": "scr-check"
+              },
+              "capture": {
+                "selector": "[data-testid=\"drawer-check\"]"
+              }
+            }
+          ],
+          "description": "中央のステージに画面の画像が出て、ホットスポット（押せる場所）が薄い枠で重なります。上の作図ツールで矩形・円・多角形を描き、右のインスペクターでラベルと遷移先を付けます。「体験」に切り替えると、利用者が見るとおりに押して進めます。",
+          "capture": {
+            "url": "http://127.0.0.1:4174/",
+            "viewport": {
+              "width": 1120,
+              "height": 720
+            },
+            "capturedAt": "2026-11-13T23:26:55.236Z"
+          }
+        },
+        {
+          "id": "scr-hotspot",
+          "caption": "ホットスポットを選んだところ",
+          "assetRef": "img-hotspot",
+          "hotspots": [
+            {
+              "id": "hs-hotspot-1",
+              "label": "ラベル（押せる場所の名前）",
+              "shape": "rect",
+              "coords": [
+                1661,
+                362,
+                2222,
+                434
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"hotspot-label\"]"
+              }
+            },
+            {
+              "id": "hs-hotspot-2",
+              "label": "遷移先（押したときに移る画面・手順）",
+              "shape": "rect",
+              "coords": [
+                1661,
+                672,
+                2222,
+                738
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"hotspot-transition\"]"
+              }
+            },
+            {
+              "id": "hs-hotspot-3",
+              "label": "体験に切り替える",
+              "shape": "rect",
+              "coords": [
+                1454,
+                72,
+                1567,
+                137
+              ],
+              "transition": {
+                "to": "scr-play"
+              },
+              "capture": {
+                "selector": "[data-testid=\"mode-play\"]"
+              }
+            },
+            {
+              "id": "hs-hotspot-4",
+              "label": "選択ツールに戻る",
+              "shape": "rect",
+              "coords": [
+                529,
+                266,
+                600,
+                337
+              ],
+              "transition": {
+                "to": "scr-screenflow"
+              },
+              "capture": {
+                "selector": "[data-testid=\"tool-select\"]"
+              }
+            }
+          ],
+          "description": "右のインスペクターにラベル・形・座標・操作（押す／入力／読む）・遷移先・適用範囲が出ます。遷移先には、この Topic の画面のほか、他の Topic の画面や手順も選べます。行き先の画面がまだ無いときは「新しい画面を追加して遷移先にする」で、撮った順に画面を足していけます。",
+          "admonitions": [
+            {
+              "level": "note",
+              "text": "ホットスポットは矢印キーで 1 px（Shift で 10 px）動かせます。Delete で消せます（元に戻すで復帰）。"
+            }
+          ],
+          "capture": {
+            "url": "http://127.0.0.1:4174/",
+            "viewport": {
+              "width": 1120,
+              "height": 720
+            },
+            "capturedAt": "2026-11-13T23:26:55.842Z"
+          }
+        },
+        {
+          "id": "scr-play",
+          "caption": "体験（利用者が見る形）",
+          "assetRef": "img-play",
+          "hotspots": [
+            {
+              "id": "hs-play-1",
+              "label": "編集に戻る（いま見ている画面が選ばれる）",
+              "shape": "rect",
+              "coords": [
+                1349,
+                72,
+                1462,
+                137
+              ],
+              "transition": {
+                "to": "scr-screenflow"
+              },
+              "capture": {
+                "selector": "[data-testid=\"mode-edit\"]"
+              }
+            },
+            {
+              "id": "hs-play-2",
+              "label": "ホットスポット（押すと遷移先へ）",
+              "shape": "rect",
+              "coords": [
+                1079,
+                497,
+                1544,
+                664
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"play\"] [data-hotspot]"
+              }
+            }
+          ],
+          "description": "編集中の画面を、そのまま利用者が見る形で試せます。ホットスポットを押すと遷移先へ進み、「戻る」「最初から」で履歴をたどれます。「編集」に戻すと、いま見ている画面が選ばれた状態になるので、「この遷移先の画面を直したい」が 1 回の切り替えでできます。",
+          "capture": {
+            "url": "http://127.0.0.1:4174/",
+            "viewport": {
+              "width": 1120,
+              "height": 720
+            },
+            "capturedAt": "2026-11-13T23:26:56.361Z"
+          }
+        },
+        {
+          "id": "scr-map",
+          "caption": "遷移の地図",
+          "assetRef": "img-map",
+          "hotspots": [
+            {
+              "id": "hs-map-1",
+              "label": "ノード（押すとその画面を選ぶ）",
+              "shape": "rect",
+              "coords": [
+                82,
+                943,
+                432,
+                1053
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"map-node\"]"
+              }
+            },
+            {
+              "id": "hs-map-2",
+              "label": "検査を開く",
+              "shape": "rect",
+              "coords": [
+                378,
+                651,
+                493,
+                716
+              ],
+              "transition": {
+                "to": "scr-check"
+              },
+              "capture": {
+                "selector": "[data-testid=\"drawer-check\"]"
+              }
+            },
+            {
+              "id": "hs-map-3",
+              "label": "素材を開く",
+              "shape": "rect",
+              "coords": [
+                19,
+                650,
+                188,
+                717
+              ],
+              "transition": {
+                "to": "scr-assets"
+              },
+              "capture": {
+                "selector": "[data-testid=\"drawer-assets\"]"
+              }
+            }
+          ],
+          "description": "Topic の画面をノード、遷移を辺にした図です。緑の点が開始画面、点線の弧は戻る遷移、ノードの上の名札は多くの画面から同じ画面へ戻る遷移です。開始画面から到達できない画面と、遷移先の無い遷移は赤く出ます。ノードを押すとその画面を選びます。",
+          "capture": {
+            "url": "http://127.0.0.1:4174/",
+            "viewport": {
+              "width": 1120,
+              "height": 720
+            },
+            "capturedAt": "2026-11-13T23:26:56.920Z"
+          }
+        },
+        {
+          "id": "scr-check",
+          "caption": "検査",
+          "assetRef": "img-check",
+          "hotspots": [
+            {
+              "id": "hs-check-1",
+              "label": "素材を開く",
+              "shape": "rect",
+              "coords": [
+                19,
+                794,
+                188,
+                861
+              ],
+              "transition": {
+                "to": "scr-assets"
+              },
+              "capture": {
+                "selector": "[data-testid=\"drawer-assets\"]"
+              }
+            },
+            {
+              "id": "hs-check-2",
+              "label": "遷移の地図に戻る",
+              "shape": "rect",
+              "coords": [
+                188,
+                795,
+                379,
+                860
+              ],
+              "transition": {
+                "to": "scr-map"
+              },
+              "capture": {
+                "selector": "[data-testid=\"drawer-map\"]"
+              }
+            }
+          ],
+          "description": "manual-model の validateManual の結果です。エラー（参照切れ・必須の欠け）と警告（到達できない画面・使われていない素材）を Topic ごとに並べ、行を押すと該当の場所へ移ります。保存のたびに実行し、エラーがあっても保存は止めず、通知で知らせます。",
+          "capture": {
+            "url": "http://127.0.0.1:4174/",
+            "viewport": {
+              "width": 1120,
+              "height": 720
+            },
+            "capturedAt": "2026-11-13T23:26:57.409Z"
+          }
+        },
+        {
+          "id": "scr-assets",
+          "caption": "素材",
+          "assetRef": "img-assets",
+          "hotspots": [
+            {
+              "id": "hs-assets-1",
+              "label": "画像を追加（ファイルを選ぶ）",
+              "shape": "rect",
+              "coords": [
+                19,
+                880,
+                185,
+                938
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"assets-add\"]"
+              }
+            },
+            {
+              "id": "hs-assets-2",
+              "label": "素材を選ぶ",
+              "shape": "rect",
+              "coords": [
+                21,
+                1041,
+                449,
+                1386
+              ],
+              "transition": {
+                "to": "scr-asset"
+              },
+              "capture": {
+                "selector": "[data-testid=\"asset-card\"] .thumb"
+              }
+            },
+            {
+              "id": "hs-assets-3",
+              "label": "遷移の地図を開く",
+              "shape": "rect",
+              "coords": [
+                187,
+                795,
+                379,
+                860
+              ],
+              "transition": {
+                "to": "scr-map"
+              },
+              "capture": {
+                "selector": "[data-testid=\"drawer-map\"]"
+              }
+            }
+          ],
+          "description": "画像の一覧です。使っている画面・手順の数と、使われていないもの・画像の無いものが分かります。追加は「画像を追加」、フォルダー、この引き出しやステージへのドロップ、スクリーンショットの貼り付け（Ctrl/⌘+V）のどれでもできます。カードを押すと右に素材の欄が出ます。",
+          "capture": {
+            "url": "http://127.0.0.1:4174/",
+            "viewport": {
+              "width": 1120,
+              "height": 720
+            },
+            "capturedAt": "2026-11-13T23:26:57.963Z"
+          }
+        },
+        {
+          "id": "scr-asset",
+          "caption": "素材を選んだところ",
+          "assetRef": "img-asset",
+          "hotspots": [
+            {
+              "id": "hs-asset-1",
+              "label": "マスク（矩形で囲んだ場所を塗りつぶす）",
+              "shape": "rect",
+              "coords": [
+                1907,
+                561,
+                2201,
+                619
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"asset-mask\"]"
+              }
+            },
+            {
+              "id": "hs-asset-2",
+              "label": "この素材を削除（参照は残り、検査に出る）",
+              "shape": "rect",
+              "coords": [
+                1661,
+                713,
+                2222,
+                770
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"asset-remove\"]"
+              }
+            },
+            {
+              "id": "hs-asset-3",
+              "label": "マニュアルの情報へ",
+              "shape": "rect",
+              "coords": [
+                19,
+                309,
+                484,
+                411
+              ],
+              "transition": {
+                "to": "scr-root"
+              },
+              "capture": {
+                "selector": "[data-testid=\"tree-root\"]"
+              }
+            }
+          ],
+          "description": "代替テキスト・出典、ファイル名と大きさ、使っている場所が出ます。「画像を差し替える」で別の画像に、「マスク（塗りつぶし）」で画面の一部（個人情報など）を黒く塗って置き換えます。塗りつぶした画像に置き換えると元の画像は残りません。",
+          "capture": {
+            "url": "http://127.0.0.1:4174/",
+            "viewport": {
+              "width": 1120,
+              "height": 720
+            },
+            "capturedAt": "2026-11-13T23:26:58.535Z"
+          }
+        },
+        {
+          "id": "scr-root",
+          "caption": "マニュアルの情報と適用範囲",
+          "assetRef": "img-root",
+          "hotspots": [
+            {
+              "id": "hs-root-1",
+              "label": "題名",
+              "shape": "rect",
+              "coords": [
+                1661,
+                407,
+                2222,
+                479
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"manual-title\"]"
+              }
+            },
+            {
+              "id": "hs-root-2",
+              "label": "画面の流れの Topic へ戻る",
+              "shape": "rect",
+              "coords": [
+                61,
+                477,
+                393,
+                542
+              ],
+              "transition": {
+                "to": "scr-screenflow"
+              },
+              "capture": {
+                "selector": "[data-testid=\"tree-topic\"]:nth-of-type(2)"
+              }
+            }
+          ],
+          "description": "構成ツリーの先頭の「マニュアル」を選ぶと、題名・言語・版・説明と、適用範囲（Scope）を編集できます。適用範囲は「この機種だけ」「この設置場所だけ」の内容を示すもので、Topic・画面・手順・ブロックに付けると、体験で範囲を選んだときに絞り込まれます。",
+          "capture": {
+            "url": "http://127.0.0.1:4174/",
+            "viewport": {
+              "width": 1120,
+              "height": 720
+            },
+            "capturedAt": "2026-11-13T23:26:59.062Z"
+          }
+        },
+        {
+          "id": "scr-procedure",
+          "caption": "手順の Topic",
+          "assetRef": "img-procedure",
+          "hotspots": [
+            {
+              "id": "hs-procedure-1",
+              "label": "手順の文（Enter で次の手順、Tab で一段深く）",
+              "shape": "rect",
+              "coords": [
+                639,
+                884,
+                1549,
+                957
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"step-text\"]"
+              }
+            },
+            {
+              "id": "hs-procedure-2",
+              "label": "分岐（条件と行き先）を足す",
+              "shape": "rect",
+              "coords": [
+                1661,
+                841,
+                1809,
+                899
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"add-branch\"]"
+              }
+            },
+            {
+              "id": "hs-procedure-3",
+              "label": "困ったときの Topic へ",
+              "shape": "rect",
+              "coords": [
+                61,
+                1159,
+                484,
+                1224
+              ],
+              "transition": {
+                "to": "scr-troubleshooting"
+              },
+              "capture": {
+                "selector": "[data-testid=\"tree-topic\"]:nth-of-type(4)"
+              }
+            },
+            {
+              "id": "hs-procedure-4",
+              "label": "画面の流れの Topic へ戻る",
+              "shape": "rect",
+              "coords": [
+                61,
+                477,
+                484,
+                542
+              ],
+              "transition": {
+                "to": "scr-screenflow"
+              },
+              "capture": {
+                "selector": "[data-testid=\"tree-topic\"]:nth-of-type(2)"
+              }
+            }
+          ],
+          "description": "手順は番号付きの一覧で、文がそのまま入力欄です。Enter で次の手順、Tab で一段深く、Shift+Tab で一段浅く、空の手順で Backspace すると消えます。結果（→）と注意（⚠）は行の中に書き、図は下の「素材」のカードを手順にドラッグして付けます。右のインスペクターで操作対象・分岐・適用範囲を指定します。",
+          "capture": {
+            "url": "http://127.0.0.1:4174/",
+            "viewport": {
+              "width": 1120,
+              "height": 720
+            },
+            "capturedAt": "2026-11-13T23:26:59.740Z"
+          }
+        },
+        {
+          "id": "scr-troubleshooting",
+          "caption": "困ったときの Topic",
+          "assetRef": "img-troubleshooting",
+          "hotspots": [
+            {
+              "id": "hs-troubleshooting-1",
+              "label": "問い",
+              "shape": "rect",
+              "coords": [
+                680,
+                844,
+                1549,
+                918
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"step-question\"]"
+              }
+            },
+            {
+              "id": "hs-troubleshooting-2",
+              "label": "答えを足す（文と行き先）",
+              "shape": "rect",
+              "coords": [
+                675,
+                1207,
+                797,
+                1265
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"add-answer\"]"
+              }
+            },
+            {
+              "id": "hs-troubleshooting-3",
+              "label": "画面の流れの Topic へ戻る",
+              "shape": "rect",
+              "coords": [
+                61,
+                477,
+                484,
+                542
+              ],
+              "transition": {
+                "to": "scr-screenflow"
+              },
+              "capture": {
+                "selector": "[data-testid=\"tree-topic\"]:nth-of-type(2)"
+              }
+            }
+          ],
+          "description": "問い（Q.）と答えの木です。答えごとに行き先（次の問い、対処の手順、画面）を選びます。問いの無い手順は「対処」で、体験ではそこで問答が終わります。",
+          "capture": {
+            "url": "http://127.0.0.1:4174/",
+            "viewport": {
+              "width": 1120,
+              "height": 720
+            },
+            "capturedAt": "2026-11-13T23:27:00.263Z"
+          }
+        }
+      ]
+    },
+    {
+      "id": "topic-make",
+      "kind": "procedure",
+      "title": "画面の流れを作る",
+      "summary": "スクリーンショットを並べ、押せる場所を描き、遷移先をつないで、体験で確かめるまで。",
+      "steps": [
+        {
+          "id": "st-topic",
+          "text": "「Topic を追加」の左のプルダウンで「画面の流れ」を選び、「Topic を追加」を押す",
+          "expected": "構成ツリーに新しい Topic が入り、右のインスペクターに題名の欄が出る",
+          "assetRefs": [
+            "img-start"
+          ]
+        },
+        {
+          "id": "st-images",
+          "text": "画面の画像を足す",
+          "expected": "画像 1 枚につき画面が 1 つできる。最初の 1 枚が開始画面（●）になる",
+          "assetRefs": [
+            "img-screenflow"
+          ],
+          "children": [
+            {
+              "id": "st-images-1",
+              "text": "構成ツリーの「画面を追加（画像を選ぶ）」でファイルを選ぶ（複数可）"
+            },
+            {
+              "id": "st-images-2",
+              "text": "または、画像ファイルをステージにドロップする"
+            },
+            {
+              "id": "st-images-3",
+              "text": "または、スクリーンショットを撮ってそのまま Ctrl/⌘+V で貼り付ける"
+            }
+          ],
+          "admonitions": [
+            {
+              "level": "note",
+              "text": "画像は JSON と別のファイルとして持ちます。JSON には source.path のファイル名と幅・高さが入ります。"
+            }
+          ]
+        },
+        {
+          "id": "st-draw",
+          "text": "作図ツールの □ を選び、画像の上の押せる場所をドラッグで囲む",
+          "expected": "ホットスポットができ、インスペクターの「ラベル」にフォーカスが移る",
+          "assetRefs": [
+            "img-hotspot"
+          ],
+          "children": [
+            {
+              "id": "st-draw-1",
+              "text": "ラベルに、押せる場所の名前を書く（例: 180 円）"
+            },
+            {
+              "id": "st-draw-2",
+              "text": "遷移先のプルダウンで、押したときに移る画面を選ぶ。まだ無ければ「新しい画面を追加して遷移先にする」を選ぶ"
+            },
+            {
+              "id": "st-draw-3",
+              "text": "説明だけで遷移しない場所は、操作を「読む」にする"
+            }
+          ],
+          "admonitions": [
+            {
+              "level": "caution",
+              "text": "画像の大きさが違う画像に差し替えると、座標を縮尺で変換するかを聞かれます。「キャンセル」にすると座標はそのままです。"
+            }
+          ]
+        },
+        {
+          "id": "st-play",
+          "text": "「体験」に切り替え、ホットスポットを押して進む",
+          "expected": "遷移先の画面に移る。「編集」に戻すとその画面が選ばれている",
+          "assetRefs": [
+            "img-play"
+          ]
+        },
+        {
+          "id": "st-map",
+          "text": "下の「遷移の地図」で全体を見て、赤いノード（到達できない画面）と赤い辺（遷移先が無い）を直す",
+          "assetRefs": [
+            "img-map"
+          ],
+          "next": [
+            {
+              "to": "st-draw",
+              "condition": "赤い箇所があるとき（ノードを押して、その画面のホットスポットを直す）"
+            },
+            {
+              "to": "st-save"
+            }
+          ]
+        },
+        {
+          "id": "st-save",
+          "text": "「保存」で JSON を書き出す",
+          "expected": "検査にエラーがあれば通知が出る（保存は止まらない）",
+          "admonitions": [
+            {
+              "level": "note",
+              "text": "画像を JSON に埋め込みたいときは、上の帯の「画像を JSON に埋め込む」にチェックを入れてから保存します。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "topic-files",
+      "kind": "description",
+      "title": "保存されるもの",
+      "summary": "JSON と画像の持ち方、下書き、検査。",
+      "blocks": [
+        {
+          "kind": "section",
+          "id": "b-json",
+          "title": "JSON の形",
+          "children": [
+            {
+              "kind": "para",
+              "id": "b-json-1",
+              "text": "保存される JSON は experiential-manual-model の Manual です。1 冊のマニュアルに Topic（画面の流れ・手順・説明・困ったとき）が並び、画像は assets に、適用範囲は scopes に入ります。"
+            },
+            {
+              "kind": "para",
+              "id": "b-json-2",
+              "text": "2021 年の作品の JSON（purchaseTypes）も開けます。開くと新しい形に変換され、ファイル名の末尾が .manual.json になります。"
+            },
+            {
+              "kind": "figure",
+              "id": "b-json-3",
+              "assetRef": "img-bigmap",
+              "title": "2021 年の作品（79 画面・212 ボタン）を開き、遷移の地図を見たところ"
+            }
+          ]
+        },
+        {
+          "kind": "section",
+          "id": "b-img",
+          "title": "画像の持ち方",
+          "children": [
+            {
+              "kind": "list",
+              "id": "b-img-1",
+              "items": [
+                "既定では、画像は JSON と別のファイルです。JSON の source.path にファイル名、width / height に大きさが入ります",
+                "「画像を JSON に埋め込む」にチェックを入れて保存すると、source.data に data URL が入り、JSON だけで持ち運べます",
+                "開いたときに画像が見つからなければ、下の「素材」の「画像をまとめて割り当てる」でファイルを選びます（ファイル名で照合します）"
+              ]
+            },
+            {
+              "kind": "figure",
+              "id": "b-img-2",
+              "assetRef": "img-assets",
+              "title": "素材の引き出し"
+            }
+          ]
+        },
+        {
+          "kind": "section",
+          "id": "b-draft",
+          "title": "下書き",
+          "children": [
+            {
+              "kind": "para",
+              "id": "b-draft-1",
+              "text": "編集した内容は少し待ってからブラウザーの localStorage に下書きとして保存されます。次に開いたとき、復元するかを尋ねます。画像は下書きに入らないので、復元後に割り当て直します。"
+            }
+          ]
+        },
+        {
+          "kind": "section",
+          "id": "b-check",
+          "title": "検査",
+          "children": [
+            {
+              "kind": "table",
+              "id": "b-check-1",
+              "rows": [
+                [
+                  "種類",
+                  "内容",
+                  "直し方"
+                ],
+                [
+                  "エラー",
+                  "参照切れ（遷移先・素材・適用範囲）、必須の項目の欠け",
+                  "行を押して該当箇所へ。参照が切れた遷移は「参照が切れた遷移をすべて外す」"
+                ],
+                [
+                  "警告",
+                  "到達できない画面、遷移の無い画面、使われていない素材・適用範囲",
+                  "「地図で見る」で地図に出す。素材は「使われていない素材を整理」"
+                ]
+              ]
+            },
+            {
+              "kind": "admonition",
+              "id": "b-check-2",
+              "level": "note",
+              "title": "保存は止まりません",
+              "text": "エラーがあっても保存はできます。通知で件数を知らせるだけです。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "topic-trouble",
+      "kind": "troubleshooting",
+      "title": "困ったとき",
+      "summary": "画像が出ない、体験で進まない、検査にエラーが出る。",
+      "steps": [
+        {
+          "id": "q-image",
+          "text": "画面に画像が出ず「画像なし」と表示されますか？",
+          "question": "画面に画像が出ず「画像なし」と表示されますか？",
+          "answers": [
+            {
+              "text": "はい",
+              "next": {
+                "to": "r-image"
+              }
+            },
+            {
+              "text": "いいえ",
+              "next": {
+                "to": "q-play"
+              }
+            }
+          ]
+        },
+        {
+          "id": "q-play",
+          "text": "体験でホットスポットを押しても進みませんか？",
+          "question": "体験でホットスポットを押しても進みませんか？",
+          "answers": [
+            {
+              "text": "はい",
+              "next": {
+                "to": "r-play"
+              }
+            },
+            {
+              "text": "いいえ",
+              "next": {
+                "to": "q-check"
+              }
+            }
+          ]
+        },
+        {
+          "id": "q-check",
+          "text": "検査にエラーが出ますか？",
+          "question": "検査にエラーが出ますか？",
+          "answers": [
+            {
+              "text": "はい",
+              "next": {
+                "to": "r-check"
+              }
+            },
+            {
+              "text": "いいえ",
+              "next": {
+                "to": "r-other"
+              }
+            }
+          ]
+        },
+        {
+          "id": "r-image",
+          "text": "下の「素材」の引き出しを開き、「画像をまとめて割り当てる」で画像ファイルを選びます。ファイル名が JSON の source.path と同じものが割り当てられます。1 つずつ割り当てるときは、素材を選んで「画像を割り当てる」です。",
+          "assetRefs": [
+            "img-assets"
+          ]
+        },
+        {
+          "id": "r-play",
+          "text": "そのホットスポットに遷移先が無いか、操作が「読む」になっています。下の「遷移の地図」の「遷移先なし」の数を確かめ、ノードを押して画面を選び、ホットスポットを選んでインスペクターで遷移先を選びます。",
+          "assetRefs": [
+            "img-map",
+            "img-hotspot"
+          ]
+        },
+        {
+          "id": "r-check",
+          "text": "検査の行を押すと該当の場所へ移ります。画面を消して遷移先が無くなったときは「参照が切れた遷移をすべて外す」で一度に外せます。素材の参照切れは、素材を足して画面の「画像を差し替える」で付け直します。",
+          "assetRefs": [
+            "img-check"
+          ]
+        },
+        {
+          "id": "r-other",
+          "text": "上の帯の「ヘルプ」から、このマニュアルの「画面の見かた」を開いて、画面ごとの説明を読んでください。"
+        }
+      ]
+    }
+  ]
+}

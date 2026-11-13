@@ -168,3 +168,24 @@ test('券売機の例で、手順・困ったとき・説明を書き足して�
   expect(desc.blocks!.some((b) => b.kind === 'para' && b.text === '新しい段落です。')).toBe(true);
   expect(desc.blocks!.some((b) => b.kind === 'table' && b.rows?.[0]?.[0] === '見出し A')).toBe(true);
 });
+
+test('ヘルプは editor 自身の体験型マニュアルで、押して進める', async ({ page }) => {
+  await page.getByTestId('help').click();
+  const dialog = page.getByTestId('help-dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('.em-stage')).toBeVisible();
+  // 最初の画面の「例を開く」のホットスポットを押すと、次の画面へ進む
+  const before = await dialog.locator('.em-stage').getAttribute('data-screen');
+  await dialog.locator('[data-hotspot]').first().click();
+  await expect(dialog.locator('.em-stage')).not.toHaveAttribute('data-screen', before ?? '');
+  // 目次から手順・説明・困ったときを開ける
+  await dialog.getByRole('button', { name: /画面の流れを作る/ }).click();
+  await expect(dialog).toContainText('Topic を追加');
+  await dialog.getByRole('button', { name: /困ったとき/ }).first().click();
+  await expect(dialog).toContainText('画像なし');
+  // 「例として開く」で editor に読み込める
+  await page.getByTestId('help-open-example').click();
+  await expect(dialog).toBeHidden();
+  await expect(page.getByTestId('tree-topic')).toHaveCount(4);
+  await expect(page.getByTestId('filename')).toContainText('help.manual.json');
+});

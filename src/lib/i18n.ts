@@ -392,6 +392,14 @@ const ja = {
   'block.figureTitle': '図の題（任意）',
   'block.admTitle': '見出し（任意）',
 
+  // ヘルプ（editor 自身の体験型マニュアル）
+  'help.button': 'ヘルプ',
+  'help.title': 'manual-editor の使い方（体験型マニュアル）',
+  'help.openAsExample': '例として開く',
+  'help.loading': '読み込んでいます…',
+  'help.loadFailed': 'ヘルプを読み込めませんでした（{reason}）。',
+  'help.openedNote': 'ヘルプの JSON を開きました。このヘルプ自体が manual-editor で作れる体験型マニュアルです。画面と座標は scripts/make-help.mjs が生成しています。',
+
   // 行き先のプルダウン
   'target.label': '行き先',
   'target.none': '（なし）',
