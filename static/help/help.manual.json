@@ -15,19 +15,31 @@
       "source": {
         "path": "img/01-start.png",
         "mediaType": "image/png",
-        "hash": "sha256:9ac37e0d44f24dd0528373812d2fe05e72a9fc6daceb7e94393f0cbd4f929ae2",
+        "hash": "sha256:b485041c0260aa08ad9819aceb6aacefdb367bb78af1d5ebf09a33df0cc714f2",
         "width": 2240,
         "height": 1440
       },
       "alt": "起動した直後"
     },
     {
+      "id": "img-help",
+      "kind": "image",
+      "source": {
+        "path": "img/02-help.png",
+        "mediaType": "image/png",
+        "hash": "sha256:0f0c3c65e19fec2219914b9dba762776adb9ea1b7a87b7a6bbb733f841ee8aa7",
+        "width": 2240,
+        "height": 1440
+      },
+      "alt": "ヘルプ"
+    },
+    {
       "id": "img-example",
       "kind": "image",
       "source": {
-        "path": "img/02-example.png",
+        "path": "img/03-example.png",
         "mediaType": "image/png",
-        "hash": "sha256:c36e99d6f718781a8ca785a045dca5d06908c635b42d78dc44ff0c533801bdc7",
+        "hash": "sha256:9a4865eaa54fec4c41cfa9c2513a7ace1ffb182e361f66affab05327d9ec6754",
         "width": 2240,
         "height": 1440
       },
@@ -37,9 +49,9 @@
       "id": "img-screenflow",
       "kind": "image",
       "source": {
-        "path": "img/03-screenflow.png",
+        "path": "img/04-screenflow.png",
         "mediaType": "image/png",
-        "hash": "sha256:4c0b6e16e782a284c0e13d2ff8b58fe2bfd41abf3a72e3044de5fae32ae2b62a",
+        "hash": "sha256:24c9d20a2ce0e2ed8f910bb3194cf46f32fe30b1922b20ad58b871f486d4dfff",
         "width": 2240,
         "height": 1440
       },
@@ -49,9 +61,9 @@
       "id": "img-hotspot",
       "kind": "image",
       "source": {
-        "path": "img/04-hotspot.png",
+        "path": "img/05-hotspot.png",
         "mediaType": "image/png",
-        "hash": "sha256:e8b21e787a16546b19d7a0bb143a4fe51b92ba0e4b0c405a298bea90c9fda7f6",
+        "hash": "sha256:571bffe918913f45b363adef06876e7983c74ea8ea56ef252df5063fb7163bdc",
         "width": 2240,
         "height": 1440
       },
@@ -61,9 +73,9 @@
       "id": "img-play",
       "kind": "image",
       "source": {
-        "path": "img/05-play.png",
+        "path": "img/06-play.png",
         "mediaType": "image/png",
-        "hash": "sha256:e8324732b94561399ff454fb4db038b14fbe97a3047b472c3ca85993039f8814",
+        "hash": "sha256:9d60ba70ac3f475188467de9737935c3036bc602fab4cb9d673bb237d160decd",
         "width": 2240,
         "height": 1440
       },
@@ -73,9 +85,9 @@
       "id": "img-map",
       "kind": "image",
       "source": {
-        "path": "img/06-map.png",
+        "path": "img/07-map.png",
         "mediaType": "image/png",
-        "hash": "sha256:e427ef9b0ef25cf059ab336cb0b412ebf9ba8805d13defa512370703747f5321",
+        "hash": "sha256:03eaa1e0f963ec50ff6208133df11be9fd975f3b01deab4266b3d58a478a2b57",
         "width": 2240,
         "height": 1440
       },
@@ -85,9 +97,9 @@
       "id": "img-check",
       "kind": "image",
       "source": {
-        "path": "img/07-check.png",
+        "path": "img/08-check.png",
         "mediaType": "image/png",
-        "hash": "sha256:f70fd7b2bc5ec9edf01984f0b355c8d22fb5a0499eb87e9eb457ea36073f206f",
+        "hash": "sha256:fd39310b6df7912d817c9b10172fa9d12bfd3c5a5d744074eaff0c9bc0d68235",
         "width": 2240,
         "height": 1440
       },
@@ -97,9 +109,9 @@
       "id": "img-assets",
       "kind": "image",
       "source": {
-        "path": "img/08-assets.png",
+        "path": "img/09-assets.png",
         "mediaType": "image/png",
-        "hash": "sha256:e6f29e91dc77835bdd98c583cd7b2eaff80e0a5d233409b197fe48f7dadbf9bc",
+        "hash": "sha256:c475322b4cd7230761d0a8bdb2990af0fdeb8af34dc85b74223fd21291eb219b",
         "width": 2240,
         "height": 1440
       },
@@ -109,9 +121,9 @@
       "id": "img-asset",
       "kind": "image",
       "source": {
-        "path": "img/09-asset.png",
+        "path": "img/10-asset.png",
         "mediaType": "image/png",
-        "hash": "sha256:e9ac20f82563d3b64c8232a12b64cbe465f2034f4cb68e8dc02f320d0efd3c70",
+        "hash": "sha256:c8e7a303d7ffbf75193c6db14cf712128bcbd12d62419ce874496dce7ac29f79",
         "width": 2240,
         "height": 1440
       },
@@ -121,9 +133,9 @@
       "id": "img-root",
       "kind": "image",
       "source": {
-        "path": "img/10-root.png",
+        "path": "img/11-root.png",
         "mediaType": "image/png",
-        "hash": "sha256:6ac8bb5a5ac77500a93b59bf9bd59535bc090298a70e6db62e40fc2e2d5fbf05",
+        "hash": "sha256:c13782bc5a91da91463944e1842703b7c4dd604589693072caa3829486725a5c",
         "width": 2240,
         "height": 1440
       },
@@ -133,9 +145,9 @@
       "id": "img-procedure",
       "kind": "image",
       "source": {
-        "path": "img/11-procedure.png",
+        "path": "img/12-procedure.png",
         "mediaType": "image/png",
-        "hash": "sha256:9396fbaf1e5217d41f9ed1def1e0ddecc44d11f56ea44ebef56d1c2a91b90310",
+        "hash": "sha256:2aa872c203e4eabfad796cb4f5859038af59359f65c146d2e191054e5a86dafc",
         "width": 2240,
         "height": 1440
       },
@@ -145,9 +157,9 @@
       "id": "img-troubleshooting",
       "kind": "image",
       "source": {
-        "path": "img/12-troubleshooting.png",
+        "path": "img/13-troubleshooting.png",
         "mediaType": "image/png",
-        "hash": "sha256:44beb617c6d05caaff03172471c53d277300586d2003f56ed023fe7016cce9ea",
+        "hash": "sha256:753dceb8202d8d262c5922617d2fd70f930a033cdb7ebba67546f3bbe4beb438",
         "width": 2240,
         "height": 1440
       },
@@ -157,9 +169,9 @@
       "id": "img-bigmap",
       "kind": "image",
       "source": {
-        "path": "img/13-bigmap.png",
+        "path": "img/14-bigmap.png",
         "mediaType": "image/png",
-        "hash": "sha256:ba4c51e6f4c017ed9566f15e214aa9bb30a27a25ef7042a0bfcf12cc88aba46b",
+        "hash": "sha256:f0ea0da21fc71466c788e2a33f05af56a3052e5bf87e563fe2a6c59ce03e3f69",
         "width": 2240,
         "height": 1440
       },
@@ -181,19 +193,19 @@
           "hotspots": [
             {
               "id": "hs-start-1",
-              "label": "例を開く（同梱の券売機の例）",
+              "label": "ヘルプ（このマニュアル。例もここから開く）",
               "shape": "rect",
               "coords": [
-                546,
-                8,
-                789,
-                66
+                2106,
+                14,
+                2222,
+                72
               ],
               "transition": {
-                "to": "scr-example"
+                "to": "scr-help"
               },
               "capture": {
-                "selector": "[data-testid=\"open-example\"]"
+                "selector": "[data-testid=\"help\"]"
               }
             },
             {
@@ -202,9 +214,9 @@
               "shape": "rect",
               "coords": [
                 301,
-                346,
+                285,
                 490,
-                404
+                342
               ],
               "action": "read",
               "capture": {
@@ -217,9 +229,9 @@
               "shape": "rect",
               "coords": [
                 19,
-                211,
+                149,
                 484,
-                276
+                214
               ],
               "transition": {
                 "to": "scr-root"
@@ -233,10 +245,10 @@
               "label": "保存（開いたファイルに上書き、または保存先を選ぶ）",
               "shape": "rect",
               "coords": [
-                790,
-                8,
-                880,
-                66
+                546,
+                14,
+                636,
+                72
               ],
               "action": "read",
               "capture": {
@@ -248,10 +260,10 @@
               "label": "ダウンロード（ブラウザーの保存先に JSON を落とす）",
               "shape": "rect",
               "coords": [
-                1125,
-                8,
-                1317,
-                66
+                881,
+                14,
+                1073,
+                72
               ],
               "action": "read",
               "capture": {
@@ -259,14 +271,62 @@
               }
             }
           ],
-          "description": "上の帯にファイルの操作、左に構成ツリー、中央にステージ、右にインスペクター、下に引き出し（素材・遷移の地図・検査）があります。まずは「例を開く」で同梱の例を開くか、「Topic を追加」で作り始めます。",
+          "description": "上の帯にファイルの操作、左に構成ツリー、中央にステージ、右にインスペクター、下に引き出し（素材・遷移の地図・検査）があります。まずは「ヘルプ」の中の例を開くか、「Topic を追加」で作り始めます。",
           "capture": {
             "url": "http://127.0.0.1:4174/",
             "viewport": {
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:26:53.916Z"
+            "capturedAt": "2026-11-13T23:57:56.348Z"
+          }
+        },
+        {
+          "id": "scr-help",
+          "caption": "ヘルプ",
+          "assetRef": "img-help",
+          "hotspots": [
+            {
+              "id": "hs-help-1",
+              "label": "券売機の例を開く（同梱の小さな例）",
+              "shape": "rect",
+              "coords": [
+                1872,
+                71,
+                2115,
+                128
+              ],
+              "transition": {
+                "to": "scr-example"
+              },
+              "capture": {
+                "selector": "[data-testid=\"open-example\"]"
+              }
+            },
+            {
+              "id": "hs-help-2",
+              "label": "このヘルプを例として開く",
+              "shape": "rect",
+              "coords": [
+                1524,
+                71,
+                1868,
+                128
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"help-open-example\"]"
+              }
+            }
+          ],
+          "description": "このマニュアルです。目次から「画面の見かた」「画面の流れを作る」「保存されるもの」「困ったとき」を開けます。右上の「例:」から、このヘルプ自体や同梱の券売機の例を editor に読み込めます。",
+          "capture": {
+            "url": "http://127.0.0.1:4174/",
+            "viewport": {
+              "width": 1120,
+              "height": 720
+            },
+            "capturedAt": "2026-11-13T23:57:56.983Z"
           }
         },
         {
@@ -280,9 +340,9 @@
               "shape": "rect",
               "coords": [
                 61,
-                477,
+                416,
                 484,
-                542
+                480
               ],
               "transition": {
                 "to": "scr-screenflow"
@@ -297,9 +357,9 @@
               "shape": "rect",
               "coords": [
                 61,
-                761,
+                700,
                 484,
-                826
+                765
               ],
               "transition": {
                 "to": "scr-procedure"
@@ -314,9 +374,9 @@
               "shape": "rect",
               "coords": [
                 61,
-                1159,
+                1098,
                 484,
-                1224
+                1163
               ],
               "transition": {
                 "to": "scr-troubleshooting"
@@ -350,7 +410,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:26:54.573Z"
+            "capturedAt": "2026-11-13T23:57:57.689Z"
           }
         },
         {
@@ -364,9 +424,9 @@
               "shape": "rect",
               "coords": [
                 596,
-                266,
+                205,
                 667,
-                337
+                276
               ],
               "action": "read",
               "capture": {
@@ -379,9 +439,9 @@
               "shape": "rect",
               "coords": [
                 1079,
-                577,
+                516,
                 1557,
-                749
+                688
               ],
               "transition": {
                 "to": "scr-hotspot"
@@ -396,9 +456,9 @@
               "shape": "rect",
               "coords": [
                 1454,
-                72,
+                10,
                 1567,
-                137
+                76
               ],
               "transition": {
                 "to": "scr-play"
@@ -413,9 +473,9 @@
               "shape": "rect",
               "coords": [
                 63,
-                534,
+                472,
                 484,
-                599
+                537
               ],
               "action": "read",
               "capture": {
@@ -464,7 +524,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:26:55.236Z"
+            "capturedAt": "2026-11-13T23:57:58.412Z"
           }
         },
         {
@@ -478,9 +538,9 @@
               "shape": "rect",
               "coords": [
                 1661,
-                362,
+                301,
                 2222,
-                434
+                372
               ],
               "action": "read",
               "capture": {
@@ -493,9 +553,9 @@
               "shape": "rect",
               "coords": [
                 1661,
-                672,
+                611,
                 2222,
-                738
+                677
               ],
               "action": "read",
               "capture": {
@@ -508,9 +568,9 @@
               "shape": "rect",
               "coords": [
                 1454,
-                72,
+                10,
                 1567,
-                137
+                76
               ],
               "transition": {
                 "to": "scr-play"
@@ -525,9 +585,9 @@
               "shape": "rect",
               "coords": [
                 529,
-                266,
+                205,
                 600,
-                337
+                276
               ],
               "transition": {
                 "to": "scr-screenflow"
@@ -550,7 +610,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:26:55.842Z"
+            "capturedAt": "2026-11-13T23:57:59.002Z"
           }
         },
         {
@@ -564,9 +624,9 @@
               "shape": "rect",
               "coords": [
                 1349,
-                72,
+                10,
                 1462,
-                137
+                76
               ],
               "transition": {
                 "to": "scr-screenflow"
@@ -581,9 +641,9 @@
               "shape": "rect",
               "coords": [
                 1079,
-                497,
+                435,
                 1544,
-                664
+                603
               ],
               "action": "read",
               "capture": {
@@ -598,7 +658,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:26:56.361Z"
+            "capturedAt": "2026-11-13T23:57:59.528Z"
           }
         },
         {
@@ -663,7 +723,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:26:56.920Z"
+            "capturedAt": "2026-11-13T23:58:00.104Z"
           }
         },
         {
@@ -713,7 +773,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:26:57.409Z"
+            "capturedAt": "2026-11-13T23:58:00.600Z"
           }
         },
         {
@@ -778,7 +838,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:26:57.963Z"
+            "capturedAt": "2026-11-13T23:58:01.162Z"
           }
         },
         {
@@ -792,9 +852,9 @@
               "shape": "rect",
               "coords": [
                 1907,
-                561,
+                560,
                 2201,
-                619
+                617
               ],
               "action": "read",
               "capture": {
@@ -807,9 +867,9 @@
               "shape": "rect",
               "coords": [
                 1661,
-                713,
+                711,
                 2222,
-                770
+                769
               ],
               "action": "read",
               "capture": {
@@ -822,9 +882,9 @@
               "shape": "rect",
               "coords": [
                 19,
-                309,
+                248,
                 484,
-                411
+                350
               ],
               "transition": {
                 "to": "scr-root"
@@ -841,7 +901,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:26:58.535Z"
+            "capturedAt": "2026-11-13T23:58:01.702Z"
           }
         },
         {
@@ -855,9 +915,9 @@
               "shape": "rect",
               "coords": [
                 1661,
-                407,
+                346,
                 2222,
-                479
+                418
               ],
               "action": "read",
               "capture": {
@@ -870,9 +930,9 @@
               "shape": "rect",
               "coords": [
                 61,
-                477,
+                416,
                 393,
-                542
+                480
               ],
               "transition": {
                 "to": "scr-screenflow"
@@ -889,7 +949,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:26:59.062Z"
+            "capturedAt": "2026-11-13T23:58:02.240Z"
           }
         },
         {
@@ -903,9 +963,9 @@
               "shape": "rect",
               "coords": [
                 639,
-                884,
+                824,
                 1549,
-                957
+                898
               ],
               "action": "read",
               "capture": {
@@ -918,9 +978,9 @@
               "shape": "rect",
               "coords": [
                 1661,
-                841,
+                780,
                 1809,
-                899
+                837
               ],
               "action": "read",
               "capture": {
@@ -933,9 +993,9 @@
               "shape": "rect",
               "coords": [
                 61,
-                1159,
+                1098,
                 484,
-                1224
+                1163
               ],
               "transition": {
                 "to": "scr-troubleshooting"
@@ -950,9 +1010,9 @@
               "shape": "rect",
               "coords": [
                 61,
-                477,
+                416,
                 484,
-                542
+                480
               ],
               "transition": {
                 "to": "scr-screenflow"
@@ -969,7 +1029,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:26:59.740Z"
+            "capturedAt": "2026-11-13T23:58:02.870Z"
           }
         },
         {
@@ -983,9 +1043,9 @@
               "shape": "rect",
               "coords": [
                 680,
-                844,
+                785,
                 1549,
-                918
+                858
               ],
               "action": "read",
               "capture": {
@@ -998,9 +1058,9 @@
               "shape": "rect",
               "coords": [
                 675,
-                1207,
+                1148,
                 797,
-                1265
+                1205
               ],
               "action": "read",
               "capture": {
@@ -1013,9 +1073,9 @@
               "shape": "rect",
               "coords": [
                 61,
-                477,
+                416,
                 484,
-                542
+                480
               ],
               "transition": {
                 "to": "scr-screenflow"
@@ -1032,7 +1092,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:27:00.263Z"
+            "capturedAt": "2026-11-13T23:58:03.411Z"
           }
         }
       ]

@@ -127,9 +127,9 @@ await capture({
   id: 'start',
   caption: '起動した直後',
   description:
-    '上の帯にファイルの操作、左に構成ツリー、中央にステージ、右にインスペクター、下に引き出し（素材・遷移の地図・検査）があります。まずは「例を開く」で同梱の例を開くか、「Topic を追加」で作り始めます。',
+    '上の帯にファイルの操作、左に構成ツリー、中央にステージ、右にインスペクター、下に引き出し（素材・遷移の地図・検査）があります。まずは「ヘルプ」の中の例を開くか、「Topic を追加」で作り始めます。',
   hotspots: [
-    { ...tid('open-example'), label: '例を開く（同梱の券売機の例）', to: 'example' },
+    { ...tid('help'), label: 'ヘルプ（このマニュアル。例もここから開く）', to: 'help' },
     { ...tid('add-topic'), label: 'Topic を追加（種類は左のプルダウンで選ぶ）', action: 'read' },
     { ...tid('tree-root'), label: 'マニュアルの題名・版・適用範囲を編集する', to: 'root' },
     { ...tid('save'), label: '保存（開いたファイルに上書き、または保存先を選ぶ）', action: 'read' },
@@ -137,6 +137,18 @@ await capture({
   ]
 });
 
+await page.getByTestId('help').click();
+await page.waitForSelector('[data-testid="help-dialog"] .em-stage');
+await capture({
+  id: 'help',
+  caption: 'ヘルプ',
+  description:
+    'このマニュアルです。目次から「画面の見かた」「画面の流れを作る」「保存されるもの」「困ったとき」を開けます。右上の「例:」から、このヘルプ自体や同梱の券売機の例を editor に読み込めます。',
+  hotspots: [
+    { ...tid('open-example'), label: '券売機の例を開く（同梱の小さな例）', to: 'example' },
+    { ...tid('help-open-example'), label: 'このヘルプを例として開く', action: 'read' }
+  ]
+});
 await page.getByTestId('open-example').click();
 await page.waitForSelector('[data-testid="description-editor"]');
 await capture({

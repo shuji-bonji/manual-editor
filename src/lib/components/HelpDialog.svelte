@@ -1,6 +1,7 @@
 <!--
   ヘルプ: editor 自身の使い方を、体験型マニュアル（static/help/help.manual.json。scripts/make-help.mjs が editor の画面から生成）として
   player の外枠（Frame、P-0）で見せる。「例として開く」で同じ JSON を editor に読み込み、作り方の見本として中身を見られる。
+  同梱の小さな例（券売機。仮の画像）もここから開く（上の帯には「いま開いている 1 冊の操作」だけを置く。ダッシュボードは後の版）。
 -->
 <script lang="ts">
   import { onMount } from 'svelte';
@@ -39,13 +40,21 @@
     close();
     await editor.openFromUrl(url, 'help.manual.json', t('help.openedNote'));
   }
+
+  async function openKenbaiki() {
+    if (editor.dirty && !confirm(t('file.confirmDiscard'))) return;
+    close();
+    await editor.openExample();
+  }
 </script>
 
 <dialog bind:this={dialog} class="help" onclose={onclose} oncancel={(e) => (e.preventDefault(), close())} aria-label={t('help.title')} data-testid="help-dialog">
   <div class="row spread head">
     <strong>{t('help.title')}</strong>
     <div class="row">
+      <span class="muted small">{t('help.examples')}</span>
       <button type="button" class="btn small" onclick={openAsExample} data-testid="help-open-example">{t('help.openAsExample')}</button>
+      <button type="button" class="btn small" onclick={openKenbaiki} data-testid="open-example" title={t('help.kenbaikiHelp')}>{t('file.example')}</button>
       <button type="button" class="btn small" onclick={close} aria-label={t('common.close')}>×</button>
     </div>
   </div>

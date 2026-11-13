@@ -33,7 +33,6 @@
     {#if editor.canPick}
       <button class="btn small" type="button" onclick={() => confirmDiscard() && editor.openWithPicker()}>{t('file.openPicker')}</button>
     {/if}
-    <button class="btn small" type="button" onclick={() => confirmDiscard() && editor.openExample()} data-testid="open-example">{t('file.example')}</button>
     <button class="btn small primary" type="button" onclick={() => (editor.canPick ? editor.saveWithPicker() : editor.saveDownload())} data-testid="save">{t('file.save')}</button>
     {#if editor.canPick}
       <button class="btn small" type="button" onclick={() => editor.saveWithPicker(true)}>{t('file.saveAs')}</button>

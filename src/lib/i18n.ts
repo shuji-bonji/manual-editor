@@ -395,7 +395,9 @@ const ja = {
   // ヘルプ（editor 自身の体験型マニュアル）
   'help.button': 'ヘルプ',
   'help.title': 'manual-editor の使い方（体験型マニュアル）',
-  'help.openAsExample': '例として開く',
+  'help.examples': '例:',
+  'help.openAsExample': 'このヘルプを例として開く',
+  'help.kenbaikiHelp': '同梱の小さな例（券売機。画像は仮のもの）を開きます。',
   'help.loading': '読み込んでいます…',
   'help.loadFailed': 'ヘルプを読み込めませんでした（{reason}）。',
   'help.openedNote': 'ヘルプの JSON を開きました。このヘルプ自体が manual-editor で作れる体験型マニュアルです。画面と座標は scripts/make-help.mjs が生成しています。',

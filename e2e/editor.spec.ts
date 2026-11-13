@@ -116,6 +116,7 @@ test('2021 年の JSON を開くと、遷移の地図・検査・素材が読め
 });
 
 test('券売機の例で、手順・困ったとき・説明を書き足して保存できる', async ({ page }) => {
+  await page.getByTestId('help').click();
   await page.getByTestId('open-example').click();
   await expect(page.getByTestId('description-editor')).toBeVisible();
   const topics = page.getByTestId('tree-topic');
