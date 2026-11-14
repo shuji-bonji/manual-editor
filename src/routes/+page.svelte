@@ -21,12 +21,12 @@
 
   let ready = $state(false);
 
-  onMount(() => {
-    editor.init();
+  onMount(async () => {
+    await editor.init();
     ready = true;
   });
 
-  // 編集した内容を、少し待ってから下書きとして localStorage に保存する
+  // 編集した内容を、少し待ってから作業場所（ブラウザーの中のフォルダー）の manual.json に書く
   $effect(() => {
     void editor.manual;
     if (!ready) return;
@@ -34,10 +34,10 @@
     return () => clearTimeout(id);
   });
 
-  // 画面を閉じる前の確認（未保存の変更があるとき）
+  // 画面を閉じる前の確認。作業場所が残るブラウザーでは、閉じても続きから始められるので尋ねない
   $effect(() => {
     const handler = (e: BeforeUnloadEvent) => {
-      if (editor.dirty) e.preventDefault();
+      if (editor.dirty && !editor.persistent) e.preventDefault();
     };
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
@@ -101,15 +101,6 @@
 <div class="app">
   <TopBar />
 
-  {#if editor.pendingDraft}
-    <div class="banner" role="alert" data-testid="draft-banner">
-      <span>{t('draft.found', { time: new Date(editor.pendingDraft.savedAt).toLocaleString('ja-JP') })}</span>
-      <span class="row">
-        <button class="btn small primary" type="button" onclick={() => editor.restoreDraft()}>{t('draft.restore')}</button>
-        <button class="btn small" type="button" onclick={() => editor.discardDraft()}>{t('draft.discard')}</button>
-      </span>
-    </div>
-  {/if}
   {#each editor.notices as n (n.id)}
     <div class="banner {n.kind}" role={n.kind === 'error' ? 'alert' : 'status'}>
       <span>{n.text}</span>

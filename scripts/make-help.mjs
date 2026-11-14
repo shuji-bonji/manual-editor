@@ -426,8 +426,8 @@ const manual = {
           ] },
           { kind: 'figure', id: 'b-img-2', assetRef: img('assets'), title: '素材の引き出し' }
         ] },
-        { kind: 'section', id: 'b-draft', title: '下書き', children: [
-          { kind: 'para', id: 'b-draft-1', text: '編集した内容は少し待ってからブラウザーの localStorage に下書きとして保存されます。次に開いたとき、復元するかを尋ねます。画像は下書きに入らないので、復元後に割り当て直します。' }
+        { kind: 'section', id: 'b-draft', title: '前回の続き', children: [
+          { kind: 'para', id: 'b-draft-1', text: '編集した内容は、少し待ってからブラウザーの中の作業場所に書かれます。取り込んだ画像も作業場所にコピーされます。タブを閉じても、次に開いたときは前回の続きから始まります。利用者のファイルは、「保存」を押すまで変わりません。' }
         ] },
         { kind: 'section', id: 'b-check', title: '検査', children: [
           { kind: 'table', id: 'b-check-1', rows: [

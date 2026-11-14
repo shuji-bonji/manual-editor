@@ -41,7 +41,8 @@ To build for GitHub Pages, set the repository name: `BASE_PATH=/manual-editor np
 - **Transition map** (bottom drawer): the screens of a Topic as nodes and `Hotspot.transition` as edges. The layout is a layered layout of our own, from a breadth-first search starting at the start screen; unreachable screens and transitions without a target are shown in red. Transitions from many screens back to the same screen ("cancel → STEP1") are shown as labels instead of lines. Clicking a node selects that screen.
 - **Check** (bottom drawer): lists the errors and warnings of `validateManual` grouped by Topic, with the location as names ("screen › hotspot") and the common messages in Japanese. Selecting an item moves to the Topic, screen, step or asset; unreachable screens have a "show on map" button. Saving reports remaining errors without blocking the save.
 - **Edit | Play**: switched on the same stage. Play is the viewer component itself (`packages/player`): pressing a hotspot moves to its target, with back and restart. The screen reached while playing is selected when you switch back to edit. Procedure, description and troubleshooting topics can be played too.
-- **Undo / redo** and an automatic draft in `localStorage`.
+- **Undo / redo**.
+- **Picks up where you left off**: the manual you are editing is kept in a workspace inside the browser (Origin Private File System) as `manual.json` plus `assets/`. `manual.json` is written after each edit and images are written when you add them, so closing the tab does not lose your work. Pasted and masked images are kept too.
 
 ## What it does not do
 
@@ -54,12 +55,12 @@ To build for GitHub Pages, set the repository name: `BASE_PATH=/manual-editor np
 
 ## How images are stored
 
-The JSON does not contain image data by default. `Asset.source.path` holds only the file name, and the image files are kept separately. After opening a JSON, assign the image files in the "Assets" drawer at the bottom ("Assign images in bulk" matches them by file name). The manual's title, version and scopes (`Scope`) are edited in the inspector after selecting "Manual" at the top of the structure tree. The "Embed images in JSON" option writes each image as a data URL into `source.path` instead; this makes the JSON large.
+Images you add are copied into `assets/` in the browser workspace. `Asset.source.path` holds the path relative to `manual.json` (`assets/01-start.png`). The JSON you save does not contain image data by default (saving the JSON and its images as a single file comes in the next version). After opening a JSON, assign the image files in the "Assets" drawer at the bottom ("Assign images in bulk" matches them by file name). The manual's title, version and scopes (`Scope`) are edited in the inspector after selecting "Manual" at the top of the structure tree. The "Embed images in JSON" option writes each image as a data URL into `source.path` instead; this makes the JSON large.
 
 ## Data stays in your browser
 
 > [!NOTE]
-> The app has no server. Files are read and written in your browser only, and nothing is uploaded. The only thing kept by the browser is the draft in `localStorage` (without images), which you can discard from the banner.
+> The app has no server. Files are read and written in your browser only, and nothing is uploaded. The browser keeps the manual you are editing (`manual.json` and its images) in the workspace, and a note in `localStorage` of which manual was open. When you switch to another manual with "New" or "Open", the previous one is removed from the workspace. In a browser that cannot use the workspace, the app says so and asks before you close the tab.
 
 ## Technology
 
@@ -68,7 +69,8 @@ SvelteKit 2 and Svelte 5 (runes), TypeScript, `@sveltejs/adapter-static`, `@vite
 | Path | Role |
 |---|---|
 | `src/lib/ops.ts` | Pure editing functions (`addTopic`, `addHotspot`, `setTransition`, ...) |
-| `src/lib/io.ts` | Parse and serialize JSON, draft, file access |
+| `src/lib/io.ts` | Parse and serialize JSON, access to the user's files |
+| `src/lib/workspace.ts` | Reads and writes the browser workspace (`manual.json` and images of the manual being edited) |
 | `src/lib/issues.ts` | Maps a `validateManual` path to a place in the UI |
 | `src/lib/state.svelte.ts` | The store that holds one `Manual` |
 | `src/lib/components/` | UI panels |

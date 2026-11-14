@@ -1,4 +1,4 @@
-# 引き継ぎメモ（2026-11-14 21:30 JST 更新）
+# 引き継ぎメモ（2026-11-14 22:35 JST 更新）
 
 新しいチャットで体験型マニュアルの製品（player・editor・cli）の作業を続けるための入口です。設計の本文は `docs/` の 2 文書にあり、このメモはそこへの案内と、決まっていることの要約です。
 
@@ -48,6 +48,7 @@
 
 > [!IMPORTANT]
 > **2026-11-14 に、データの扱いを取り決めました（未実装）**。編集は常にブラウザーの中の workspace（OPFS）で行い、保存は 1 冊を 1 つの zip（`manual.json` ＋ `assets/`）にして書き出します。配布は閲覧パッケージ（先に単一の HTML、後にフォルダー）で、受け取った側は体験モードで開き、編集するときは複製します。取り決めの全文と作る順序は [design/player-and-editor.md](../design/player-and-editor.md) 13 節です。下の候補より先に、13.7 節の順で進める想定です。
+> **13.7 の 1（workspace と画像の取り込み）は 2026-11-14 に済み**（13.8 節。svelte-check 0 件、Vitest 69 件、E2E 5 本）。次は 13.7 の 2（zip の読み書きと、メニューへのまとめ）。
 
 1. **公開の準備**: 製品名は Experiential Manual Editor に決まった（2026-11-14、D-30）。README・画面・manifest の「仮称」を製品名に直し、`packages/player` の npm 公開（`private: true` を外す）、GitHub Pages への配備（`deploy.yml`。リポジトリを Public にするか）
 2. **学習サイトへの埋め込み**: s1000d-stack の `site/` に `dist/element/experiential-manual.js` と券売機の例を置く（手順 3 の残り。置き方は公開の形と合わせて決める）
@@ -67,7 +68,7 @@ npm run check      # svelte-check
 npm test           # Vitest
 npm run build      # build/（adapter-static、PWA）
 npx playwright install chromium   # 初回だけ
-npm run test:e2e   # ビルドして Playwright（e2e/editor.spec.ts の 4 本）
+npm run test:e2e   # ビルドして Playwright（e2e/editor.spec.ts の 5 本）
 npm run make:help  # ビルドして、ヘルプ（static/help/）を editor の画面から作り直す
 ```
 

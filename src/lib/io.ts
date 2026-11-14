@@ -1,9 +1,7 @@
 /**
- * ファイルの読み書きと、編集中の下書きの保存。
+ * 利用者のファイルの読み書き。編集中の 1 冊をブラウザーの中に置く処理は workspace.ts にある。
  *
  * - parseManualText / serializeManual は純粋な関数で、Vitest で試す。
- * - 下書きは localStorage に置く。localStorage は使えないことがある（プライベートウィンドウ、容量超過など）ため、
- *   読み書きはすべて try/catch で囲み、失敗しても編集を続けられるようにする。画像は容量が大きいので下書きに含めない。
  * - ファイルを開く・保存する操作は、File System Access API が使えるブラウザーではそれを使い、
  *   使えなければ <input type="file"> とダウンロードで行う。
  */
@@ -80,47 +78,6 @@ export const fileName = (f: AssetFile): string | undefined =>
   f.path !== undefined && !isDataUrl(f.path) ? basename(f.path) : undefined;
 
 export const basename = (path: string): string => path.split(/[\\/]/).pop() ?? path;
-
-// ---------------------------------------------------------------------------
-// 下書き（localStorage）
-// ---------------------------------------------------------------------------
-
-const DRAFT_KEY = 'manual-editor:draft:v1';
-
-export interface Draft {
-  manual: Manual;
-  fileName: string;
-  savedAt: string;
-}
-
-export function saveDraft(manual: Manual, fileName: string): boolean {
-  try {
-    const draft: Draft = { manual, fileName, savedAt: new Date().toISOString() };
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-export function loadDraft(): Draft | undefined {
-  try {
-    const raw = localStorage.getItem(DRAFT_KEY);
-    if (!raw) return undefined;
-    const d = JSON.parse(raw) as Draft;
-    return d && Array.isArray(d.manual?.topics) ? d : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-export function clearDraft(): void {
-  try {
-    localStorage.removeItem(DRAFT_KEY);
-  } catch {
-    /* 消せなくても編集は続けられる */
-  }
-}
 
 // ---------------------------------------------------------------------------
 // ファイルの入出力（ブラウザーのみ）

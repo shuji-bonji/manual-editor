@@ -3,6 +3,8 @@
  * 1. 開く → 描く → つなぐ → 体験 → 保存（新規のマニュアルで、画面の流れを 1 つ作る）
  * 2. 2021 年の JSON（79 画面）を開き、遷移の地図・検査・素材の引き出しが読める
  * 3. 券売機の例で、手順・困ったとき・説明を 1 つずつ書き足し、保存した JSON が検査に通る
+ * 4. ヘルプ（editor 自身の体験型マニュアル）
+ * 5. 作業場所（設計書 13 節）: 取り込んだ画像と編集中の内容が、再読み込みの後も残る
  */
 import { readFileSync } from 'node:fs';
 import { expect, test, type Download, type Page } from '@playwright/test';
@@ -77,7 +79,7 @@ test('開く → 描く → つなぐ → 体験 → 保存', async ({ page }) =
   const screens = manual.topics[0].screens ?? [];
   expect(screens).toHaveLength(2);
   expect(screens[0].hotspots[0]).toMatchObject({ shape: 'rect', label: '180円', transition: { to: screens[1].id } });
-  expect(manual.assets?.[0].source).toMatchObject({ path: 'step1.png', width: 800, height: 500 });
+  expect(manual.assets?.[0].source).toMatchObject({ path: 'assets/step1.png', width: 800, height: 500 });
   expect(errors).toEqual([]);
 });
 
@@ -189,4 +191,78 @@ test('ヘルプは editor 自身の体験型マニュアルで、押して進め
   await expect(dialog).toBeHidden();
   await expect(page.getByTestId('tree-topic')).toHaveCount(4);
   await expect(page.getByTestId('filename')).toContainText('help.manual.json');
+});
+
+/** 作業場所（OPFS）にある、いま開いている 1 冊の中身を読む */
+async function workspaceBook(page: Page): Promise<{ manual: string; files: string[] } | undefined> {
+  return page.evaluate(async () => {
+    const raw = localStorage.getItem('experiential-manual-editor:session:v1');
+    if (!raw) return undefined;
+    const { bookId } = JSON.parse(raw) as { bookId: string };
+    try {
+      const root = await navigator.storage.getDirectory();
+      const book = await (await root.getDirectoryHandle('books')).getDirectoryHandle(bookId);
+      const manual = await (await (await book.getFileHandle('manual.json')).getFile()).text();
+      const files: string[] = [];
+      const walk = async (dir: FileSystemDirectoryHandle, prefix: string) => {
+        // @ts-expect-error TypeScript の標準の型定義に、ディレクトリーの列挙が無い版がある
+        for await (const [name, handle] of dir.entries()) {
+          if (handle.kind === 'directory') await walk(handle, `${prefix}${name}/`);
+          else files.push(prefix + name);
+        }
+      };
+      await walk(book, '');
+      return { manual, files: files.sort() };
+    } catch {
+      return undefined;
+    }
+  });
+}
+
+test('作業場所: 取り込んだ画像と編集中の内容が、再読み込みの後も残る', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(String(e)));
+
+  await page.getByTestId('new').click();
+  await page.getByTestId('add-topic').click();
+  await page.getByTestId('add-screen-input').setInputFiles([
+    { name: 'step1.png', mimeType: 'image/png', buffer: makePng(800, 500) },
+    { name: 'step2.png', mimeType: 'image/png', buffer: makePng(640, 400, [200, 120, 60]) }
+  ]);
+  await expect(page.getByTestId('tree-screen')).toHaveCount(2);
+
+  // 画像は assets/ にコピーされ、manual.json は少し待ってから書かれる
+  await expect
+    .poll(async () => (await workspaceBook(page))?.files, { timeout: 10_000 })
+    .toEqual(['assets/step1.png', 'assets/step2.png', 'manual.json']);
+  await expect.poll(async () => (await workspaceBook(page))?.manual ?? '', { timeout: 10_000 }).toContain('assets/step2.png');
+
+  // 再読み込みすると、尋ねられずに続きから始まり、画像も表示される
+  await page.reload();
+  await expect(page.getByTestId('tree-screen')).toHaveCount(2);
+  await page.getByTestId('tree-screen').nth(1).click();
+  const img = page.locator('[data-testid="screen-canvas"] img');
+  await expect(img).toBeVisible();
+  await expect.poll(() => img.evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBe(640);
+  await expect(page.getByTestId('draft-banner')).toHaveCount(0);
+
+  // 保存した JSON の path は、manual.json からの相対パス（assets/…）
+  const manual = await downloadedManual(page, page.waitForEvent('download'));
+  expect(manual.assets?.map((a) => a.source.path)).toEqual(['assets/step1.png', 'assets/step2.png']);
+  expect(validateManual(manual).errors).toEqual([]);
+
+  // 新規にすると、前の 1 冊は作業場所から消える（一覧から選ぶ形は後の版）
+  await page.getByTestId('new').click();
+  await expect(page.getByTestId('tree-screen')).toHaveCount(0);
+  await expect.poll(async () => (await workspaceBook(page))?.files, { timeout: 10_000 }).toEqual(['manual.json']);
+  const books = await page.evaluate(async () => {
+    const root = await navigator.storage.getDirectory();
+    const dir = await root.getDirectoryHandle('books');
+    const names: string[] = [];
+    // @ts-expect-error TypeScript の標準の型定義に、ディレクトリーの列挙が無い版がある
+    for await (const name of dir.keys()) names.push(name);
+    return names.length;
+  });
+  expect(books).toBe(1);
+  expect(errors).toEqual([]);
 });

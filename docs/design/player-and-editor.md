@@ -497,3 +497,26 @@ flowchart LR
 | 4 | player の IIFE のビルドと、単一の HTML の閲覧パッケージ化 | 書き出した HTML をダブルクリックで開いて進める |
 | 5 | 閲覧パッケージを「開く」→ 体験モード → 警告 → 複製して編集 | 複製した 1 冊の `id` が変わり、画像が揃っている |
 | 6 | フォルダーの形の閲覧パッケージ | `vite preview` で配って開く |
+
+### 13.8 実装の記録（13.7 の 1: workspace と画像の取り込み。2026-11-14）
+
+| 項目 | 実装 |
+|---|---|
+| 置き場所 | `src/lib/workspace.ts`。`WorkspaceStore`（`readManual` / `writeManual` / `readFile` / `writeFile` / `removeFile` / `listFiles` / `removeBook` / `listBooks`）をインターフェースにし、OPFS の実装とメモリーの実装を持つ。Vitest はメモリーの実装で試す（`workspace.test.ts`、8 件） |
+| 構成 | OPFS の `books/<bookId>/manual.json` と `books/<bookId>/assets/…`。画像は `Asset.source.path` の相対パスどおりに置く（同梱のヘルプは `img/…` のまま入る） |
+| OPFS が使えるかの判定 | `openWorkspace()` が実際に 1 回書いて確かめる。`getDirectory` はあっても `createWritable` が無いブラウザーがあるため。書けなければメモリーの実装に切り替え、画面に知らせ、閉じる前の確認（`beforeunload`）を残す。IndexedDB の実装は作っていない |
+| path の検査 | `pathSegments()` が `..`・絶対パス・URL・data URL・`manual.json` 自身を受け付けない。作業場所の外へは書かない |
+| 画像の取り込み | ファイルの選択・フォルダー・ドロップ・貼り付け・画面の画像の差し替えは `addAssetFromFile` → `assets/<名前>` にコピー。「画像をまとめて割り当てる」は素材の `path` の場所にコピー。マスクは同じフォルダーの `.png` に書き、元のファイルを作業場所から消す。同梱の例・ヘルプは、開いたときに画像を取りに行って作業場所にコピーする |
+| 自動保存 | 編集の 800 ms 後に `manual.json` を書く（`+page.svelte` の `$effect` → `editor.autosave()`）。書き込みは 1 つずつ順に行い、失敗は 1 回だけ知らせる |
+| 再開 | `localStorage` の `experiential-manual-editor:session:v1` に `bookId`・`fileName`・`dirty` を置き、起動時にその 1 冊を作業場所から読む。「下書きを復元しますか」のバナーと `saveDraft` / `loadDraft` / `clearDraft`（旧キー `manual-editor:draft:v1`）は削除した |
+| `dirty` の意味 | 「利用者のファイルにまだ保存していない」。作業場所が残るブラウザーでは、閉じる前の確認は出さない。「新規」「開く」の前の確認はこれまでどおり出す |
+| 確かめ | E2E の 5 本目（画像 2 枚を足す → 作業場所に `assets/step1.png`・`assets/step2.png`・`manual.json` → 再読み込みで画面と画像が戻る → 保存した JSON の `path` が `assets/…` → 新規で前の 1 冊が消える）。ヘルプを例として開いて再読み込みで戻ること、マスクで `assets/shot.jpg` が `assets/shot.png` に置き換わることは、その場の Playwright で確かめた（常設のテストにはしていない） |
+
+設計（13.3）との差と、残したこと:
+
+- **フォルダー名は `Manual.id` ではなく、editor が付ける `bookId`（UUID）にした**。同じ `id` の JSON を開き直したときに前の画像と混ざらないようにするため。
+- **作業場所に置くのは、開いている 1 冊だけにした**。「新規」「開く」で別の 1 冊に切り替えると、前の 1 冊を消す。複数の冊を残して一覧から選ぶ形は、ダッシュボードと一緒に作る。
+- 2 つのタブで同時に開くと、同じ 1 冊を両方が書く（後から書いたほうが残る）。片方で「新規」「開く」をすると、もう片方が開いている 1 冊の画像が作業場所から消える。タブ間の排他は作っていない。
+- 素材を一覧から消しても、作業場所の画像ファイルは消さない（元に戻すで素材が戻ったときに画像が要るため）。使われなくなったファイルは、zip の保存（13.7 の 2）で「`manual.json` が指しているものだけを入れる」ことで外に出さない。
+- 保存・開くはまだ JSON 単体のまま（13.7 の 2 で zip に変える）。それまでは、保存した JSON の `path` が `assets/…` になり、画像は JSON と別に持つ。「画像を JSON に埋め込む」の選択肢も残っている。
+- ヘルプの文（「保存されるもの」の「下書き」の節）を「前回の続き」に書き換えた（`scripts/make-help.mjs` と `static/help/help.manual.json` の両方）。画面は撮り直していない。下書きのバナーが消えただけで、撮ってある画面には写っていない。

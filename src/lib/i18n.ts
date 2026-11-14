@@ -50,10 +50,10 @@ const ja = {
   'save.doneEmbedded': '保存しました。画像は data URL として JSON に埋め込まれています。',
   'save.doneFile': '{name} に保存しました。',
   'save.embedFailed': '素材 {id} の画像を埋め込めませんでした。',
-  'draft.found': '前回の編集の下書きがあります（{time}）。画像は下書きに含まれません。',
-  'draft.restore': '復元する',
-  'draft.discard': '破棄する',
-  'draft.restoredNote': '下書きを復元しました。画像は読み込み直してください。',
+  'workspace.notPersistent':
+    'このブラウザーでは、編集中の内容をブラウザーの中に残せません。タブを閉じる前に「保存」してください。',
+  'workspace.writeFailed': '編集中の内容をブラウザーの中に書けませんでした（{reason}）。「保存」でファイルに残してください。',
+  'workspace.resumeFailed': '前回の続きを読み込めませんでした（{reason}）。',
 
   // Topic
   'topic.heading': 'Topic 一覧',

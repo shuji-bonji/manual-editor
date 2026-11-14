@@ -3,7 +3,10 @@
  *
  * - manual は `$state.raw`。ops.ts が毎回新しい Manual を返すので、深い監視（Proxy）は要らない。
  *   Proxy にすると structuredClone が使えなくなるため、raw にしている。
- * - 画像は Manual の外（images）に持つ。Manual に入るのは Asset.source.path（ファイル名）だけ。
+ * - 編集中の 1 冊は作業場所（workspace.ts。ブラウザーの中のフォルダー）に置く。manual.json は編集のたびに、
+ *   画像は取り込んだ時点で書くので、タブを閉じても続きから始められる（設計書 13 節）。
+ * - 画像の表示には、作業場所から読んだ Blob の object URL（images）を使う。Manual に入るのは
+ *   Asset.source.path（manual.json からの相対パス。新しく取り込む画像は assets/ の下）だけ。
  * - 元に戻す・やり直しは、Manual の履歴（最大 100 件）で行う。同じ欄への連続した入力は 1 回にまとめる。
  */
 import { SvelteMap } from 'svelte/reactivity';
@@ -12,25 +15,33 @@ import { base } from '$app/paths';
 import { OpError, addAsset, addScreen, addTopic, newManual, scaleHotspots, updateAssetSource, updateScreen, uniquePath, type Added } from './ops';
 import {
   canUseFilePicker,
-  clearDraft,
   downloadBlob,
   downloadText,
   embeddedData,
   fileName,
   fileToDataUrl,
   isDataUrl,
-  loadDraft,
   measureImage,
   parseManualText,
   pickJsonFile,
   pickSaveHandle,
-  saveDraft,
   serializeManual,
   sha256Of,
   writeToHandle,
-  type Draft,
   type FileHandle
 } from './io';
+import {
+  assetPath,
+  clearSession,
+  isStorablePath,
+  loadSession,
+  memoryStore,
+  openWorkspace,
+  requestPersistence,
+  saveSession,
+  type Session,
+  type WorkspaceStore
+} from './workspace';
 import { t } from './i18n';
 
 /** 中央のステージの状態。edit は作図・選択、play は体験（player の ScreenFlow） */
@@ -72,9 +83,9 @@ class EditorState {
   notices = $state.raw<Notice[]>([]);
   /** 保存時に画像を data URL にして JSON に埋め込むか */
   embedImages = $state(false);
-  /** 前回の下書き（復元するか尋ねる）。無ければ undefined */
-  pendingDraft = $state.raw<Draft | undefined>(undefined);
   canPick = $state(false);
+  /** 作業場所が再読み込みの後も残るか。false のときは、閉じる前に確認を出す */
+  persistent = $state(false);
 
   /** 素材 id → 表示用の URL（object URL・data URL・同梱サンプルの URL） */
   images = new SvelteMap<string, string>();
@@ -90,6 +101,14 @@ class EditorState {
   private handle: FileHandle | undefined;
   private noticeSeq = 0;
   private blobUrls = new Set<string>();
+  /** 作業場所。init() で OPFS に差し替える（使えなければメモリーのまま） */
+  private ws: WorkspaceStore = memoryStore();
+  /** 作業場所の中の、この 1 冊のフォルダー名。Manual.id とは別に持つ（同じ id の JSON を開き直しても混ざらないように） */
+  private bookId: string = crypto.randomUUID();
+  /** 作業場所への書き込みを 1 つずつ順に行うための列 */
+  private writes: Promise<void> = Promise.resolve();
+  private writeFailed = false;
+  private persistenceAsked = false;
 
   get canUndo(): boolean {
     return this.undoStack.length > 0;
@@ -98,10 +117,88 @@ class EditorState {
     return this.redoStack.length > 0;
   }
 
-  /** ブラウザーで起動したあとに 1 回呼ぶ（localStorage と File System Access API を調べる） */
-  init(): void {
+  /** ブラウザーで起動したあとに 1 回呼ぶ（作業場所を開き、前回の続きがあれば読み込む） */
+  async init(): Promise<void> {
     this.canPick = canUseFilePicker();
-    this.pendingDraft = loadDraft();
+    this.ws = await openWorkspace();
+    this.persistent = this.ws.persistent;
+    if (!this.persistent) this.notify('warn', t('workspace.notPersistent'));
+    const session = loadSession();
+    if (session) await this.resume(session);
+  }
+
+  // ---- 作業場所 -------------------------------------------------------------
+
+  /** 作業場所への書き込みを順番に行う。失敗は 1 回だけ知らせ、編集は続けられるようにする */
+  private enqueue(job: () => Promise<void>): Promise<void> {
+    this.writes = this.writes.then(job).then(
+      () => {
+        this.writeFailed = false;
+      },
+      (e) => {
+        if (!this.writeFailed) this.notify('error', t('workspace.writeFailed', { reason: e instanceof Error ? e.message : String(e) }));
+        this.writeFailed = true;
+      }
+    );
+    return this.writes;
+  }
+
+  /** どの 1 冊を開いているかを覚える（次に開いたときの続き） */
+  private remember(): void {
+    saveSession({ bookId: this.bookId, fileName: this.fileName, dirty: this.dirty });
+  }
+
+  /** いまの Manual を作業場所の manual.json に書く */
+  private persistManual(): Promise<void> {
+    const bookId = this.bookId;
+    const text = serializeManual(this.manual);
+    this.remember();
+    return this.enqueue(() => this.ws.writeManual(bookId, text));
+  }
+
+  /** 画像を作業場所にコピーする。path が作業場所に置けない形（URL など）なら何もしない */
+  private storeImage(path: string | undefined, data: Blob): Promise<void> {
+    if (!isStorablePath(path)) return Promise.resolve();
+    const bookId = this.bookId;
+    if (!this.persistenceAsked && this.persistent) {
+      this.persistenceAsked = true;
+      void requestPersistence();
+    }
+    return this.enqueue(() => this.ws.writeFile(bookId, path, data));
+  }
+
+  /**
+   * 別の 1 冊に切り替える前に呼ぶ。いまの 1 冊を作業場所から消し、新しいフォルダー名を決める。
+   * 作業場所に複数の冊を残して一覧から選ぶ形（ダッシュボード）は後の版で作る。それまでは、開いている 1 冊だけを持つ。
+   */
+  private startNewBook(): void {
+    const old = this.bookId;
+    this.bookId = crypto.randomUUID();
+    void this.enqueue(() => this.ws.removeBook(old));
+  }
+
+  /** 前回開いていた 1 冊を、作業場所から読み込む。読めなければ新規のまま始める */
+  private async resume(session: Session): Promise<void> {
+    try {
+      const text = await this.ws.readManual(session.bookId);
+      if (text === undefined) {
+        clearSession();
+        return;
+      }
+      const { manual } = parseManualText(text);
+      this.bookId = session.bookId;
+      this.manual = manual;
+      this.fileName = session.fileName;
+      this.dirty = session.dirty;
+      this.undoStack = [];
+      this.redoStack = [];
+      this.lastCoalesce = undefined;
+      this.handle = undefined;
+      this.selectTopic(this.manual.topics[0]?.id);
+      await this.resolveImages(this.manual);
+    } catch (e) {
+      this.notify('error', t('workspace.resumeFailed', { reason: e instanceof Error ? e.message : String(e) }));
+    }
   }
 
   // ---- 通知 ---------------------------------------------------------------
@@ -236,10 +333,11 @@ class EditorState {
     if (a && (a.source.width !== size.w || a.source.height !== size.h)) {
       this.apply((m) => updateAssetSource(m, assetId, { width: size.w, height: size.h }), `asset-size:${assetId}`);
     }
+    await this.storeImage(a?.source.path, file);
     return true;
   }
 
-  /** 画像ファイルを素材として足す（画面は作らない）。足した素材の id を返す */
+  /** 画像ファイルを素材として足す（画面は作らない）。画像は作業場所の assets/ にコピーする。足した素材の id を返す */
   async addAssetFromFile(file: File | Blob, name?: string): Promise<string | undefined> {
     const baseName = name ?? (file instanceof File ? file.name : `image-${Date.now()}.png`);
     if (!file.type.startsWith('image/')) {
@@ -255,13 +353,14 @@ class EditorState {
     }
     const hash = await sha256Of(file);
     const assetId = this.apply((m) =>
-      addAsset(m, { filename: baseName, mediaType: file.type, alt: baseName.replace(/\.[^.]+$/, ''), hash, width: size.w, height: size.h })
+      addAsset(m, { filename: assetPath(baseName), mediaType: file.type, alt: baseName.replace(/\.[^.]+$/, ''), hash, width: size.w, height: size.h })
     );
     if (!assetId) {
       URL.revokeObjectURL(url);
       return undefined;
     }
     this.setImage(assetId, url, size);
+    await this.storeImage(this.manual.assets?.find((a) => a.id === assetId)?.source.path, file);
     return assetId;
   }
 
@@ -299,8 +398,8 @@ class EditorState {
   }
 
   /**
-   * マスク: 塗りつぶした画像（PNG）で素材の画像を置き換える。元の画像は残さない（U-16）。
-   * ファイル名は .png にし、hash・mediaType・幅・高さを更新し、埋め込んであった data URL は外す。
+   * マスク: 塗りつぶした画像（PNG）で素材の画像を置き換える。元の画像は残さない（U-16。作業場所からも消す）。
+   * ファイル名は .png にし（フォルダーはそのまま）、hash・mediaType・幅・高さを更新し、埋め込んであった data URL は外す。
    */
   async maskAsset(assetId: string, masked: Blob): Promise<void> {
     const a = this.manual.assets?.find((x) => x.id === assetId);
@@ -314,10 +413,15 @@ class EditorState {
     }
     const hash = await sha256Of(masked);
     const currentPath = a.source.path !== undefined && !isDataUrl(a.source.path) ? a.source.path : undefined;
-    const stem = (fileName(a.source) ?? assetId).replace(/\.[^.]+$/, '');
-    const path = currentPath?.toLowerCase().endsWith('.png') ? currentPath : uniquePath(this.manual, `${stem}.png`);
+    const renamed = currentPath ? currentPath.replace(/\.[^./\\]+$/, '') + '.png' : assetPath(`${assetId}.png`);
+    const path = currentPath?.toLowerCase().endsWith('.png') ? currentPath : uniquePath(this.manual, renamed);
     this.setImage(assetId, url, size);
     this.apply((m) => updateAssetSource(m, assetId, { path, mediaType: 'image/png', hash, width: size.w, height: size.h, data: null }));
+    if (currentPath && currentPath !== path && isStorablePath(currentPath)) {
+      const bookId = this.bookId;
+      void this.enqueue(() => this.ws.removeFile(bookId, currentPath));
+    }
+    await this.storeImage(path, masked);
     this.notify('info', t('assets.masked'));
   }
 
@@ -368,7 +472,7 @@ class EditorState {
   /** 画像を決めずに画面を足す（遷移先を先に作るため）。素材は名前だけで、画像は後から差し替える */
   addBlankScreen(topicId: string, caption?: string): string | undefined {
     const n = (this.manual.topics.find((x) => x.id === topicId)?.screens?.length ?? 0) + 1;
-    const assetId = this.apply((m) => addAsset(m, { filename: `screen-${n}.png`, mediaType: 'image/png' }));
+    const assetId = this.apply((m) => addAsset(m, { filename: assetPath(`screen-${n}.png`), mediaType: 'image/png' }));
     if (!assetId) return undefined;
     return this.apply((m) => addScreen(m, topicId, assetId, caption ?? t('screen.defaultCaption', { n })));
   }
@@ -385,22 +489,44 @@ class EditorState {
     return n;
   }
 
-  /** 読み込んだ Manual の素材のうち、data URL のものはそのまま画像にする。baseUrl があれば相対パスも読みに行く */
+  /**
+   * 読み込んだ Manual の素材の画像を用意する。
+   * - data URL が埋め込まれていれば、それをそのまま使う（manual.json に入っているので、作業場所にも残る）。
+   * - 作業場所にファイルがあれば、それを読む（前回の続き）。
+   * - baseUrl があれば、相対パスの画像を取りに行き、作業場所にコピーする（同梱の例・ヘルプ）。
+   */
   private async resolveImages(manual: Manual, baseUrl?: string): Promise<void> {
     for (const url of this.blobUrls) URL.revokeObjectURL(url);
     this.blobUrls.clear();
     this.images.clear();
     this.sizes.clear();
+    const bookId = this.bookId;
     for (const a of manual.assets ?? []) {
       if (a.kind !== 'image') continue;
       // 画像が読めなくても、JSON に幅・高さがあれば座標の変換に使える
       if (a.source.width && a.source.height) this.sizes.set(a.id, { w: a.source.width, h: a.source.height });
-      const data = embeddedData(a.source);
       const path = a.source.path;
-      const url = data ?? (path !== undefined && baseUrl ? new URL(path, baseUrl).href : undefined);
+      let url = embeddedData(a.source);
+      if (!url && isStorablePath(path)) {
+        let blob: Blob | undefined;
+        try {
+          blob = await this.ws.readFile(bookId, path);
+          if (!blob && baseUrl) {
+            const res = await fetch(new URL(path, baseUrl).href);
+            if (res.ok) {
+              blob = await res.blob();
+              await this.storeImage(path, blob);
+            }
+          }
+        } catch {
+          blob = undefined;
+        }
+        if (blob) url = URL.createObjectURL(blob);
+      }
       if (!url) continue;
       const size = await measureImage(url);
       if (size) this.setImage(a.id, url, size);
+      else if (url.startsWith('blob:')) URL.revokeObjectURL(url);
     }
   }
 
@@ -411,12 +537,12 @@ class EditorState {
       newId: () => crypto.randomUUID(),
       title: name.replace(/\.json$/i, '')
     });
+    this.startNewBook();
     this.manual = parsed.manual;
     this.undoStack = [];
     this.redoStack = [];
     this.lastCoalesce = undefined;
     this.handle = handle;
-    this.pendingDraft = undefined;
     this.fileName = parsed.kind === 'legacy' ? name.replace(/\.json$/i, '') + '.manual.json' : name;
     this.dirty = parsed.kind === 'legacy';
     this.notices = [];
@@ -426,6 +552,7 @@ class EditorState {
     }
     this.selectTopic(this.manual.topics[0]?.id);
     this.mode = 'edit';
+    void this.persistManual();
     await this.resolveImages(this.manual, baseUrl);
     const missing = (this.manual.assets ?? []).filter((a) => a.kind === 'image' && !this.images.has(a.id)).length;
     if (missing > 0) this.notify('warn', t('open.missingImages', { n: missing }));
@@ -468,18 +595,22 @@ class EditorState {
   }
 
   newDocument(): void {
+    this.startNewBook();
     this.manual = newManual(crypto.randomUUID(), t('manual.untitled'));
     this.undoStack = [];
     this.redoStack = [];
+    this.lastCoalesce = undefined;
     this.handle = undefined;
-    this.pendingDraft = undefined;
     this.fileName = 'manual.json';
     this.dirty = false;
     this.notices = [];
+    for (const url of this.blobUrls) URL.revokeObjectURL(url);
+    this.blobUrls.clear();
     this.images.clear();
     this.sizes.clear();
     this.selection = {};
     this.mode = 'edit';
+    void this.persistManual();
   }
 
   private async serialize(): Promise<string> {
@@ -511,6 +642,7 @@ class EditorState {
     const text = await this.serialize();
     downloadText(this.fileName, text);
     this.dirty = false;
+    this.remember();
     this.notify('info', this.embedImages ? t('save.doneEmbedded') : t('save.doneSeparate'));
     this.reportIssuesOnSave();
   }
@@ -525,6 +657,7 @@ class EditorState {
       this.handle = handle;
       this.fileName = handle.name;
       this.dirty = false;
+      this.remember();
       this.notify('info', t('save.doneFile', { name: handle.name }));
       this.reportIssuesOnSave();
     } catch (e) {
@@ -541,32 +674,11 @@ class EditorState {
     downloadBlob(fileName(asset.source) ?? `${assetId}.${blob.type.split('/')[1] ?? 'png'}`, blob);
   }
 
-  // ---- 下書き -------------------------------------------------------------
+  // ---- 自動保存 -----------------------------------------------------------
 
-  restoreDraft(): void {
-    const d = this.pendingDraft;
-    if (!d) return;
-    this.manual = d.manual;
-    this.fileName = d.fileName;
-    this.undoStack = [];
-    this.redoStack = [];
-    this.dirty = true;
-    this.pendingDraft = undefined;
-    this.images.clear();
-    this.sizes.clear();
-    this.selectTopic(this.manual.topics[0]?.id);
-    this.notify('warn', t('draft.restoredNote'));
-  }
-
-  discardDraft(): void {
-    clearDraft();
-    this.pendingDraft = undefined;
-  }
-
-  /** 編集中の Manual を下書きとして保存する（保存先の localStorage が使えなければ何もしない） */
+  /** 編集中の Manual を作業場所に書く（+page.svelte が、編集のたびに少し待ってから呼ぶ） */
   autosave(): void {
-    if (this.pendingDraft || !this.dirty) return;
-    saveDraft(this.manual, this.fileName);
+    void this.persistManual();
   }
 }
 
