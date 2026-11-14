@@ -520,3 +520,25 @@ flowchart LR
 - 素材を一覧から消しても、作業場所の画像ファイルは消さない（元に戻すで素材が戻ったときに画像が要るため）。使われなくなったファイルは、zip の保存（13.7 の 2）で「`manual.json` が指しているものだけを入れる」ことで外に出さない。
 - 保存・開くはまだ JSON 単体のまま（13.7 の 2 で zip に変える）。それまでは、保存した JSON の `path` が `assets/…` になり、画像は JSON と別に持つ。「画像を JSON に埋め込む」の選択肢も残っている。
 - ヘルプの文（「保存されるもの」の「下書き」の節）を「前回の続き」に書き換えた（`scripts/make-help.mjs` と `static/help/help.manual.json` の両方）。画面は撮り直していない。下書きのバナーが消えただけで、撮ってある画面には写っていない。
+
+### 13.9 実装の記録（13.7 の 2・3: zip の読み書き、メニュー、ヘルプの `assets/`。2026-11-15）
+
+| 項目 | 実装 |
+|---|---|
+| zip | `src/lib/zip.ts`。ライブラリは足さず自前で書いた（実行時の依存は model と player だけのまま）。書くときは無圧縮（stored。中身の大半が PNG / JPEG のため）、読むときは無圧縮と deflate（`DecompressionStream('deflate-raw')`）。ファイル名は UTF-8。CRC-32 を読むときに確かめる。ZIP64・暗号化・分割は理由を付けて断る。`zip.test.ts` 6 件（Python の `zipfile` で作った deflate の zip を読む件を含む）。書き出した zip が `unzip -t` と Python の `zipfile.testzip()` を通ることを確かめた |
+| 1 冊のまとまり | `src/lib/bundle.ts`。`locateManual`（`manual.json` → `*.manual.json` → 1 つだけの `.json` の順で、いちばん浅いもの。最上位にフォルダーが 1 段あってもよい）、`splitBundle`（`__MACOSX`・`.DS_Store`・`Thumbs.db`・隠しファイルと、フォルダーの外を除く）、`buildBundle`（`manual.json` と、Manual が指している画像だけを入れる）、`suggestedBundleName` / `bundleNameFrom`。`bundle.test.ts` 8 件 |
+| メニュー | 上の帯の「ファイル ▾」（`TopBar.svelte`、`role="menu"`、↑↓ と Esc、外を押すと閉じる）。項目は 新規作成 / 開く… / フォルダーを開く… / 保存 / 名前を付けて保存…（File System Access API があるときだけ）。「開く（上書き保存できる）」「ダウンロード」「画像を JSON に埋め込む」は外した |
+| 開く | zip・JSON（`showOpenFilePicker` があればそれ、無ければ `<input type="file">`）。中身の先頭 4 バイトで zip かどうかを見分ける。zip の中の画像は作業場所にコピーしてから表示する。フォルダーは `<input webkitdirectory>` で読むだけ |
+| 保存 | `editor.save()`。作業場所への書き込みが済むのを待ってから zip を作る。`showSaveFilePicker` があれば、開いた zip・前に保存した zip に上書きし、無ければ保存先を選ぶ。API が無ければダウンロード。上書きの前に `lastModified` を比べ、開いた後に外で書き換えられていたら確認を出す。画像が作業場所に無い素材（JSON 単体を開いて未割り当てのもの）は zip に入れず、件数を知らせる |
+| ファイル名 | 保存先が決まるまでは題名から作る（`<題名>.manual.zip`。ファイル名に使えない文字は `-`）。開いたファイルからは `kenbaiki.manual.json` → `kenbaiki.manual.zip`、フォルダーからは `<フォルダー名>.manual.zip` |
+| ヘルプ | `scripts/make-help.mjs` の出力先を `static/help/assets/` に変え、「ファイル」のメニューの画面を 1 枚足して作り直した（画面 15、ホットスポット 49）。文も zip の保存に合わせて直した。`vite.config.ts` の `globIgnores` も `help/assets` に変えた。画像は Linux の Chromium（Noto Sans CJK）で撮っている |
+| 確かめ | svelte-check 0 件、Vitest 83 件、E2E 7 本（6 本目: 保存 → 新規 → zip を開く → 画像が戻る、最上位にフォルダーのある zip、使われていない画像が zip に入らない、JSON 単体の保存で知らせが出る、壊れた zip。7 本目: フォルダーを開く）。E2E は 8 回続けて 7 本とも通過 |
+
+設計（13.4）との差と、残したこと:
+
+- **上書きの先（ファイルのハンドル）は、再読み込みすると失う**。再読み込みの後の最初の「保存」では、保存先を選び直す。ハンドルを IndexedDB に残して再開する形は作っていない。
+- 「開く」は 2 つの項目（ファイル / フォルダー）に分けた。ブラウザーのファイル選択は、ファイルとフォルダーを 1 つの画面で選べないため。
+- E2E は、保存先を選ぶ OS の画面を操作できないので、File System Access API を消した状態（保存はダウンロード）で通している。**上書き保存と、外で書き換えられたときの確認は、自動のテストでは通していない**。
+- 閲覧パッケージ（単一の HTML、フォルダー）を「開く」ことは 13.7 の 5 で作る。いまは zip・JSON・フォルダーだけ。
+- ロケールが POSIX の Linux では、Chromium が日本語のファイル名のダウンロードを `download` という名前にする（`LANG=C.UTF-8` なら題名どおり）。E2E のファイル名の確認は英数字の題名で行い、日本語の題名は `bundle.test.ts` で確かめている。
+

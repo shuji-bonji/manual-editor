@@ -1,0 +1,75 @@
+import { describe, expect, it } from 'vitest';
+import type { Manual } from '@shuji-bonji/experiential-manual-model';
+import { buildBundle, bundleNameFrom, locateManual, referencedPaths, splitBundle, suggestedBundleName } from './bundle';
+import { unzip } from './zip';
+
+describe('locateManual', () => {
+  it('manual.json を選ぶ。最上位にフォルダーが 1 段あってもよい', () => {
+    expect(locateManual(['manual.json', 'assets/a.png'])).toEqual({ root: '', path: 'manual.json' });
+    expect(locateManual(['券売機/assets/a.png', '券売機/manual.json', '__MACOSX/券売機/._manual.json'])).toEqual({ root: '券売機/', path: '券売機/manual.json' });
+  });
+
+  it('manual.json が複数あれば、いちばん浅いものを選ぶ', () => {
+    expect(locateManual(['old/manual.json', 'manual.json'])?.path).toBe('manual.json');
+  });
+
+  it('manual.json が無ければ *.manual.json、それも無ければ 1 つだけの .json を選ぶ', () => {
+    expect(locateManual(['help/img/01.png', 'help/help.manual.json', 'help/other.json'])).toEqual({ root: 'help/', path: 'help/help.manual.json' });
+    expect(locateManual(['legacy\\data.json', 'legacy\\img\\a.png'])).toEqual({ root: 'legacy/', path: 'legacy/data.json' });
+    expect(locateManual(['a.json', 'b.json'])).toBeUndefined();
+    expect(locateManual(['a.png', '.hidden/manual.json'])).toBeUndefined();
+  });
+});
+
+describe('splitBundle', () => {
+  it('manual の JSON と、そこからの相対パスのファイルに分ける。フォルダーの外と OS のごみは入れない', () => {
+    const e = (path: string) => ({ path, data: path });
+    const parts = splitBundle([e('m/manual.json'), e('m/assets/a.png'), e('m/img/b.png'), e('m/.DS_Store'), e('m/assets/Thumbs.db'), e('other/c.png'), e('__MACOSX/m/assets/._a.png')]);
+    expect(parts?.manual.path).toBe('m/manual.json');
+    expect(parts?.files.map((f) => f.path)).toEqual(['assets/a.png', 'img/b.png']);
+  });
+
+  it('JSON が決まらなければ undefined', () => {
+    expect(splitBundle([{ path: 'a.png', data: 1 }])).toBeUndefined();
+  });
+});
+
+const manual = (paths: (string | undefined)[]): Manual =>
+  ({
+    id: 'm',
+    title: 't',
+    version: { number: '1.0' },
+    language: 'ja',
+    topics: [],
+    assets: paths.map((path, i) => ({ id: `a${i}`, kind: 'image', source: path === undefined ? { data: 'data:image/png;base64,AAAA' } : { path } }))
+  }) as Manual;
+
+describe('buildBundle', () => {
+  it('manual.json と、Manual が指している画像だけを入れる', async () => {
+    const m = manual(['assets/a.png', './assets/a.png', 'assets/b.png', 'https://example.com/c.png', '../d.png', undefined]);
+    expect(referencedPaths(m)).toEqual(['assets/a.png', 'assets/b.png']);
+    const store: Record<string, Uint8Array> = { 'assets/a.png': new Uint8Array([1, 2, 3]), 'assets/unused.png': new Uint8Array([9]) };
+    const { zip, missing } = await buildBundle(m, '{"id":"m"}', async (p) => store[p]);
+    expect(missing).toEqual(['assets/b.png']);
+    const entries = await unzip(zip);
+    expect(entries.map((e) => e.path)).toEqual(['manual.json', 'assets/a.png']);
+    expect(new TextDecoder().decode(entries[0].data)).toBe('{"id":"m"}');
+    expect(entries[1].data).toEqual(new Uint8Array([1, 2, 3]));
+  });
+});
+
+describe('ファイル名', () => {
+  it('題名から保存するファイル名の案を作る', () => {
+    expect(suggestedBundleName('券売機の使い方')).toBe('券売機の使い方.manual.zip');
+    expect(suggestedBundleName('a/b: c?')).toBe('a-b- c-.manual.zip');
+    expect(suggestedBundleName('   ')).toBe('manual.manual.zip');
+  });
+
+  it('開いたファイルの名前から保存するファイル名を作る', () => {
+    expect(bundleNameFrom('kenbaiki.manual.json')).toBe('kenbaiki.manual.zip');
+    expect(bundleNameFrom('legacy-2021.json')).toBe('legacy-2021.manual.zip');
+    expect(bundleNameFrom('券売機.manual.zip')).toBe('券売機.manual.zip');
+    expect(bundleNameFrom('backup.zip')).toBe('backup.manual.zip');
+    expect(bundleNameFrom('help')).toBe('help.manual.zip');
+  });
+});

@@ -35,7 +35,7 @@ export default defineConfig({
         // 足さないと、オフラインで開いたときに service worker の navigation 応答が失敗する。
         additionalManifestEntries: [{ url: 'index.html', revision: String(Date.now()) }],
         // 例の画像（券売機の仮の画面）とヘルプの画面（editor のスクリーンショット）は大きいので、事前の保存の対象から外す。見たときにネットワークから取る。
-        globIgnores: ['**/examples/img/**', '**/help/img/**']
+        globIgnores: ['**/examples/img/**', '**/help/assets/**']
       },
       devOptions: { enabled: false }
     })

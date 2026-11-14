@@ -2,7 +2,8 @@
  * 利用者のファイルの読み書き。編集中の 1 冊をブラウザーの中に置く処理は workspace.ts にある。
  *
  * - parseManualText / serializeManual は純粋な関数で、Vitest で試す。
- * - ファイルを開く・保存する操作は、File System Access API が使えるブラウザーではそれを使い、
+ * - 保存するのは、1 冊を 1 つにまとめた zip（manual.json ＋ assets/。zip.ts と bundle.ts）。
+ * - ファイルを開く・保存する操作は、File System Access API が使えるブラウザーではそれを使い（同じファイルに上書きできる）、
  *   使えなければ <input type="file"> とダウンロードで行う。
  */
 import { fromLegacyJson, type AssetFile, type Manual } from '@shuji-bonji/experiential-manual-model';
@@ -50,8 +51,9 @@ export function parseManualText(text: string, options: { newId?: () => string; t
 
 /**
  * Manual を JSON の文字列にする。
- * embed に素材 id と data URL の対応を渡すと、その素材の source.data に data URL を入れる（画像を JSON に埋め込む選択肢。model 0.2.0）。
- * source.path のファイル名はそのまま残す。渡さなければ data は入らず、画像は JSON と別に持つ。
+ * embed に素材 id と data URL の対応を渡すと、その素材の source.data に data URL を入れる（model 0.2.0。
+ * 単一の HTML の閲覧パッケージのように、画像を JSON に埋め込む出力で使う）。
+ * source.path はそのまま残す。渡さなければ data は入らず、画像は JSON と別に持つ。
  */
 export function serializeManual(manual: Manual, embed?: Record<string, string>): string {
   const out = structuredClone(manual);
@@ -97,39 +99,44 @@ interface PickerWindow {
 export type FileHandle = FileHandleLike;
 
 export const canUseFilePicker = (): boolean =>
-  typeof window !== 'undefined' && typeof (window as PickerWindow).showOpenFilePicker === 'function';
+  typeof window !== 'undefined' &&
+  typeof (window as PickerWindow).showOpenFilePicker === 'function' &&
+  typeof (window as PickerWindow).showSaveFilePicker === 'function';
 
-const JSON_TYPES = [{ description: 'manual-model の JSON', accept: { 'application/json': ['.json'] } }];
+/** 「開く」で選べるもの: 1 冊をまとめた zip と、manual の JSON 単体（2021 年の JSON を含む） */
+const OPEN_TYPES = [
+  { description: '体験型マニュアル（zip / JSON）', accept: { 'application/zip': ['.zip'], 'application/json': ['.json'] } }
+];
+const SAVE_TYPES = [{ description: '体験型マニュアル（zip）', accept: { 'application/zip': ['.zip'] } }];
 
 /** File System Access API でファイルを開く。利用者が取り消したら undefined */
-export async function pickJsonFile(): Promise<{ text: string; name: string; handle: FileHandle } | undefined> {
+export async function pickOpenFile(): Promise<{ file: File; handle: FileHandle } | undefined> {
   const w = window as PickerWindow;
   if (!w.showOpenFilePicker) return undefined;
   try {
-    const [handle] = await w.showOpenFilePicker({ types: JSON_TYPES, multiple: false });
-    const file = await handle.getFile();
-    return { text: await file.text(), name: file.name, handle };
+    const [handle] = await w.showOpenFilePicker({ types: OPEN_TYPES, multiple: false });
+    return { file: await handle.getFile(), handle };
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') return undefined;
     throw e;
   }
 }
 
-/** 名前を付けて保存する。File System Access API が無い・取り消したときは undefined */
+/** 保存先を選ぶ。File System Access API が無い・取り消したときは undefined */
 export async function pickSaveHandle(suggestedName: string): Promise<FileHandle | undefined> {
   const w = window as PickerWindow;
   if (!w.showSaveFilePicker) return undefined;
   try {
-    return await w.showSaveFilePicker({ suggestedName, types: JSON_TYPES });
+    return await w.showSaveFilePicker({ suggestedName, types: SAVE_TYPES });
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') return undefined;
     throw e;
   }
 }
 
-export async function writeToHandle(handle: FileHandle, text: string): Promise<void> {
+export async function writeToHandle(handle: FileHandle, data: Blob | string): Promise<void> {
   const w = await handle.createWritable();
-  await w.write(text);
+  await w.write(data);
   await w.close();
 }
 
@@ -144,9 +151,6 @@ export function downloadBlob(name: string, blob: Blob): void {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
-
-export const downloadText = (name: string, text: string): void =>
-  downloadBlob(name, new Blob([text], { type: 'application/json' }));
 
 // ---------------------------------------------------------------------------
 // 画像の補助

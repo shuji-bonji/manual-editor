@@ -1,28 +1,55 @@
 /**
  * 主な流れの E2E（設計書 6 節の手順 8）。
- * 1. 開く → 描く → つなぐ → 体験 → 保存（新規のマニュアルで、画面の流れを 1 つ作る）
+ * 1. 開く → 描く → つなぐ → 体験 → 保存（新規のマニュアルで、画面の流れを 1 つ作る。保存は zip）
  * 2. 2021 年の JSON（79 画面）を開き、遷移の地図・検査・素材の引き出しが読める
  * 3. 券売機の例で、手順・困ったとき・説明を 1 つずつ書き足し、保存した JSON が検査に通る
  * 4. ヘルプ（editor 自身の体験型マニュアル）
  * 5. 作業場所（設計書 13 節）: 取り込んだ画像と編集中の内容が、再読み込みの後も残る
+ * 6. zip（設計書 13.4 節）: 保存した zip を開き直すと画像ごと戻る。フォルダーと、ほかの道具で作った zip も開ける
  */
-import { readFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { expect, test, type Download, type Page } from '@playwright/test';
 import { validateManual, type Manual } from '@shuji-bonji/experiential-manual-model';
 import { makePng } from './png';
+import { unzip, zipStore } from '../src/lib/zip';
 
 const LEGACY = new URL('../src/lib/fixtures/legacy-2021.json', import.meta.url).pathname;
 
-async function downloadedManual(page: Page, download: Promise<Download>): Promise<Manual> {
-  await page.getByTestId('download').click();
-  const d = await download;
+/** テストが書き出すファイルの置き場所。名前を英数字だけにする（テストの題名を含むパスは、ロケールによって Chromium が読めないことがある） */
+const tempDir = (): string => mkdtempSync(join(tmpdir(), 'eme-e2e-'));
+
+/** 「ファイル」のメニューを開いて、項目を選ぶ */
+async function fileMenu(page: Page, item: 'new' | 'open' | 'open-folder' | 'save'): Promise<void> {
+  await page.getByTestId('file-menu').click();
+  await page.getByTestId(item).click();
+}
+
+/** 「保存」で落ちてきた zip を開き、manual.json と、zip の中のファイルの一覧を返す */
+async function savedBundle(page: Page): Promise<{ manual: Manual; files: string[]; name: string }> {
+  const download = page.waitForEvent('download');
+  await fileMenu(page, 'save');
+  const d: Download = await download;
   const path = await d.path();
   if (!path) throw new Error('ダウンロードのファイルがありません');
-  return JSON.parse(readFileSync(path, 'utf8')) as Manual;
+  const entries = await unzip(new Uint8Array(readFileSync(path)));
+  const json = entries.find((e) => e.path === 'manual.json');
+  if (!json) throw new Error('zip に manual.json がありません');
+  return { manual: JSON.parse(new TextDecoder().decode(json.data)) as Manual, files: entries.map((e) => e.path).sort(), name: d.suggestedFilename() };
+}
+
+async function downloadedManual(page: Page): Promise<Manual> {
+  return (await savedBundle(page)).manual;
 }
 
 test.beforeEach(async ({ page }) => {
   page.on('dialog', (d) => d.accept());
+  // 保存先を選ぶ OS の画面はテストから操作できないので、File System Access API が無いブラウザーとして動かす（保存はダウンロードになる）
+  await page.addInitScript(() => {
+    delete (window as { showOpenFilePicker?: unknown }).showOpenFilePicker;
+    delete (window as { showSaveFilePicker?: unknown }).showSaveFilePicker;
+  });
   await page.goto('/');
 });
 
@@ -31,7 +58,7 @@ test('開く → 描く → つなぐ → 体験 → 保存', async ({ page }) =
   page.on('pageerror', (e) => errors.push(String(e)));
 
   // 新規のマニュアルに、画面の流れの Topic を 1 つ足す
-  await page.getByTestId('new').click();
+  await fileMenu(page, 'new');
   await page.getByTestId('add-topic').click();
   await expect(page.getByTestId('tree-topic')).toHaveCount(1);
   await expect(page.getByTestId('topic-title')).toHaveValue(/Topic/);
@@ -72,7 +99,7 @@ test('開く → 描く → つなぐ → 体験 → 保存', async ({ page }) =
   await expect(page.getByTestId('edit-stage')).toContainText('STEP2');
 
   // 保存（ダウンロード）した JSON が manual-model の検査に通る
-  const manual = await downloadedManual(page, page.waitForEvent('download'));
+  const manual = await downloadedManual(page);
   const v = validateManual(manual);
   expect(v.errors).toEqual([]);
   expect(manual.topics).toHaveLength(1);
@@ -158,7 +185,7 @@ test('券売機の例で、手順・困ったとき・説明を書き足して�
   await expect(page.locator('[data-testid^="block-"]')).toHaveCount(blocks + 2);
 
   // 保存した JSON に入っていて、検査に通る
-  const manual = await downloadedManual(page, page.waitForEvent('download'));
+  const manual = await downloadedManual(page);
   expect(validateManual(manual).errors).toEqual([]);
   const proc = manual.topics.find((t) => t.kind === 'procedure')!;
   const added = proc.steps!.flatMap((s) => s.children ?? []).find((s) => s.text === '新しい手順です');
@@ -190,7 +217,7 @@ test('ヘルプは editor 自身の体験型マニュアルで、押して進め
   await page.getByTestId('help-open-example').click();
   await expect(dialog).toBeHidden();
   await expect(page.getByTestId('tree-topic')).toHaveCount(4);
-  await expect(page.getByTestId('filename')).toContainText('help.manual.json');
+  await expect(page.getByTestId('filename')).toContainText('help.manual.zip');
 });
 
 /** 作業場所（OPFS）にある、いま開いている 1 冊の中身を読む */
@@ -223,7 +250,7 @@ test('作業場所: 取り込んだ画像と編集中の内容が、再読み込
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(String(e)));
 
-  await page.getByTestId('new').click();
+  await fileMenu(page, 'new');
   await page.getByTestId('add-topic').click();
   await page.getByTestId('add-screen-input').setInputFiles([
     { name: 'step1.png', mimeType: 'image/png', buffer: makePng(800, 500) },
@@ -246,13 +273,14 @@ test('作業場所: 取り込んだ画像と編集中の内容が、再読み込
   await expect.poll(() => img.evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBe(640);
   await expect(page.getByTestId('draft-banner')).toHaveCount(0);
 
-  // 保存した JSON の path は、manual.json からの相対パス（assets/…）
-  const manual = await downloadedManual(page, page.waitForEvent('download'));
-  expect(manual.assets?.map((a) => a.source.path)).toEqual(['assets/step1.png', 'assets/step2.png']);
-  expect(validateManual(manual).errors).toEqual([]);
+  // 保存した zip には manual.json と画像が入り、path は manual.json からの相対パス（assets/…）
+  const saved = await savedBundle(page);
+  expect(saved.files).toEqual(['assets/step1.png', 'assets/step2.png', 'manual.json']);
+  expect(saved.manual.assets?.map((a) => a.source.path)).toEqual(['assets/step1.png', 'assets/step2.png']);
+  expect(validateManual(saved.manual).errors).toEqual([]);
 
   // 新規にすると、前の 1 冊は作業場所から消える（一覧から選ぶ形は後の版）
-  await page.getByTestId('new').click();
+  await fileMenu(page, 'new');
   await expect(page.getByTestId('tree-screen')).toHaveCount(0);
   await expect.poll(async () => (await workspaceBook(page))?.files, { timeout: 10_000 }).toEqual(['manual.json']);
   const books = await page.evaluate(async () => {
@@ -265,4 +293,107 @@ test('作業場所: 取り込んだ画像と編集中の内容が、再読み込
   });
   expect(books).toBe(1);
   expect(errors).toEqual([]);
+});
+
+test('zip: 保存した zip を開き直すと画像ごと戻る。フォルダーと、ほかの道具で作った zip も開ける', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(String(e)));
+
+  // 題名を付け、画面を 2 枚足して保存する
+  await fileMenu(page, 'new');
+  await page.getByTestId('tree-root').click();
+  await page.getByTestId('manual-title').fill('Kenbaiki: guide');
+  await page.getByTestId('add-topic').click();
+  await page.getByTestId('add-screen-input').setInputFiles([
+    { name: 'step1.png', mimeType: 'image/png', buffer: makePng(800, 500) },
+    { name: 'step2.png', mimeType: 'image/png', buffer: makePng(640, 400, [200, 120, 60]) }
+  ]);
+  await expect(page.getByTestId('tree-screen')).toHaveCount(2);
+  await expect(page.getByTestId('filename')).toContainText('Kenbaiki- guide.manual.zip ●');
+
+  const download = page.waitForEvent('download');
+  await fileMenu(page, 'save');
+  const d = await download;
+  expect(d.suggestedFilename()).toBe('Kenbaiki- guide.manual.zip');
+  const zipPath = join(tempDir(), 'saved.manual.zip');
+  await d.saveAs(zipPath);
+  await expect(page.getByTestId('filename')).toHaveText('Kenbaiki- guide.manual.zip');
+
+  // 新規にしてから、保存した zip を開く。画面と画像が戻る
+  await fileMenu(page, 'new');
+  await expect(page.getByTestId('tree-screen')).toHaveCount(0);
+  await page.getByTestId('open-input').setInputFiles(zipPath);
+  await expect(page.getByTestId('tree-screen')).toHaveCount(2);
+  await expect(page.getByTestId('filename')).toHaveText('saved.manual.zip');
+  await page.getByTestId('tree-screen').nth(1).click();
+  const img = page.locator('[data-testid="screen-canvas"] img');
+  await expect(img).toBeVisible();
+  await expect.poll(() => img.evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBe(640);
+  await expect(page.getByText('画像が見つからない素材')).toHaveCount(0);
+
+  // 最上位にフォルダーが 1 段あり、OS のごみが混ざった zip（ほかの道具で作り直したもの）も開ける
+  const entries = await unzip(new Uint8Array(readFileSync(zipPath)));
+  const rezipped = zipStore([
+    ...entries.map((e) => ({ path: `券売機/${e.path}`, data: e.data })),
+    { path: '__MACOSX/券売機/._manual.json', data: new Uint8Array([0]) },
+    { path: '券売機/.DS_Store', data: new Uint8Array([0]) }
+  ]);
+  await fileMenu(page, 'new');
+  await page.getByTestId('open-input').setInputFiles({ name: '券売機.zip', mimeType: 'application/zip', buffer: Buffer.from(rezipped) });
+  await expect(page.getByTestId('tree-screen')).toHaveCount(2);
+  await expect(page.getByTestId('filename')).toHaveText('券売機.manual.zip');
+  await expect.poll(async () => (await workspaceBook(page))?.files).toEqual(['assets/step1.png', 'assets/step2.png', 'manual.json']);
+
+  // 使わない素材を足してから整理する。作業場所には画像が残るが、保存する zip には入らない
+  await page.getByTestId('drawer-assets').click();
+  await page.getByTestId('assets-add-input').setInputFiles([{ name: 'unused.png', mimeType: 'image/png', buffer: makePng(100, 100) }]);
+  await expect.poll(async () => (await workspaceBook(page))?.files).toContain('assets/unused.png');
+  await page.getByTestId('assets-prune').click();
+  const pruned = await savedBundle(page);
+  expect(pruned.files).toEqual(['assets/step1.png', 'assets/step2.png', 'manual.json']);
+  expect((await workspaceBook(page))?.files).toContain('assets/unused.png');
+
+  // JSON 単体を開くと画像は無い。保存すると、画像が入っていないことを知らせる
+  await fileMenu(page, 'new');
+  await page.getByTestId('open-input').setInputFiles({
+    name: 'only.manual.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(pruned.manual))
+  });
+  await expect(page.getByTestId('tree-screen')).toHaveCount(2);
+  await expect(page.getByText('画像が見つからない素材が 2 件')).toBeVisible();
+  const noImage = await savedBundle(page);
+  expect(noImage.files).toEqual(['manual.json']);
+  expect(noImage.name).toBe('only.manual.zip');
+  await expect(page.getByText('画像の無い素材が 2 件')).toBeVisible();
+
+  // zip でも JSON でもないものは、理由を出して開かない
+  await page.getByTestId('open-input').setInputFiles({ name: 'broken.zip', mimeType: 'application/zip', buffer: Buffer.from('PK\u0003\u0004broken') });
+  await expect(page.getByText(/zip として読めません/)).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('フォルダーを開くと、manual.json と相対パスの画像が読み込まれる', async ({ page }) => {
+  const dir = join(tempDir(), 'kenbaiki-folder');
+  mkdirSync(`${dir}/assets`, { recursive: true });
+  const manual: Manual = {
+    id: 'folder-test',
+    title: 'フォルダーの例',
+    version: { number: '1.0' },
+    language: 'ja',
+    assets: [{ id: 'img-1', kind: 'image', source: { path: 'assets/top.png', mediaType: 'image/png' } }],
+    topics: [{ id: 't1', kind: 'screenFlow', title: '画面の流れ', startScreenRef: 's1', screens: [{ id: 's1', assetRef: 'img-1', caption: 'TOP', hotspots: [] }] }]
+  } as Manual;
+  writeFileSync(`${dir}/manual.json`, JSON.stringify(manual));
+  writeFileSync(`${dir}/assets/top.png`, makePng(320, 200));
+  writeFileSync(`${dir}/.DS_Store`, 'x');
+
+  await page.getByTestId('open-folder-input').setInputFiles(dir);
+  await expect(page.getByTestId('tree-screen')).toHaveCount(1);
+  await expect(page.getByTestId('filename')).toContainText('kenbaiki-folder.manual.zip');
+  const img = page.locator('[data-testid="screen-canvas"] img');
+  await expect.poll(() => img.evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBe(320);
+  await expect.poll(async () => (await workspaceBook(page))?.files).toEqual(['assets/top.png', 'manual.json']);
+  const saved = await savedBundle(page);
+  expect(saved.files).toEqual(['assets/top.png', 'manual.json']);
 });

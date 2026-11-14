@@ -4,7 +4,7 @@
   "language": "ja",
   "version": {
     "number": "0.1.0",
-    "date": "2026-11-14"
+    "date": "2026-11-15"
   },
   "description": "体験型マニュアルの作成ツール manual-editor のヘルプです。このヘルプ自体が manual-editor で開ける体験型マニュアル（experiential-manual-model の JSON）で、画面と押せる場所の座標は scripts/make-help.mjs が editor の画面から生成しています。",
   "scopes": [],
@@ -13,21 +13,33 @@
       "id": "img-start",
       "kind": "image",
       "source": {
-        "path": "img/01-start.png",
+        "path": "assets/01-start.png",
         "mediaType": "image/png",
-        "hash": "sha256:b485041c0260aa08ad9819aceb6aacefdb367bb78af1d5ebf09a33df0cc714f2",
+        "hash": "sha256:b485b6adac834da524ab3665f8a3c62e967136d3d7880757af35be62549a66eb",
         "width": 2240,
         "height": 1440
       },
       "alt": "起動した直後"
     },
     {
+      "id": "img-filemenu",
+      "kind": "image",
+      "source": {
+        "path": "assets/02-filemenu.png",
+        "mediaType": "image/png",
+        "hash": "sha256:f7fe188f7ebaef246c2082655414a6085a5a04c4fd0fb0ad37763c75ad82f746",
+        "width": 2240,
+        "height": 1440
+      },
+      "alt": "「ファイル」のメニュー"
+    },
+    {
       "id": "img-help",
       "kind": "image",
       "source": {
-        "path": "img/02-help.png",
+        "path": "assets/03-help.png",
         "mediaType": "image/png",
-        "hash": "sha256:0f0c3c65e19fec2219914b9dba762776adb9ea1b7a87b7a6bbb733f841ee8aa7",
+        "hash": "sha256:7b4fdbbcd3953c0d717f7da5dbaea9c592f82b0198fad31f5ba1ea63db9a073a",
         "width": 2240,
         "height": 1440
       },
@@ -37,9 +49,9 @@
       "id": "img-example",
       "kind": "image",
       "source": {
-        "path": "img/03-example.png",
+        "path": "assets/04-example.png",
         "mediaType": "image/png",
-        "hash": "sha256:9a4865eaa54fec4c41cfa9c2513a7ace1ffb182e361f66affab05327d9ec6754",
+        "hash": "sha256:f25a149a9436e671c9baa64b2cc2a2b297fbb9f6ff3c3fb60a2a9c02ee1a6293",
         "width": 2240,
         "height": 1440
       },
@@ -49,9 +61,9 @@
       "id": "img-screenflow",
       "kind": "image",
       "source": {
-        "path": "img/04-screenflow.png",
+        "path": "assets/05-screenflow.png",
         "mediaType": "image/png",
-        "hash": "sha256:24c9d20a2ce0e2ed8f910bb3194cf46f32fe30b1922b20ad58b871f486d4dfff",
+        "hash": "sha256:45cf24d53f3ebfc63be5da0968c54064dfb49c880ea4b92ab58cdf4436e65686",
         "width": 2240,
         "height": 1440
       },
@@ -61,9 +73,9 @@
       "id": "img-hotspot",
       "kind": "image",
       "source": {
-        "path": "img/05-hotspot.png",
+        "path": "assets/06-hotspot.png",
         "mediaType": "image/png",
-        "hash": "sha256:571bffe918913f45b363adef06876e7983c74ea8ea56ef252df5063fb7163bdc",
+        "hash": "sha256:ec2a0cfce076b3cda6e9dbe8fba3ff8cfdc549a450eadc5db89b0df6b674a6d5",
         "width": 2240,
         "height": 1440
       },
@@ -73,9 +85,9 @@
       "id": "img-play",
       "kind": "image",
       "source": {
-        "path": "img/06-play.png",
+        "path": "assets/07-play.png",
         "mediaType": "image/png",
-        "hash": "sha256:9d60ba70ac3f475188467de9737935c3036bc602fab4cb9d673bb237d160decd",
+        "hash": "sha256:b70c8d3524d69f61526f33e555b220dd5156df9732e06d026d9df5cb692b56c8",
         "width": 2240,
         "height": 1440
       },
@@ -85,9 +97,9 @@
       "id": "img-map",
       "kind": "image",
       "source": {
-        "path": "img/07-map.png",
+        "path": "assets/08-map.png",
         "mediaType": "image/png",
-        "hash": "sha256:03eaa1e0f963ec50ff6208133df11be9fd975f3b01deab4266b3d58a478a2b57",
+        "hash": "sha256:2de265a9d821bc16ef845210ca81470e0f847866d7db802194028523dd1b454f",
         "width": 2240,
         "height": 1440
       },
@@ -97,9 +109,9 @@
       "id": "img-check",
       "kind": "image",
       "source": {
-        "path": "img/08-check.png",
+        "path": "assets/09-check.png",
         "mediaType": "image/png",
-        "hash": "sha256:fd39310b6df7912d817c9b10172fa9d12bfd3c5a5d744074eaff0c9bc0d68235",
+        "hash": "sha256:149d17a2a084aad9b1173ac4f2cab01820a04b74ea790511caa7611b42f633dc",
         "width": 2240,
         "height": 1440
       },
@@ -109,9 +121,9 @@
       "id": "img-assets",
       "kind": "image",
       "source": {
-        "path": "img/09-assets.png",
+        "path": "assets/10-assets.png",
         "mediaType": "image/png",
-        "hash": "sha256:c475322b4cd7230761d0a8bdb2990af0fdeb8af34dc85b74223fd21291eb219b",
+        "hash": "sha256:20248771d17b9a9726aa72efcf88472b3b1fd8a1296b6f215dec0b9fcf8d5d85",
         "width": 2240,
         "height": 1440
       },
@@ -121,9 +133,9 @@
       "id": "img-asset",
       "kind": "image",
       "source": {
-        "path": "img/10-asset.png",
+        "path": "assets/11-asset.png",
         "mediaType": "image/png",
-        "hash": "sha256:c8e7a303d7ffbf75193c6db14cf712128bcbd12d62419ce874496dce7ac29f79",
+        "hash": "sha256:f4defaa2d393aab8a41303c19ee3ae5cd2b3b3dfca032edad5874bfc581648b0",
         "width": 2240,
         "height": 1440
       },
@@ -133,9 +145,9 @@
       "id": "img-root",
       "kind": "image",
       "source": {
-        "path": "img/11-root.png",
+        "path": "assets/12-root.png",
         "mediaType": "image/png",
-        "hash": "sha256:c13782bc5a91da91463944e1842703b7c4dd604589693072caa3829486725a5c",
+        "hash": "sha256:7725261da08ea99dd58675731f3d18319d7143623b24ed0ddcb71a57d05824be",
         "width": 2240,
         "height": 1440
       },
@@ -145,9 +157,9 @@
       "id": "img-procedure",
       "kind": "image",
       "source": {
-        "path": "img/12-procedure.png",
+        "path": "assets/13-procedure.png",
         "mediaType": "image/png",
-        "hash": "sha256:2aa872c203e4eabfad796cb4f5859038af59359f65c146d2e191054e5a86dafc",
+        "hash": "sha256:237afe57a8508729c1805a81190d9dda8d128511cbd6318e2236df350ac69062",
         "width": 2240,
         "height": 1440
       },
@@ -157,9 +169,9 @@
       "id": "img-troubleshooting",
       "kind": "image",
       "source": {
-        "path": "img/13-troubleshooting.png",
+        "path": "assets/14-troubleshooting.png",
         "mediaType": "image/png",
-        "hash": "sha256:753dceb8202d8d262c5922617d2fd70f930a033cdb7ebba67546f3bbe4beb438",
+        "hash": "sha256:0215e2214e1cc3e47adf67bf9158105ad514d4eb5dd94707b3e97717fd5ca9ac",
         "width": 2240,
         "height": 1440
       },
@@ -169,9 +181,9 @@
       "id": "img-bigmap",
       "kind": "image",
       "source": {
-        "path": "img/14-bigmap.png",
+        "path": "assets/15-bigmap.png",
         "mediaType": "image/png",
-        "hash": "sha256:f0ea0da21fc71466c788e2a33f05af56a3052e5bf87e563fe2a6c59ce03e3f69",
+        "hash": "sha256:611b29bd59876d62914dc33e25a21f87a6fc7bb08ce1d2b411f142276dc8a76f",
         "width": 2240,
         "height": 1440
       },
@@ -242,13 +254,91 @@
             },
             {
               "id": "hs-start-4",
-              "label": "保存（開いたファイルに上書き、または保存先を選ぶ）",
+              "label": "ファイル（新規作成・開く・保存のメニュー）",
               "shape": "rect",
               "coords": [
-                546,
-                14,
-                636,
-                72
+                19,
+                16,
+                180,
+                73
+              ],
+              "transition": {
+                "to": "scr-filemenu"
+              },
+              "capture": {
+                "selector": "[data-testid=\"file-menu\"]"
+              }
+            }
+          ],
+          "description": "上の帯に「ファイル」のメニュー、左に構成ツリー、中央にステージ、右にインスペクター、下に引き出し（素材・遷移の地図・検査）があります。まずは「ヘルプ」の中の例を開くか、「Topic を追加」で作り始めます。",
+          "capture": {
+            "url": "http://127.0.0.1:4174/",
+            "viewport": {
+              "width": 1120,
+              "height": 720
+            },
+            "capturedAt": "2026-11-14T15:01:49.433Z"
+          }
+        },
+        {
+          "id": "scr-filemenu",
+          "caption": "「ファイル」のメニュー",
+          "assetRef": "img-filemenu",
+          "hotspots": [
+            {
+              "id": "hs-filemenu-1",
+              "label": "新規作成（空のマニュアルを作る）",
+              "shape": "rect",
+              "coords": [
+                28,
+                83,
+                407,
+                156
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"new\"]"
+              }
+            },
+            {
+              "id": "hs-filemenu-2",
+              "label": "開く（保存した zip か、manual の JSON を選ぶ）",
+              "shape": "rect",
+              "coords": [
+                28,
+                148,
+                407,
+                222
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"open\"]"
+              }
+            },
+            {
+              "id": "hs-filemenu-3",
+              "label": "フォルダーを開く（manual.json と画像の入ったフォルダーを読み込む。フォルダーには書き戻さない）",
+              "shape": "rect",
+              "coords": [
+                28,
+                214,
+                407,
+                288
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"open-folder\"]"
+              }
+            },
+            {
+              "id": "hs-filemenu-4",
+              "label": "保存（開いた zip に上書き、または保存先を選ぶ。選べないブラウザーではダウンロード）",
+              "shape": "rect",
+              "coords": [
+                28,
+                297,
+                407,
+                371
               ],
               "action": "read",
               "capture": {
@@ -256,29 +346,46 @@
               }
             },
             {
-              "id": "hs-start-5",
-              "label": "ダウンロード（ブラウザーの保存先に JSON を落とす）",
+              "id": "hs-filemenu-5",
+              "label": "名前を付けて保存（保存先を選び直す）",
               "shape": "rect",
               "coords": [
-                881,
-                14,
-                1073,
-                72
+                28,
+                363,
+                407,
+                437
               ],
               "action": "read",
               "capture": {
-                "selector": "[data-testid=\"download\"]"
+                "selector": "[data-testid=\"save-as\"]"
+              }
+            },
+            {
+              "id": "hs-filemenu-6",
+              "label": "メニューを閉じる",
+              "shape": "rect",
+              "coords": [
+                19,
+                16,
+                180,
+                73
+              ],
+              "transition": {
+                "to": "scr-start"
+              },
+              "capture": {
+                "selector": "[data-testid=\"file-menu\"]"
               }
             }
           ],
-          "description": "上の帯にファイルの操作、左に構成ツリー、中央にステージ、右にインスペクター、下に引き出し（素材・遷移の地図・検査）があります。まずは「ヘルプ」の中の例を開くか、「Topic を追加」で作り始めます。",
+          "description": "1 冊のマニュアルは、manual.json と画像（assets/）を 1 つの zip にまとめて保存します。編集中の内容はブラウザーの中の作業場所に置かれ、利用者のファイルは「保存」を選ぶまで変わりません。",
           "capture": {
             "url": "http://127.0.0.1:4174/",
             "viewport": {
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:57:56.348Z"
+            "capturedAt": "2026-11-14T15:01:50.053Z"
           }
         },
         {
@@ -326,7 +433,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:57:56.983Z"
+            "capturedAt": "2026-11-14T15:01:50.659Z"
           }
         },
         {
@@ -410,7 +517,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:57:57.689Z"
+            "capturedAt": "2026-11-14T15:01:51.348Z"
           }
         },
         {
@@ -455,9 +562,9 @@
               "label": "体験に切り替える",
               "shape": "rect",
               "coords": [
-                1454,
+                1818,
                 10,
-                1567,
+                1931,
                 76
               ],
               "transition": {
@@ -524,7 +631,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:57:58.412Z"
+            "capturedAt": "2026-11-14T15:01:51.981Z"
           }
         },
         {
@@ -567,9 +674,9 @@
               "label": "体験に切り替える",
               "shape": "rect",
               "coords": [
-                1454,
+                1818,
                 10,
-                1567,
+                1931,
                 76
               ],
               "transition": {
@@ -610,7 +717,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:57:59.002Z"
+            "capturedAt": "2026-11-14T15:01:52.576Z"
           }
         },
         {
@@ -623,9 +730,9 @@
               "label": "編集に戻る（いま見ている画面が選ばれる）",
               "shape": "rect",
               "coords": [
-                1349,
+                1713,
                 10,
-                1462,
+                1826,
                 76
               ],
               "transition": {
@@ -658,7 +765,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:57:59.528Z"
+            "capturedAt": "2026-11-14T15:01:53.077Z"
           }
         },
         {
@@ -723,7 +830,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:58:00.104Z"
+            "capturedAt": "2026-11-14T15:01:53.663Z"
           }
         },
         {
@@ -773,7 +880,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:58:00.600Z"
+            "capturedAt": "2026-11-14T15:01:54.136Z"
           }
         },
         {
@@ -838,7 +945,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:58:01.162Z"
+            "capturedAt": "2026-11-14T15:01:54.715Z"
           }
         },
         {
@@ -901,7 +1008,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:58:01.702Z"
+            "capturedAt": "2026-11-14T15:01:55.270Z"
           }
         },
         {
@@ -949,7 +1056,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:58:02.240Z"
+            "capturedAt": "2026-11-14T15:01:55.802Z"
           }
         },
         {
@@ -1029,7 +1136,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:58:02.870Z"
+            "capturedAt": "2026-11-14T15:01:56.447Z"
           }
         },
         {
@@ -1092,7 +1199,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-13T23:58:03.411Z"
+            "capturedAt": "2026-11-14T15:01:56.977Z"
           }
         }
       ]
@@ -1135,7 +1242,7 @@
           "admonitions": [
             {
               "level": "note",
-              "text": "画像は JSON と別のファイルとして持ちます。JSON には source.path のファイル名と幅・高さが入ります。"
+              "text": "画像は、ブラウザーの中の作業場所の assets/ にコピーされます。JSON には source.path（assets/ からの相対パス）と幅・高さが入ります。"
             }
           ]
         },
@@ -1193,12 +1300,12 @@
         },
         {
           "id": "st-save",
-          "text": "「保存」で JSON を書き出す",
+          "text": "「ファイル」のメニューの「保存」で、zip に書き出す",
           "expected": "検査にエラーがあれば通知が出る（保存は止まらない）",
           "admonitions": [
             {
               "level": "note",
-              "text": "画像を JSON に埋め込みたいときは、上の帯の「画像を JSON に埋め込む」にチェックを入れてから保存します。"
+              "text": "zip には manual.json と、マニュアルが使っている画像が入ります。この zip を「開く」で選ぶと、画像ごと元に戻ります。"
             }
           ]
         }
@@ -1208,7 +1315,7 @@
       "id": "topic-files",
       "kind": "description",
       "title": "保存されるもの",
-      "summary": "JSON と画像の持ち方、下書き、検査。",
+      "summary": "保存する zip の中身、画像の持ち方、前回の続き、検査。",
       "blocks": [
         {
           "kind": "section",
@@ -1218,12 +1325,12 @@
             {
               "kind": "para",
               "id": "b-json-1",
-              "text": "保存される JSON は experiential-manual-model の Manual です。1 冊のマニュアルに Topic（画面の流れ・手順・説明・困ったとき）が並び、画像は assets に、適用範囲は scopes に入ります。"
+              "text": "「保存」で書き出すのは、manual.json と画像のフォルダー assets/ を 1 つにまとめた zip（名前の末尾は .manual.zip）です。manual.json は experiential-manual-model の Manual です。1 冊のマニュアルに Topic（画面の流れ・手順・説明・困ったとき）が並び、画像は assets に、適用範囲は scopes に入ります。"
             },
             {
               "kind": "para",
               "id": "b-json-2",
-              "text": "2021 年の作品の JSON（purchaseTypes）も開けます。開くと新しい形に変換され、ファイル名の末尾が .manual.json になります。"
+              "text": "2021 年の作品の JSON（purchaseTypes）も開けます。開くと新しい形に変換され、保存すると zip になります。"
             },
             {
               "kind": "figure",
@@ -1242,9 +1349,9 @@
               "kind": "list",
               "id": "b-img-1",
               "items": [
-                "既定では、画像は JSON と別のファイルです。JSON の source.path にファイル名、width / height に大きさが入ります",
-                "「画像を JSON に埋め込む」にチェックを入れて保存すると、source.data に data URL が入り、JSON だけで持ち運べます",
-                "開いたときに画像が見つからなければ、下の「素材」の「画像をまとめて割り当てる」でファイルを選びます（ファイル名で照合します）"
+                "取り込んだ画像は assets/ に入ります。manual.json の source.path に assets/ からの相対パス、width / height に大きさが入ります",
+                "保存する zip に入るのは、マニュアルが使っている画像だけです。素材の一覧から外した画像は入りません",
+                "manual の JSON だけを開いたときは画像がありません。下の「素材」の「画像をまとめて割り当てる」でファイルを選びます（ファイル名で照合します）。manual.json と画像の入ったフォルダーは「フォルダーを開く」で読み込めます"
               ]
             },
             {
@@ -1369,7 +1476,7 @@
         },
         {
           "id": "r-image",
-          "text": "下の「素材」の引き出しを開き、「画像をまとめて割り当てる」で画像ファイルを選びます。ファイル名が JSON の source.path と同じものが割り当てられます。1 つずつ割り当てるときは、素材を選んで「画像を割り当てる」です。",
+          "text": "下の「素材」の引き出しを開き、「画像をまとめて割り当てる」で画像ファイルを選びます。ファイル名が manual.json の source.path のファイル名と同じものが割り当てられます。1 つずつ割り当てるときは、素材を選んで「画像を割り当てる」です。",
           "assetRefs": [
             "img-assets"
           ]

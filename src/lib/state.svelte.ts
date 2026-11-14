@@ -16,14 +16,12 @@ import { OpError, addAsset, addScreen, addTopic, newManual, scaleHotspots, updat
 import {
   canUseFilePicker,
   downloadBlob,
-  downloadText,
   embeddedData,
   fileName,
-  fileToDataUrl,
   isDataUrl,
   measureImage,
   parseManualText,
-  pickJsonFile,
+  pickOpenFile,
   pickSaveHandle,
   serializeManual,
   sha256Of,
@@ -42,6 +40,8 @@ import {
   type Session,
   type WorkspaceStore
 } from './workspace';
+import { buildBundle, bundleNameFrom, splitBundle, suggestedBundleName } from './bundle';
+import { looksLikeZip, unzip } from './zip';
 import { t } from './i18n';
 
 /** 中央のステージの状態。edit は作図・選択、play は体験（player の ScreenFlow） */
@@ -72,7 +72,8 @@ const HISTORY_LIMIT = 100;
 
 class EditorState {
   manual = $state.raw<Manual>(newManual(crypto.randomUUID(), t('manual.untitled')));
-  fileName = $state('manual.json');
+  /** 保存先の zip の名前。まだ保存も開いてもいなければ空（そのときは題名から作った案を出す） */
+  fileName = $state('');
   dirty = $state(false);
   mode = $state<Mode>('edit');
   drawer = $state<Drawer | undefined>(undefined);
@@ -81,8 +82,6 @@ class EditorState {
   focusLabel = $state(0);
   selection = $state<Selection>({});
   notices = $state.raw<Notice[]>([]);
-  /** 保存時に画像を data URL にして JSON に埋め込むか */
-  embedImages = $state(false);
   canPick = $state(false);
   /** 作業場所が再読み込みの後も残るか。false のときは、閉じる前に確認を出す */
   persistent = $state(false);
@@ -94,11 +93,16 @@ class EditorState {
 
   validation = $derived(validateManual(this.manual));
   topic = $derived(this.manual.topics.find((x) => x.id === this.selection.topicId));
+  /** 上の帯に出すファイル名（保存先が決まっていなければ、題名から作った案） */
+  displayName = $derived(this.fileName || suggestedBundleName(this.manual.title));
 
   private undoStack: Manual[] = [];
   private redoStack: Manual[] = [];
   private lastCoalesce: string | undefined;
+  /** 上書き保存する先（File System Access API で開いた・保存した zip）。再読み込みすると失う */
   private handle: FileHandle | undefined;
+  /** handle のファイルを、最後に読んだ・書いた時点の更新時刻。保存の前に、外で書き換えられていないかを確かめる */
+  private handleStamp: number | undefined;
   private noticeSeq = 0;
   private blobUrls = new Set<string>();
   /** 作業場所。init() で OPFS に差し替える（使えなければメモリーのまま） */
@@ -189,6 +193,7 @@ class EditorState {
       this.bookId = session.bookId;
       this.manual = manual;
       this.fileName = session.fileName;
+      // 上書きの先（handle）は再読み込みで失うので、保存するときは保存先を選び直す
       this.dirty = session.dirty;
       this.undoStack = [];
       this.redoStack = [];
@@ -532,18 +537,28 @@ class EditorState {
 
   // ---- 開く・保存する --------------------------------------------------------
 
-  private async load(text: string, name: string, handle?: FileHandle, baseUrl?: string): Promise<void> {
+  /**
+   * Manual の JSON を読み込んで、新しい 1 冊として開く。
+   * files は、manual.json からの相対パスにした画像など（zip・フォルダーから開いたとき）。先に作業場所へコピーする。
+   */
+  private async load(
+    text: string,
+    name: string,
+    from: { handle?: FileHandle; baseUrl?: string; files?: { path: string; data: Blob }[] } = {}
+  ): Promise<void> {
     const parsed = parseManualText(text, {
       newId: () => crypto.randomUUID(),
-      title: name.replace(/\.json$/i, '')
+      title: name.replace(/\.(manual\.zip|manual\.json|zip|json)$/i, '')
     });
     this.startNewBook();
     this.manual = parsed.manual;
     this.undoStack = [];
     this.redoStack = [];
     this.lastCoalesce = undefined;
-    this.handle = handle;
-    this.fileName = parsed.kind === 'legacy' ? name.replace(/\.json$/i, '') + '.manual.json' : name;
+    this.handle = from.handle;
+    this.handleStamp = undefined;
+    this.fileName = bundleNameFrom(name);
+    // 開いた直後は、利用者のファイルと同じ中身。2021 年の JSON だけは変換しているので「未保存」にする
     this.dirty = parsed.kind === 'legacy';
     this.notices = [];
     if (parsed.kind === 'legacy') {
@@ -553,25 +568,59 @@ class EditorState {
     this.selectTopic(this.manual.topics[0]?.id);
     this.mode = 'edit';
     void this.persistManual();
-    await this.resolveImages(this.manual, baseUrl);
+    for (const f of from.files ?? []) await this.storeImage(f.path, f.data);
+    await this.resolveImages(this.manual, from.baseUrl);
     const missing = (this.manual.assets ?? []).filter((a) => a.kind === 'image' && !this.images.has(a.id)).length;
     if (missing > 0) this.notify('warn', t('open.missingImages', { n: missing }));
   }
 
-  /** <input type="file"> で選ばれたファイルを開く */
+  /** zip か JSON のファイルを開く。zip なら中の manual.json と画像を、JSON なら JSON だけを読む */
+  private async openAny(file: File, handle?: FileHandle): Promise<void> {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    if (!looksLikeZip(bytes)) {
+      await this.load(new TextDecoder().decode(bytes), file.name);
+      return;
+    }
+    const parts = splitBundle(await unzip(bytes));
+    if (!parts) throw new Error(t('open.noManual'));
+    await this.load(new TextDecoder().decode(parts.manual.data), file.name, {
+      handle,
+      files: parts.files.map((f) => ({ path: f.path, data: new Blob([f.data as BlobPart]) }))
+    });
+    if (handle) this.handleStamp = file.lastModified;
+  }
+
+  /** <input type="file"> で選ばれたファイル（zip か JSON）を開く */
   async openFile(file: File): Promise<void> {
     try {
-      await this.load(await file.text(), file.name);
+      await this.openAny(file);
     } catch (e) {
       this.notify('error', e instanceof Error ? e.message : String(e));
     }
   }
 
-  /** File System Access API で開く（上書き保存ができる） */
+  /** File System Access API で開く（zip なら、保存のときに同じファイルへ上書きできる） */
   async openWithPicker(): Promise<void> {
     try {
-      const r = await pickJsonFile();
-      if (r) await this.load(r.text, r.name, r.handle);
+      const r = await pickOpenFile();
+      if (r) await this.openAny(r.file, r.file.name.toLowerCase().endsWith('.zip') ? r.handle : undefined);
+    } catch (e) {
+      this.notify('error', e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  /**
+   * フォルダーを開く（<input type="file" webkitdirectory> で選ばれたファイルの一覧）。
+   * manual.json と、そこから相対パスで指す画像を作業場所にコピーする。読むだけで、フォルダーには書き戻さない。
+   */
+  async openFolder(files: File[]): Promise<void> {
+    try {
+      const entries = files.map((f) => ({ path: (f as File & { webkitRelativePath?: string }).webkitRelativePath || f.name, data: f }));
+      const parts = splitBundle(entries);
+      if (!parts) throw new Error(t('open.noManual'));
+      const folder = parts.manual.path.split('/').slice(-2, -1)[0];
+      const base = parts.manual.path.split('/').pop() ?? 'manual.json';
+      await this.load(await parts.manual.data.text(), base === 'manual.json' && folder ? folder : base, { files: parts.files });
     } catch (e) {
       this.notify('error', e instanceof Error ? e.message : String(e));
     }
@@ -587,7 +636,7 @@ class EditorState {
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      await this.load(await res.text(), name, undefined, url);
+      await this.load(await res.text(), name, { baseUrl: url });
       if (note) this.notify('info', note);
     } catch (e) {
       this.notify('error', t('open.exampleFailed', { reason: e instanceof Error ? e.message : String(e) }));
@@ -601,7 +650,8 @@ class EditorState {
     this.redoStack = [];
     this.lastCoalesce = undefined;
     this.handle = undefined;
-    this.fileName = 'manual.json';
+    this.handleStamp = undefined;
+    this.fileName = '';
     this.dirty = false;
     this.notices = [];
     for (const url of this.blobUrls) URL.revokeObjectURL(url);
@@ -613,53 +663,56 @@ class EditorState {
     void this.persistManual();
   }
 
-  private async serialize(): Promise<string> {
-    if (!this.embedImages) return serializeManual(this.manual);
-    const embed: Record<string, string> = {};
-    for (const a of this.manual.assets ?? []) {
-      const url = this.images.get(a.id);
-      if (!url) continue;
-      if (isDataUrl(url)) embed[a.id] = url;
-      else {
-        try {
-          embed[a.id] = await fileToDataUrl(await (await fetch(url)).blob());
-        } catch {
-          this.notify('warn', t('save.embedFailed', { id: a.id }));
-        }
-      }
-    }
-    return serializeManual(this.manual, embed);
+  /**
+   * いまの 1 冊を zip にする。入れるのは manual.json と、Manual が指している画像（作業場所にあるもの）。
+   * 画像が作業場所に無い素材（JSON 単体を開いて、まだ割り当てていないもの）は入れず、件数を知らせる。
+   */
+  private async bundle(): Promise<Blob> {
+    await this.writes;
+    const bookId = this.bookId;
+    const { zip, missing } = await buildBundle(this.manual, serializeManual(this.manual), async (path) => {
+      const blob = await this.ws.readFile(bookId, path);
+      return blob ? new Uint8Array(await blob.arrayBuffer()) : undefined;
+    });
+    if (missing.length > 0) this.notify('warn', t('save.missingImages', { n: missing.length }));
+    return new Blob([zip as BlobPart], { type: 'application/zip' });
   }
 
-  /** 保存のたびに検査の結果を見て、エラーがあれば知らせる（保存は止めない。設計書 E-7） */
-  private reportIssuesOnSave(): void {
+  /** 保存した後の始末（検査の結果を知らせる。エラーがあっても保存は止めない。設計書 E-7） */
+  private afterSave(name: string, downloaded: boolean): void {
+    this.fileName = name;
+    this.dirty = false;
+    this.remember();
+    this.notify('info', t(downloaded ? 'save.doneDownload' : 'save.doneFile', { name }));
     const n = this.validation.errors.length;
     if (n > 0) this.notify('warn', t('save.withErrors', { n }));
   }
 
-  /** ダウンロードとして保存する */
-  async saveDownload(): Promise<void> {
-    const text = await this.serialize();
-    downloadText(this.fileName, text);
-    this.dirty = false;
-    this.remember();
-    this.notify('info', this.embedImages ? t('save.doneEmbedded') : t('save.doneSeparate'));
-    this.reportIssuesOnSave();
-  }
-
-  /** File System Access API で保存する。開いたファイルがあれば上書き、無ければ保存先を選ぶ */
-  async saveWithPicker(forcePick = false): Promise<void> {
+  /**
+   * 保存する。1 冊を zip（manual.json ＋ 画像）にして書き出す。
+   * File System Access API があれば、開いた・前に保存した zip に上書きし、無ければ保存先を選ぶ（saveAs なら必ず選ぶ）。
+   * API が無いブラウザーでは、ダウンロードになる。
+   */
+  async save(saveAs = false): Promise<void> {
     try {
-      let handle = forcePick ? undefined : this.handle;
-      handle ??= await pickSaveHandle(this.fileName);
+      const name = this.displayName;
+      if (!this.canPick) {
+        downloadBlob(name, await this.bundle());
+        this.afterSave(name, true);
+        return;
+      }
+      let handle = saveAs ? undefined : this.handle;
+      if (handle && this.handleStamp !== undefined) {
+        // 開いた後に、ほかの道具やクラウドの同期でファイルが書き換えられていたら、上書きの前に尋ねる
+        const now = (await handle.getFile()).lastModified;
+        if (now !== this.handleStamp && !confirm(t('save.confirmOverwrite', { name: handle.name }))) return;
+      }
+      handle ??= await pickSaveHandle(name);
       if (!handle) return;
-      await writeToHandle(handle, await this.serialize());
+      await writeToHandle(handle, await this.bundle());
       this.handle = handle;
-      this.fileName = handle.name;
-      this.dirty = false;
-      this.remember();
-      this.notify('info', t('save.doneFile', { name: handle.name }));
-      this.reportIssuesOnSave();
+      this.handleStamp = (await handle.getFile()).lastModified;
+      this.afterSave(handle.name, false);
     } catch (e) {
       this.notify('error', e instanceof Error ? e.message : String(e));
     }

@@ -4,7 +4,7 @@
  * 使い方: npm run build && node scripts/make-help.mjs
  *   - build/ を vite preview で配り、Playwright（Chromium）で editor を操作して各画面を撮る
  *   - 画面の上のボタンの位置（data-testid の boundingBox）をそのまま Hotspot.coords に書く
- *   - static/help/help.manual.json と static/help/img/*.png を書き出す
+ *   - static/help/help.manual.json と static/help/assets/*.png を書き出す（1 冊の構成は設計書 13.2 節）
  *   - UI を変えたら、もう一度これを実行すれば画面と座標が追いつく
  *
  * 出す Topic は 4 種を 1 つずつ: 画面の流れ（画面の見かた）、手順（描いてつなぐ）、説明（保存されるもの）、困ったとき。
@@ -19,7 +19,7 @@ import { validateManual } from '@shuji-bonji/experiential-manual-model';
 const PORT = 4174;
 const BASE = `http://127.0.0.1:${PORT}`;
 const OUT = new URL('../static/help/', import.meta.url).pathname;
-const IMG = `${OUT}img/`;
+const IMG = `${OUT}assets/`;
 // 1400 px で撮ると player の中で縮んで文字が読めないので、editor の 3 列が収まる最小に近い幅で撮る
 const VIEWPORT = { width: 1120, height: 720 };
 const SCALE = 2; // 高精細で撮る。座標は画像の画素（CSS px × SCALE）
@@ -75,7 +75,7 @@ async function capture({ id, caption, description, admonitions, hotspots }) {
     id: assetId,
     kind: 'image',
     source: {
-      path: `img/${file}`,
+      path: `assets/${file}`,
       mediaType: 'image/png',
       hash: 'sha256:' + createHash('sha256').update(buf).digest('hex'),
       width: VIEWPORT.width * SCALE,
@@ -121,21 +121,39 @@ process.on('uncaughtException', async (e) => {
   process.exit(1);
 });
 await page.goto(BASE + '/');
+await page.getByTestId('file-menu').click();
 await page.getByTestId('new').click();
 await page.waitForTimeout(300);
 await capture({
   id: 'start',
   caption: '起動した直後',
   description:
-    '上の帯にファイルの操作、左に構成ツリー、中央にステージ、右にインスペクター、下に引き出し（素材・遷移の地図・検査）があります。まずは「ヘルプ」の中の例を開くか、「Topic を追加」で作り始めます。',
+    '上の帯に「ファイル」のメニュー、左に構成ツリー、中央にステージ、右にインスペクター、下に引き出し（素材・遷移の地図・検査）があります。まずは「ヘルプ」の中の例を開くか、「Topic を追加」で作り始めます。',
   hotspots: [
     { ...tid('help'), label: 'ヘルプ（このマニュアル。例もここから開く）', to: 'help' },
     { ...tid('add-topic'), label: 'Topic を追加（種類は左のプルダウンで選ぶ）', action: 'read' },
     { ...tid('tree-root'), label: 'マニュアルの題名・版・適用範囲を編集する', to: 'root' },
-    { ...tid('save'), label: '保存（開いたファイルに上書き、または保存先を選ぶ）', action: 'read' },
-    { ...tid('download'), label: 'ダウンロード（ブラウザーの保存先に JSON を落とす）', action: 'read' }
+    { ...tid('file-menu'), label: 'ファイル（新規作成・開く・保存のメニュー）', to: 'filemenu' }
   ]
 });
+
+await page.getByTestId('file-menu').click();
+await page.waitForSelector('[data-testid="file-menu-list"]');
+await capture({
+  id: 'filemenu',
+  caption: '「ファイル」のメニュー',
+  description:
+    '1 冊のマニュアルは、manual.json と画像（assets/）を 1 つの zip にまとめて保存します。編集中の内容はブラウザーの中の作業場所に置かれ、利用者のファイルは「保存」を選ぶまで変わりません。',
+  hotspots: [
+    { ...tid('new'), label: '新規作成（空のマニュアルを作る）', action: 'read' },
+    { ...tid('open'), label: '開く（保存した zip か、manual の JSON を選ぶ）', action: 'read' },
+    { ...tid('open-folder'), label: 'フォルダーを開く（manual.json と画像の入ったフォルダーを読み込む。フォルダーには書き戻さない）', action: 'read' },
+    { ...tid('save'), label: '保存（開いた zip に上書き、または保存先を選ぶ。選べないブラウザーではダウンロード）', action: 'read' },
+    { ...tid('save-as'), label: '名前を付けて保存（保存先を選び直す）', action: 'read' },
+    { ...tid('file-menu'), label: 'メニューを閉じる', to: 'start' }
+  ]
+});
+await page.keyboard.press('Escape');
 
 await page.getByTestId('help').click();
 await page.waitForSelector('[data-testid="help-dialog"] .em-stage');
@@ -370,7 +388,7 @@ const manual = {
             { id: 'st-images-2', text: 'または、画像ファイルをステージにドロップする' },
             { id: 'st-images-3', text: 'または、スクリーンショットを撮ってそのまま Ctrl/⌘+V で貼り付ける' }
           ],
-          admonitions: [{ level: 'note', text: '画像は JSON と別のファイルとして持ちます。JSON には source.path のファイル名と幅・高さが入ります。' }]
+          admonitions: [{ level: 'note', text: '画像は、ブラウザーの中の作業場所の assets/ にコピーされます。JSON には source.path（assets/ からの相対パス）と幅・高さが入ります。' }]
         },
         {
           id: 'st-draw',
@@ -401,9 +419,9 @@ const manual = {
         },
         {
           id: 'st-save',
-          text: '「保存」で JSON を書き出す',
+          text: '「ファイル」のメニューの「保存」で、zip に書き出す',
           expected: '検査にエラーがあれば通知が出る（保存は止まらない）',
-          admonitions: [{ level: 'note', text: '画像を JSON に埋め込みたいときは、上の帯の「画像を JSON に埋め込む」にチェックを入れてから保存します。' }]
+          admonitions: [{ level: 'note', text: 'zip には manual.json と、マニュアルが使っている画像が入ります。この zip を「開く」で選ぶと、画像ごと元に戻ります。' }]
         }
       ]
     },
@@ -411,18 +429,18 @@ const manual = {
       id: 'topic-files',
       kind: 'description',
       title: '保存されるもの',
-      summary: 'JSON と画像の持ち方、下書き、検査。',
+      summary: '保存する zip の中身、画像の持ち方、前回の続き、検査。',
       blocks: [
         { kind: 'section', id: 'b-json', title: 'JSON の形', children: [
-          { kind: 'para', id: 'b-json-1', text: '保存される JSON は experiential-manual-model の Manual です。1 冊のマニュアルに Topic（画面の流れ・手順・説明・困ったとき）が並び、画像は assets に、適用範囲は scopes に入ります。' },
-          { kind: 'para', id: 'b-json-2', text: '2021 年の作品の JSON（purchaseTypes）も開けます。開くと新しい形に変換され、ファイル名の末尾が .manual.json になります。' },
+          { kind: 'para', id: 'b-json-1', text: '「保存」で書き出すのは、manual.json と画像のフォルダー assets/ を 1 つにまとめた zip（名前の末尾は .manual.zip）です。manual.json は experiential-manual-model の Manual です。1 冊のマニュアルに Topic（画面の流れ・手順・説明・困ったとき）が並び、画像は assets に、適用範囲は scopes に入ります。' },
+          { kind: 'para', id: 'b-json-2', text: '2021 年の作品の JSON（purchaseTypes）も開けます。開くと新しい形に変換され、保存すると zip になります。' },
           { kind: 'figure', id: 'b-json-3', assetRef: img('bigmap'), title: '2021 年の作品（79 画面・212 ボタン）を開き、遷移の地図を見たところ' }
         ] },
         { kind: 'section', id: 'b-img', title: '画像の持ち方', children: [
           { kind: 'list', id: 'b-img-1', items: [
-            '既定では、画像は JSON と別のファイルです。JSON の source.path にファイル名、width / height に大きさが入ります',
-            '「画像を JSON に埋め込む」にチェックを入れて保存すると、source.data に data URL が入り、JSON だけで持ち運べます',
-            '開いたときに画像が見つからなければ、下の「素材」の「画像をまとめて割り当てる」でファイルを選びます（ファイル名で照合します）'
+            '取り込んだ画像は assets/ に入ります。manual.json の source.path に assets/ からの相対パス、width / height に大きさが入ります',
+            '保存する zip に入るのは、マニュアルが使っている画像だけです。素材の一覧から外した画像は入りません',
+            'manual の JSON だけを開いたときは画像がありません。下の「素材」の「画像をまとめて割り当てる」でファイルを選びます（ファイル名で照合します）。manual.json と画像の入ったフォルダーは「フォルダーを開く」で読み込めます'
           ] },
           { kind: 'figure', id: 'b-img-2', assetRef: img('assets'), title: '素材の引き出し' }
         ] },
@@ -457,7 +475,7 @@ const manual = {
           { text: 'はい', next: { to: 'r-check' } },
           { text: 'いいえ', next: { to: 'r-other' } }
         ] },
-        { id: 'r-image', text: '下の「素材」の引き出しを開き、「画像をまとめて割り当てる」で画像ファイルを選びます。ファイル名が JSON の source.path と同じものが割り当てられます。1 つずつ割り当てるときは、素材を選んで「画像を割り当てる」です。', assetRefs: [img('assets')] },
+        { id: 'r-image', text: '下の「素材」の引き出しを開き、「画像をまとめて割り当てる」で画像ファイルを選びます。ファイル名が manual.json の source.path のファイル名と同じものが割り当てられます。1 つずつ割り当てるときは、素材を選んで「画像を割り当てる」です。', assetRefs: [img('assets')] },
         { id: 'r-play', text: 'そのホットスポットに遷移先が無いか、操作が「読む」になっています。下の「遷移の地図」の「遷移先なし」の数を確かめ、ノードを押して画面を選び、ホットスポットを選んでインスペクターで遷移先を選びます。', assetRefs: [img('map'), img('hotspot')] },
         { id: 'r-check', text: '検査の行を押すと該当の場所へ移ります。画面を消して遷移先が無くなったときは「参照が切れた遷移をすべて外す」で一度に外せます。素材の参照切れは、素材を足して画面の「画像を差し替える」で付け直します。', assetRefs: [img('check')] },
         { id: 'r-other', text: '上の帯の「ヘルプ」から、このマニュアルの「画面の見かた」を開いて、画面ごとの説明を読んでください。' }

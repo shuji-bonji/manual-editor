@@ -30,7 +30,7 @@ To build for GitHub Pages, set the repository name: `BASE_PATH=/manual-editor np
 
 ## What it does
 
-- **Open / save**: opens a manual-model JSON and saves it (File System Access API where available, otherwise file input and download). A 2021 JSON is converted with `fromLegacyJson`, and its warnings are shown.
+- **Open / save** (the "File" menu in the top bar): a manual is saved as one zip (`<title>.manual.zip`) that holds `manual.json` and the image folder `assets/`; opening that zip restores the manual with its images. Where the File System Access API is available, saving overwrites the zip you opened or saved before (on a local disk or in a synced folder). Elsewhere it uses a file input and a download. A folder that holds `manual.json` and images can be loaded with "Open folder" (read only; nothing is written back to the folder). A manual JSON on its own and a 2021 JSON (converted with `fromLegacyJson`, with its warnings shown) can be opened too, as can a zip re-created by the OS (one top-level folder, deflate compression).
 - **Topics**: add, rename, reorder, delete, and choose the kind (`description` / `procedure` / `screenFlow` / `troubleshooting`).
 - **Screen editing** (`screenFlow`): three columns, with the structure tree on the left, the stage of the viewer components (player) in the middle and the inspector on the right. Add screenshots and drag on the image to draw rectangle, circle or polygon hotspots. A selected hotspot can be moved by dragging, reshaped with its handles and nudged with the arrow keys (1 px, 10 px with Shift). Set the label, the action (press / input / read), the target (a screen or a step; "add a new screen as the target" is available) and the condition. When a replaced image has a different size, the editor asks whether to scale the coordinates. Coordinates are stored in pixels of the original image.
 - **Procedure editing** (`procedure`): the same list as the viewer's procedure view, with the text itself as the input. Enter adds the next step, Tab / Shift+Tab change the level, Backspace on an empty step removes it, and Alt+↑↓ reorders. The expected result and warning / caution / note are written inside the step row, and figures are attached by dragging cards from the "Assets" drawer onto a step. The target hotspot, branches (condition and destination) and scopes are set in the inspector.
@@ -47,15 +47,17 @@ To build for GitHub Pages, set the repository name: `BASE_PATH=/manual-editor np
 ## What it does not do
 
 > [!IMPORTANT]
-> The app does not export S1000D. Pass the saved JSON to the Skill `experience-to-s1000d` or to the `convert_manual` tool of writer-mcp.
+> The app does not export S1000D. Pass the `manual.json` inside the saved zip to the Skill `experience-to-s1000d` or to the `convert_manual` tool of writer-mcp.
 
 - Splitting pasted Markdown into blocks, merged table cells, and nesting blocks more than one level (a section inside a section).
 - Reordering the tree by dragging (use the ↑↓ buttons), and saving node positions in the transition map (the layout is computed every time).
+- Exporting a viewer package for distribution (such as a single HTML file). This comes in the next version.
+- Reading ZIP64 (4 GB or larger) and encrypted zip files.
 - AI assistance, login, sharing and server-side storage.
 
 ## How images are stored
 
-Images you add are copied into `assets/` in the browser workspace. `Asset.source.path` holds the path relative to `manual.json` (`assets/01-start.png`). The JSON you save does not contain image data by default (saving the JSON and its images as a single file comes in the next version). After opening a JSON, assign the image files in the "Assets" drawer at the bottom ("Assign images in bulk" matches them by file name). The manual's title, version and scopes (`Scope`) are edited in the inspector after selecting "Manual" at the top of the structure tree. The "Embed images in JSON" option writes each image as a data URL into `source.path` instead; this makes the JSON large.
+Images you add are copied into `assets/` in the browser workspace. `Asset.source.path` holds the path relative to `manual.json` (`assets/01-start.png`). The saved zip contains `manual.json` and only the images the manual uses (images removed from the asset list are left out). A manual JSON opened on its own has no images, so assign the image files in the "Assets" drawer at the bottom ("Assign images in bulk" matches them by file name). The manual's title, version and scopes (`Scope`) are edited in the inspector after selecting "Manual" at the top of the structure tree.
 
 ## Data stays in your browser
 
@@ -70,6 +72,8 @@ SvelteKit 2 and Svelte 5 (runes), TypeScript, `@sveltejs/adapter-static`, `@vite
 |---|---|
 | `src/lib/ops.ts` | Pure editing functions (`addTopic`, `addHotspot`, `setTransition`, ...) |
 | `src/lib/io.ts` | Parse and serialize JSON, access to the user's files |
+| `src/lib/zip.ts` | Reads and writes zip (stored when writing; stored and deflate when reading) |
+| `src/lib/bundle.ts` | Takes a manual (`manual.json` and images) out of a zip or folder, and packs it into a zip |
 | `src/lib/workspace.ts` | Reads and writes the browser workspace (`manual.json` and images of the manual being edited) |
 | `src/lib/issues.ts` | Maps a `validateManual` path to a place in the UI |
 | `src/lib/state.svelte.ts` | The store that holds one `Manual` |
