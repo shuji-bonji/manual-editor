@@ -101,12 +101,31 @@
 <div class="app">
   <TopBar />
 
-  {#each editor.notices as n (n.id)}
-    <div class="banner {n.kind}" role={n.kind === 'error' ? 'alert' : 'status'}>
+  <!-- 確かめる必要のある知らせ（警告・エラーなど）: 「閉じる」を押すまで、画面の上に帯で出す -->
+  {#each editor.notices.filter((n) => !n.auto) as n (n.id)}
+    <div class="banner {n.kind}" role={n.kind === 'error' ? 'alert' : 'status'} data-testid="banner">
       <span>{n.text}</span>
       <button class="btn small" type="button" onclick={() => editor.dismiss(n.id)}>{t('common.close')}</button>
     </div>
   {/each}
+  <!-- 「保存しました」のような知らせ: 画面の隅に重ねて出し、5 秒後に消す。マウスを載せている・フォーカスがある間は消さない -->
+  <div class="toasts" aria-live="polite">
+    {#each editor.notices.filter((n) => n.auto) as n (n.id)}
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div
+        class="toast"
+        role="status"
+        data-testid="toast"
+        onmouseenter={() => editor.holdNotice(n.id)}
+        onmouseleave={() => editor.resumeNotice(n.id)}
+        onfocusin={() => editor.holdNotice(n.id)}
+        onfocusout={() => editor.resumeNotice(n.id)}
+      >
+        <span>{n.text}</span>
+        <button class="btn small" type="button" onclick={() => editor.dismiss(n.id)}>{t('common.close')}</button>
+      </div>
+    {/each}
+  </div>
 
   <div class="columns">
     <aside class="col tree"><StructureTree /></aside>
@@ -240,6 +259,30 @@
     border-radius: var(--radius);
     background: var(--accent-soft);
     border: 1px solid var(--accent);
+  }
+  .toasts {
+    position: fixed;
+    right: var(--gap);
+    bottom: 3rem;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: min(26rem, calc(100vw - 2 * var(--gap)));
+    pointer-events: none;
+  }
+  .toast {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.55rem 0.75rem;
+    border-radius: var(--radius);
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-left-width: 4px;
+    box-shadow: 0 6px 20px rgb(0 0 0 / 0.18);
+    pointer-events: auto;
   }
   .banner.warn {
     background: var(--warn-soft);

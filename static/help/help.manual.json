@@ -51,7 +51,7 @@
       "source": {
         "path": "assets/04-example.png",
         "mediaType": "image/png",
-        "hash": "sha256:c093cce72a0e5563bb7f060e1c99d896075e4bd709c272fc1095dcf2e3891054",
+        "hash": "sha256:b65a005bf94ecd1194e4d474aad6515b53a5e5897d8c3115d513b672f6e2b76b",
         "width": 2240,
         "height": 1440
       },
@@ -63,7 +63,7 @@
       "source": {
         "path": "assets/05-screenflow.png",
         "mediaType": "image/png",
-        "hash": "sha256:d6352bfaed335a5f41efe72860df630530197a8ff3ae5842e33c058de2b78c6f",
+        "hash": "sha256:f2c9c909676f67f2bbbb0de29987b574c0c594034ebcab8d1bf20183f38477f7",
         "width": 2240,
         "height": 1440
       },
@@ -75,7 +75,7 @@
       "source": {
         "path": "assets/06-hotspot.png",
         "mediaType": "image/png",
-        "hash": "sha256:b12cb970eb209fcb9fa9f3ec72a9b4928e01e3289d668b7bc91e8b9223eb3374",
+        "hash": "sha256:bd3fb391b11719de668e48e969808a98fe6bd3aec7e386cb8468d7aec270ccc9",
         "width": 2240,
         "height": 1440
       },
@@ -87,7 +87,7 @@
       "source": {
         "path": "assets/07-play.png",
         "mediaType": "image/png",
-        "hash": "sha256:27e00f05506c828321cbbc53cc39bfa11448a619b50ec4b2833c5e2ef5b11770",
+        "hash": "sha256:b9f3e3dfa4123ae3e4497cfed8305f40bcfb085b280ac1e3576d376adb1d03ae",
         "width": 2240,
         "height": 1440
       },
@@ -99,7 +99,7 @@
       "source": {
         "path": "assets/08-map.png",
         "mediaType": "image/png",
-        "hash": "sha256:9a2271c8142668f5f1445b84a20e24c9081e8a8042621b958769e36d6d7bea39",
+        "hash": "sha256:4ce2127372078c54981f34aa78f0b57a9fda05b69dd2c37d89f5ea4f81d88d89",
         "width": 2240,
         "height": 1440
       },
@@ -111,7 +111,7 @@
       "source": {
         "path": "assets/09-check.png",
         "mediaType": "image/png",
-        "hash": "sha256:6a97c2720d5008606ae48360131f7b8a873d3032a25efc4d252f1401210b7573",
+        "hash": "sha256:b7d6915f2384d953121d9e7ee58e101a08ddac29bf98b9534c947d714cb751e8",
         "width": 2240,
         "height": 1440
       },
@@ -123,7 +123,7 @@
       "source": {
         "path": "assets/10-assets.png",
         "mediaType": "image/png",
-        "hash": "sha256:3a8eb7be09d4da66f2db6a9eddacd2a2d02f23cd90e501fff28859364d6fcf13",
+        "hash": "sha256:8d6e69fb750736c1a8de313a94dcb23cc71ce103eab3f55b6c1fa370dcad39b0",
         "width": 2240,
         "height": 1440
       },
@@ -135,7 +135,7 @@
       "source": {
         "path": "assets/11-asset.png",
         "mediaType": "image/png",
-        "hash": "sha256:74da3adb2e938ba2d9d0d30ec610cb651c1d20be0c596808c28f7ef5d38882b7",
+        "hash": "sha256:83e77b5bda36f252681e109494765bd90032bff5158d2f0e9ec9ae835d0565b3",
         "width": 2240,
         "height": 1440
       },
@@ -147,7 +147,7 @@
       "source": {
         "path": "assets/12-root.png",
         "mediaType": "image/png",
-        "hash": "sha256:57b4004d5bf0d394dc49455f491718aa6405947be5307835f520aaa7b84d7dbd",
+        "hash": "sha256:bc488e27fafaec63a60310e311f70398b1322e7c4f32783b8c7ffef3ead5db22",
         "width": 2240,
         "height": 1440
       },
@@ -159,7 +159,7 @@
       "source": {
         "path": "assets/13-procedure.png",
         "mediaType": "image/png",
-        "hash": "sha256:7060618c8d4087d3e586061edf003225d9a2e7d3b1f78d2e4195c979af33524b",
+        "hash": "sha256:fa4c6391c495f5af20c6a0a75ca96fa0a4a7b628ba1b3a024aac6dfa46b8c641",
         "width": 2240,
         "height": 1440
       },
@@ -171,7 +171,7 @@
       "source": {
         "path": "assets/14-troubleshooting.png",
         "mediaType": "image/png",
-        "hash": "sha256:5e814ef7b65bd158a3a7cc578fe083e9bfe865d278433270433a54c2e3d6845b",
+        "hash": "sha256:5a549a26391ae7407e8249aac15c8235f37d4549bca20e4a35e6bb0fa1f174fc",
         "width": 2240,
         "height": 1440
       },
@@ -277,7 +277,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:35:58.103Z"
+            "capturedAt": "2026-11-14T19:43:09.685Z"
           }
         },
         {
@@ -400,7 +400,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:35:58.777Z"
+            "capturedAt": "2026-11-14T19:43:10.369Z"
           }
         },
         {
@@ -448,7 +448,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:35:59.468Z"
+            "capturedAt": "2026-11-14T19:43:11.071Z"
           }
         },
         {
@@ -462,9 +462,9 @@
               "shape": "rect",
               "coords": [
                 61,
-                416,
+                317,
                 484,
-                480
+                382
               ],
               "transition": {
                 "to": "scr-screenflow"
@@ -479,9 +479,9 @@
               "shape": "rect",
               "coords": [
                 61,
-                700,
+                601,
                 484,
-                765
+                666
               ],
               "transition": {
                 "to": "scr-procedure"
@@ -496,9 +496,9 @@
               "shape": "rect",
               "coords": [
                 61,
-                1098,
+                999,
                 484,
-                1163
+                1064
               ],
               "transition": {
                 "to": "scr-troubleshooting"
@@ -532,7 +532,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:36:00.155Z"
+            "capturedAt": "2026-11-14T19:43:11.786Z"
           }
         },
         {
@@ -546,9 +546,9 @@
               "shape": "rect",
               "coords": [
                 596,
-                205,
+                106,
                 667,
-                276
+                177
               ],
               "action": "read",
               "capture": {
@@ -561,9 +561,9 @@
               "shape": "rect",
               "coords": [
                 1079,
-                516,
+                417,
                 1557,
-                688
+                589
               ],
               "transition": {
                 "to": "scr-hotspot"
@@ -595,9 +595,9 @@
               "shape": "rect",
               "coords": [
                 63,
-                472,
+                374,
                 484,
-                537
+                439
               ],
               "action": "read",
               "capture": {
@@ -646,7 +646,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:36:00.876Z"
+            "capturedAt": "2026-11-14T19:43:12.542Z"
           }
         },
         {
@@ -660,9 +660,9 @@
               "shape": "rect",
               "coords": [
                 1661,
-                301,
+                202,
                 2222,
-                372
+                274
               ],
               "action": "read",
               "capture": {
@@ -675,9 +675,9 @@
               "shape": "rect",
               "coords": [
                 1661,
-                611,
+                512,
                 2222,
-                677
+                578
               ],
               "action": "read",
               "capture": {
@@ -707,9 +707,9 @@
               "shape": "rect",
               "coords": [
                 529,
-                205,
+                106,
                 600,
-                276
+                177
               ],
               "transition": {
                 "to": "scr-screenflow"
@@ -732,7 +732,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:36:01.553Z"
+            "capturedAt": "2026-11-14T19:43:13.202Z"
           }
         },
         {
@@ -763,9 +763,9 @@
               "shape": "rect",
               "coords": [
                 1079,
-                435,
+                337,
                 1544,
-                603
+                504
               ],
               "action": "read",
               "capture": {
@@ -780,7 +780,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:36:02.107Z"
+            "capturedAt": "2026-11-14T19:43:13.746Z"
           }
         },
         {
@@ -845,7 +845,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:36:02.742Z"
+            "capturedAt": "2026-11-14T19:43:14.371Z"
           }
         },
         {
@@ -895,7 +895,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:36:03.269Z"
+            "capturedAt": "2026-11-14T19:43:14.867Z"
           }
         },
         {
@@ -960,7 +960,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:36:03.920Z"
+            "capturedAt": "2026-11-14T19:43:15.479Z"
           }
         },
         {
@@ -974,9 +974,9 @@
               "shape": "rect",
               "coords": [
                 1907,
-                560,
+                561,
                 2201,
-                617
+                619
               ],
               "action": "read",
               "capture": {
@@ -989,9 +989,9 @@
               "shape": "rect",
               "coords": [
                 1661,
-                711,
+                713,
                 2222,
-                769
+                770
               ],
               "action": "read",
               "capture": {
@@ -1004,9 +1004,9 @@
               "shape": "rect",
               "coords": [
                 19,
-                248,
+                149,
                 484,
-                350
+                251
               ],
               "transition": {
                 "to": "scr-root"
@@ -1023,7 +1023,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:36:04.554Z"
+            "capturedAt": "2026-11-14T19:43:16.090Z"
           }
         },
         {
@@ -1037,9 +1037,9 @@
               "shape": "rect",
               "coords": [
                 1661,
-                346,
+                99,
                 2222,
-                418
+                171
               ],
               "action": "read",
               "capture": {
@@ -1052,9 +1052,9 @@
               "shape": "rect",
               "coords": [
                 61,
-                416,
+                317,
                 393,
-                480
+                382
               ],
               "transition": {
                 "to": "scr-screenflow"
@@ -1071,7 +1071,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:36:05.158Z"
+            "capturedAt": "2026-11-14T19:43:16.693Z"
           }
         },
         {
@@ -1085,9 +1085,9 @@
               "shape": "rect",
               "coords": [
                 639,
-                824,
+                726,
                 1549,
-                898
+                799
               ],
               "action": "read",
               "capture": {
@@ -1100,9 +1100,9 @@
               "shape": "rect",
               "coords": [
                 1661,
-                780,
+                681,
                 1809,
-                837
+                739
               ],
               "action": "read",
               "capture": {
@@ -1115,9 +1115,9 @@
               "shape": "rect",
               "coords": [
                 61,
-                1098,
+                999,
                 484,
-                1163
+                1064
               ],
               "transition": {
                 "to": "scr-troubleshooting"
@@ -1132,9 +1132,9 @@
               "shape": "rect",
               "coords": [
                 61,
-                416,
+                317,
                 484,
-                480
+                382
               ],
               "transition": {
                 "to": "scr-screenflow"
@@ -1151,7 +1151,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:36:05.870Z"
+            "capturedAt": "2026-11-14T19:43:17.410Z"
           }
         },
         {
@@ -1165,9 +1165,9 @@
               "shape": "rect",
               "coords": [
                 680,
-                785,
+                686,
                 1549,
-                858
+                760
               ],
               "action": "read",
               "capture": {
@@ -1180,9 +1180,9 @@
               "shape": "rect",
               "coords": [
                 675,
-                1148,
+                1049,
                 797,
-                1205
+                1107
               ],
               "action": "read",
               "capture": {
@@ -1195,9 +1195,9 @@
               "shape": "rect",
               "coords": [
                 61,
-                416,
+                317,
                 484,
-                480
+                382
               ],
               "transition": {
                 "to": "scr-screenflow"
@@ -1214,7 +1214,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:36:06.440Z"
+            "capturedAt": "2026-11-14T19:43:18.020Z"
           }
         }
       ]

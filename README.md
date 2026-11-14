@@ -44,6 +44,7 @@ To build for GitHub Pages, set the repository name: `BASE_PATH=/manual-editor np
 - **Check** (bottom drawer): lists the errors and warnings of `validateManual` grouped by Topic, with the location as names ("screen › hotspot") and the common messages in Japanese. Selecting an item moves to the Topic, screen, step or asset; unreachable screens have a "show on map" button. Saving reports remaining errors without blocking the save.
 - **Edit | Play**: switched on the same stage. Play is the viewer component itself (`packages/player`): pressing a hotspot moves to its target, with back and restart. The screen reached while playing is selected when you switch back to edit. Procedure, description and troubleshooting topics can be played too.
 - **Undo / redo**.
+- **Notices**: a notice such as "Saved" appears in a corner of the screen and disappears after 5 seconds (it stays while the pointer is over it). Warnings and errors appear in a bar at the top and stay until you press "Close".
 - **Picks up where you left off**: the manual you are editing is kept in a workspace inside the browser (Origin Private File System) as `manual.json` plus `assets/`. `manual.json` is written after each edit and images are written when you add them, so closing the tab does not lose your work. Pasted and masked images are kept too.
 
 ## What it does not do

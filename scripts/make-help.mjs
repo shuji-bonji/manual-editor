@@ -67,6 +67,8 @@ async function rectOf(locator, pad = 2) {
 async function capture({ id, caption, description, admonitions, hotspots }) {
   // 押せる場所が画面の外（スクロールの先）にあると座標が画像の外に出るので、先に見えるところまでスクロールしておく
   for (const h of hotspots) await h.at.scrollIntoViewIfNeeded();
+  // 5 秒で消える知らせ（「保存しました」など）は、撮る時刻で写ったり写らなかったりするので、撮る前に閉じる
+  await page.evaluate(() => document.querySelectorAll('[data-testid="toast"] button').forEach((b) => b.click()));
   await page.waitForTimeout(250);
   const file = `${String(++shot).padStart(2, '0')}-${id}.png`;
   const buf = await page.screenshot({ path: `${IMG}${file}`, type: 'png' });

@@ -8,6 +8,7 @@
  * 6. マニュアルのファイル（.emanual。設計書 13.4 節）: 保存して開き直すと画像ごと戻る。構成の違うものは開かない
  * 7. 展開したフォルダーから取り込む
  * 8. HTML としてエクスポートしたものを file:// で開き、押して進める
+ * 9. 知らせ: 「保存しました」は 5 秒で消え、エラーは「閉じる」を押すまで残る
  */
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -475,4 +476,40 @@ test('HTML としてエクスポートすると、1 つの HTML になり、file
   expect(requests.filter((u) => !u.startsWith('file://') && !u.startsWith('data:'))).toEqual([]);
   expect(requests.filter((u) => u.startsWith('file://'))).toHaveLength(1);
   expect(errors).toEqual([]);
+});
+
+test('知らせ: 「保存しました」は 5 秒で消え、エラーは「閉じる」を押すまで残る', async ({ page }) => {
+  await fileMenu(page, 'new');
+  await page.getByTestId('tree-root').click();
+  await page.getByTestId('manual-title').fill('Notice test');
+
+  // エラー（マニュアルのファイルでないものを開く）は、画面の上の帯に出る
+  await page.getByTestId('open-input').setInputFiles({ name: 'x.emanual', mimeType: 'application/octet-stream', buffer: Buffer.from('not a zip') });
+  const error = page.getByTestId('banner').filter({ hasText: 'マニュアルのファイル（.emanual）ではない' });
+  await expect(error).toBeVisible();
+
+  // 「ダウンロードしました」は、画面の隅に重ねて出る。出ても消えても、ステージの位置は動かない
+  const columns = page.locator('.columns');
+  const before = await columns.boundingBox();
+  const download = page.waitForEvent('download');
+  await fileMenu(page, 'save');
+  await download;
+  const toast = page.getByTestId('toast').filter({ hasText: 'Notice test.emanual をダウンロードしました' });
+  await expect(toast).toBeVisible();
+  expect(await columns.boundingBox()).toEqual(before);
+
+  // マウスを載せている間は消えない。外すと、そこから 5 秒で消える
+  await toast.hover();
+  await page.waitForTimeout(6000);
+  await expect(toast).toBeVisible();
+  await page.mouse.move(5, 300);
+  await page.waitForTimeout(3000);
+  await expect(toast).toBeVisible();
+  await expect(toast).toBeHidden({ timeout: 4000 });
+  expect(await columns.boundingBox()).toEqual(before);
+
+  // エラーは残っていて、「閉じる」で消える
+  await expect(error).toBeVisible();
+  await error.getByRole('button').click();
+  await expect(error).toBeHidden();
 });

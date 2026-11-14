@@ -48,7 +48,7 @@
 
 > [!IMPORTANT]
 > **2026-11-14 に、データの扱いを取り決めました（未実装）**。編集は常にブラウザーの中の workspace（OPFS）で行い、保存は 1 冊を 1 つの zip（`manual.json` ＋ `assets/`）にして書き出します。配布は閲覧パッケージ（先に単一の HTML、後にフォルダー）で、受け取った側は体験モードで開き、編集するときは複製します。取り決めの全文と作る順序は [design/player-and-editor.md](../design/player-and-editor.md) 13 節です。下の候補より先に、13.7 節の順で進める想定です。
-> **データの扱いの実装は一通り済み**（workspace、マニュアルのファイル `.emanual` の読み書きと構成の検査、「ファイル」のメニュー、展開したフォルダーからの取り込み、単一の HTML のエクスポート。記録は 13.8〜13.11 節。svelte-check 0 件、Vitest 96 件、E2E 8 本）。2026-11-15 に、Read Only と player 付きの zip は取り下げ、Player は別に提供して `.emanual` を開く形にすると決めた。**次は 13.11 節の「これから作るもの」**（`.emanual` を読む処理を player のパッケージへ移す → Player で `.emanual` を開く）。Mac の Chrome で、上書き保存と、エクスポートした HTML をダブルクリックで開けることを一度手で確かめる。
+> **データの扱いの実装は一通り済み**（workspace、マニュアルのファイル `.emanual` の読み書きと構成の検査、「ファイル」のメニュー、展開したフォルダーからの取り込み、単一の HTML のエクスポート。記録は 13.8〜13.11 節。svelte-check 0 件、Vitest 96 件、E2E 9 本。知らせの出し方は 13.12 節）。2026-11-15 に、Read Only と player 付きの zip は取り下げ、Player は別に提供して `.emanual` を開く形にすると決めた。**次は 13.11 節の「これから作るもの」**（`.emanual` を読む処理を player のパッケージへ移す → Player で `.emanual` を開く）。Mac の Chrome で、上書き保存と、エクスポートした HTML をダブルクリックで開けることを一度手で確かめる。
 
 1. **公開の準備**: 製品名は Experiential Manual Editor に決まった（2026-11-14、D-30）。README・画面・manifest の「仮称」を製品名に直し、`packages/player` の npm 公開（`private: true` を外す）、GitHub Pages への配備（`deploy.yml`。リポジトリを Public にするか）
 2. **学習サイトへの埋め込み**: s1000d-stack の `site/` に `dist/element/experiential-manual.js` と券売機の例を置く（手順 3 の残り。置き方は公開の形と合わせて決める）
@@ -68,7 +68,7 @@ npm run check      # svelte-check
 npm test           # Vitest
 npm run build      # build/（adapter-static、PWA）
 npx playwright install chromium   # 初回だけ
-npm run test:e2e   # ビルドして Playwright（e2e/editor.spec.ts の 8 本）
+npm run test:e2e   # ビルドして Playwright（e2e/editor.spec.ts の 9 本）
 npm run make:help  # ビルドして、ヘルプ（static/help/）を editor の画面から作り直す
 ```
 

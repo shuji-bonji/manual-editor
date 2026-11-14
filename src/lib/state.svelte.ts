@@ -57,7 +57,12 @@ export interface Notice {
   id: number;
   kind: 'info' | 'warn' | 'error';
   text: string;
+  /** しばらくすると自動で消えるか（「保存しました」のような、確かめる必要のない知らせ） */
+  auto: boolean;
 }
+
+/** 自動で消える知らせを出しておく時間 */
+export const NOTICE_MS = 5000;
 
 export interface Selection {
   topicId?: string;
@@ -106,6 +111,7 @@ class EditorState {
   /** handle のファイルを、最後に読んだ・書いた時点の更新時刻。保存の前に、外で書き換えられていないかを確かめる */
   private handleStamp: number | undefined;
   private noticeSeq = 0;
+  private noticeTimers = new Map<number, ReturnType<typeof setTimeout>>();
   private blobUrls = new Set<string>();
   /** 作業場所。init() で OPFS に差し替える（使えなければメモリーのまま） */
   private ws: WorkspaceStore = memoryStore();
@@ -210,11 +216,34 @@ class EditorState {
 
   // ---- 通知 ---------------------------------------------------------------
 
-  notify(kind: Notice['kind'], text: string): void {
-    this.notices = [...this.notices, { id: ++this.noticeSeq, kind, text }];
+  /**
+   * 知らせを出す。info は 5 秒後に自動で消える（画面の隅に重ねて出すので、消えても画面の配置は動かない）。
+   * warn と error、および sticky を付けた info は、「閉じる」を押すまで残る。
+   */
+  notify(kind: Notice['kind'], text: string, options: { sticky?: boolean } = {}): void {
+    const id = ++this.noticeSeq;
+    const auto = kind === 'info' && !options.sticky;
+    this.notices = [...this.notices, { id, kind, text, auto }];
+    if (auto) this.resumeNotice(id);
   }
   dismiss(id: number): void {
+    this.holdNotice(id);
     this.notices = this.notices.filter((n) => n.id !== id);
+  }
+  /** 自動で消えるのを止める（知らせにマウスを載せている・フォーカスがある間） */
+  holdNotice(id: number): void {
+    const timer = this.noticeTimers.get(id);
+    if (timer !== undefined) clearTimeout(timer);
+    this.noticeTimers.delete(id);
+  }
+  /** 自動で消えるまでの時間を、最初から数え直す */
+  resumeNotice(id: number): void {
+    this.holdNotice(id);
+    if (!this.notices.some((n) => n.id === id && n.auto)) return;
+    this.noticeTimers.set(
+      id,
+      setTimeout(() => this.dismiss(id), NOTICE_MS)
+    );
   }
   clearNotices(): void {
     this.notices = [];
@@ -572,7 +601,7 @@ class EditorState {
     this.dirty = parsed.kind === 'legacy' || from.imported === true;
     this.notices = [];
     if (parsed.kind === 'legacy') {
-      this.notify('info', t('open.legacy'));
+      this.notify('info', t('open.legacy'), { sticky: true });
       for (const w of parsed.warnings) this.notify('warn', w);
     }
     this.selectTopic(this.manual.topics[0]?.id);
