@@ -1,5 +1,5 @@
 <!--
-  E-0 の上の帯: 「ファイル」のメニュー（新規作成・開く・フォルダーを開く・保存）、元に戻す・やり直し、マニュアルの題名、
+  E-0 の上の帯: 「ファイル」のメニュー（新規作成・開く・保存・展開したフォルダーから取り込む）、元に戻す・やり直し、マニュアルの題名、
   「編集 | 体験」の切り替え、問題の件数（設計書 13.4 節）。
   ファイルの読み書きは lib/io.ts と state.svelte.ts にあり、ここは呼ぶだけ。
 -->
@@ -23,11 +23,11 @@
     if (file) await editor.openFile(file);
   }
 
-  async function onOpenFolder(e: Event) {
+  async function onImportFolder(e: Event) {
     const input = e.currentTarget as HTMLInputElement;
     const files = [...(input.files ?? [])];
     input.value = '';
-    if (files.length > 0) await editor.openFolder(files);
+    if (files.length > 0) await editor.importFolder(files);
   }
 
   function confirmDiscard(): boolean {
@@ -43,7 +43,7 @@
 
   const doNew = () => confirmDiscard() && editor.newDocument();
   const doOpen = () => confirmDiscard() && (editor.canPick ? editor.openWithPicker() : openInput?.click());
-  const doOpenFolder = () => confirmDiscard() && folderInput?.click();
+  const doImportFolder = () => confirmDiscard() && folderInput?.click();
 
   function onMenuKey(e: KeyboardEvent) {
     if (e.key === 'Escape') {
@@ -76,8 +76,8 @@
 <header class="bar">
   <div class="row files">
     <!-- ファイルを選ぶ欄は、メニューを閉じていても置いておく（File System Access API が無いブラウザーと、テストから使う） -->
-    <input bind:this={openInput} class="sr-only" type="file" accept=".zip,.json,application/zip,application/json" onchange={onOpen} data-testid="open-input" tabindex="-1" />
-    <input bind:this={folderInput} class="sr-only" type="file" webkitdirectory onchange={onOpenFolder} data-testid="open-folder-input" tabindex="-1" />
+    <input bind:this={openInput} class="sr-only" type="file" accept=".emanual,.zip" onchange={onOpen} data-testid="open-input" tabindex="-1" />
+    <input bind:this={folderInput} class="sr-only" type="file" webkitdirectory onchange={onImportFolder} data-testid="import-folder-input" tabindex="-1" />
     <div class="menu-wrap">
       <button
         bind:this={menuButton}
@@ -95,12 +95,13 @@
         <div bind:this={menu} class="menu" role="menu" aria-label={t('file.menu')} tabindex="-1" onkeydown={onMenuKey} data-testid="file-menu-list">
           <button type="button" role="menuitem" onclick={() => run(doNew)} data-testid="new">{t('file.new')}</button>
           <button type="button" role="menuitem" title={t('file.openHelp')} onclick={() => run(doOpen)} data-testid="open">{t('file.open')}</button>
-          <button type="button" role="menuitem" title={t('file.openFolderHelp')} onclick={() => run(doOpenFolder)} data-testid="open-folder">{t('file.openFolder')}</button>
           <hr />
           <button type="button" role="menuitem" title={t('file.saveHelp')} onclick={() => run(() => editor.save())} data-testid="save">{t('file.save')}</button>
           {#if editor.canPick}
             <button type="button" role="menuitem" onclick={() => run(() => editor.save(true))} data-testid="save-as">{t('file.saveAs')}</button>
           {/if}
+          <hr />
+          <button type="button" role="menuitem" title={t('file.importFolderHelp')} onclick={() => run(doImportFolder)} data-testid="import-folder">{t('file.importFolder')}</button>
         </div>
       {/if}
     </div>

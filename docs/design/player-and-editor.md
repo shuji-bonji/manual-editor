@@ -542,3 +542,36 @@ flowchart LR
 - 閲覧パッケージ（単一の HTML、フォルダー）を「開く」ことは 13.7 の 5 で作る。いまは zip・JSON・フォルダーだけ。
 - ロケールが POSIX の Linux では、Chromium が日本語のファイル名のダウンロードを `download` という名前にする（`LANG=C.UTF-8` なら題名どおり）。E2E のファイル名の確認は英数字の題名で行い、日本語の題名は `bundle.test.ts` で確かめている。
 
+### 13.10 取り決めの改定と実装の記録（拡張子 `.emanual`、開くときの検査、取り込み。2026-11-15）
+
+13.4・13.5 の一部を、次のように改めた。利用者に見せる単位を「マニュアルのファイル」1 つにし、中身が zip と JSON であることは画面の文言に出さない。
+
+| 項目 | 改める前（13.4・13.9） | 改めた後 |
+|---|---|---|
+| 拡張子 | `<題名>.manual.zip` | `<題名>.emanual`。中身は同じ zip。拡張子を `.zip` に変えれば展開できる |
+| 開く… | zip と manual の JSON 単体。`*.manual.json` や深い場所の `manual.json` も探す | マニュアルのファイルだけ。**zip であること、`manual.json` が最上位にあること、ほかに入っているのが `assets/` だけであること**を確かめ、違えば理由を出して開かない。2021 年の JSON が入っていても開かない |
+| フォルダーを開く… | 「開く」の隣 | 「展開したフォルダーから取り込む…」に改め、区切り線で保存の下に分けた。ファイルを展開して手で直したフォルダーの戻し口 |
+| manual の JSON 単体 | 「開く」で読める | 「開く」では読まない。JSON の入ったフォルダーを取り込む |
+| 配布 | 閲覧パッケージ化（先に単一の HTML、後にフォルダー） | **エクスポート**（player を同梱した zip）を、保存とは別の機能として作る。下の「次に作るもの」 |
+
+実装:
+
+| 項目 | 実装 |
+|---|---|
+| 検査 | `bundle.ts` の `checkBundle`。OS が足すファイル（`__MACOSX`・`.DS_Store`・`Thumbs.db`）は無視する。最上位にフォルダーが 1 つだけあり、その中が同じ構成の zip（OS の機能でフォルダーごと固め直したもの）は受け付ける。`manual.json` と `assets/` 以外のものがあれば、その path を返して断る（黙って捨てると、中身が欠けたことに気づけないため） |
+| 取り込み | `editor.importFolder`。`splitBundle` で manual の JSON を探し（`manual.json` → `*.manual.json` → 1 つだけの `.json`）、`normalizeAssetPaths` で素材の `path` を `assets/` の下に揃える（`img/a.png` → `assets/a.png`。重なる名前には番号）。作業場所にコピーするのは、Manual が指しているファイルだけ。取り込んだ直後は「未保存」にする |
+| 同梱の例・ヘルプ | URL から開くときも `path` を `assets/` に揃える（券売機の例は `img/…` のため）。保存したファイルの構成が、どの経路で作っても `manual.json` ＋ `assets/` になる |
+| ファイルの選択 | 開くは `.emanual` と `.zip`、保存は `.emanual`。File System Access API の `types` の MIME は `application/vnd.experiential-manual+zip` |
+| 確かめ | svelte-check 0 件、Vitest 89 件（`checkBundle` 4 件、`normalizeAssetPaths` 2 件を追加）、E2E 7 本（6 本目に、zip でない・`manual.json` が無い・余分なものが入っている・壊れている・2021 年の JSON が入っている、の 5 通りを開かないことを足した。7 本目は、画像が `img/` にあり関係のないファイルが混ざったフォルダーの取り込み）。5 回続けて 7 本とも通過。ヘルプは作り直した |
+
+次に作るもの（13.7 の 4〜6 を、次の順に置き換える）:
+
+| 順 | 作業 | 内容 |
+|---|---|---|
+| 4 | player の、モジュールでない形（IIFE）のビルド | `file://` で読み込めるようにする（いまは `formats: ['es']`） |
+| 5 | エクスポート | 「ファイル」のメニューに、保存とは別の項目として足す。出すのは player を同梱した zip（`index.html` ＋ player のスクリプト ＋ `manual.json` ＋ `assets/`）。展開して `index.html` を開けば見られる形にする（`file://` では `manual.json` を `fetch` で読めないので、`index.html` に中身を埋め込む。画像は `<img>` の相対パスで読める） |
+| 6 | エクスポートしたものを editor で開く | `checkBundle` が、エクスポートの構成（`index.html` と player のスクリプトが加わる）を見分ける。開いたら体験モード（Read Only）にし、編集に切り替えるときは警告を出して複製する（13.5 のとおり） |
+| 7 | `.emanual` の関連付け | PWA の manifest の `file_handlers` と `launchQueue`。インストールした PWA でしか確かめられないので、配備の後に作る。対応状況は実装の前に確かめる |
+
+決めていないこと: エクスポートに、単一の HTML（1 ファイルに全部を埋め込む形。13.5）も用意するか。zip の形だけで足りるなら作らない。
+

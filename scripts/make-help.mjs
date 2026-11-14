@@ -23,7 +23,7 @@ const IMG = `${OUT}assets/`;
 // 1400 px で撮ると player の中で縮んで文字が読めないので、editor の 3 列が収まる最小に近い幅で撮る
 const VIEWPORT = { width: 1120, height: 720 };
 const SCALE = 2; // 高精細で撮る。座標は画像の画素（CSS px × SCALE）
-const LEGACY = new URL('../src/lib/fixtures/legacy-2021.json', import.meta.url).pathname;
+const LEGACY_DIR = new URL('../src/lib/fixtures/', import.meta.url).pathname; // 2021 年の JSON だけが入ったフォルダー
 const VERSION = JSON.parse((await import('node:fs')).readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
 const today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10); // JST
 
@@ -143,13 +143,13 @@ await capture({
   id: 'filemenu',
   caption: '「ファイル」のメニュー',
   description:
-    '1 冊のマニュアルは、manual.json と画像（assets/）を 1 つの zip にまとめて保存します。編集中の内容はブラウザーの中の作業場所に置かれ、利用者のファイルは「保存」を選ぶまで変わりません。',
+    '1 冊のマニュアルは、1 つのファイル（名前の末尾は .emanual）に保存します。画像も一緒に入ります。編集中の内容はブラウザーの中の作業場所に置かれ、利用者のファイルは「保存」を選ぶまで変わりません。',
   hotspots: [
     { ...tid('new'), label: '新規作成（空のマニュアルを作る）', action: 'read' },
-    { ...tid('open'), label: '開く（保存した zip か、manual の JSON を選ぶ）', action: 'read' },
-    { ...tid('open-folder'), label: 'フォルダーを開く（manual.json と画像の入ったフォルダーを読み込む。フォルダーには書き戻さない）', action: 'read' },
-    { ...tid('save'), label: '保存（開いた zip に上書き、または保存先を選ぶ。選べないブラウザーではダウンロード）', action: 'read' },
+    { ...tid('open'), label: '開く（保存したマニュアルのファイルを選ぶ）', action: 'read' },
+    { ...tid('save'), label: '保存（開いたファイルに上書き、または保存先を選ぶ。選べないブラウザーではダウンロード）', action: 'read' },
     { ...tid('save-as'), label: '名前を付けて保存（保存先を選び直す）', action: 'read' },
+    { ...tid('import-folder'), label: '展開したフォルダーから取り込む（マニュアルのファイルを展開して直したフォルダーを読み込む。フォルダーには書き戻さない）', action: 'read' },
     { ...tid('file-menu'), label: 'メニューを閉じる', to: 'start' }
   ]
 });
@@ -330,7 +330,7 @@ await capture({
 });
 
 // ---- 2021 年の JSON の地図（規模の大きい例として図に使う） ------------------------------
-await page.getByTestId('open-input').setInputFiles(LEGACY);
+await page.getByTestId('import-folder-input').setInputFiles(LEGACY_DIR);
 await page.waitForSelector('[data-testid="tree-topic"]');
 await page.getByTestId('tree-topic').nth(2).click();
 await page.getByTestId('drawer-map').click();
@@ -419,9 +419,9 @@ const manual = {
         },
         {
           id: 'st-save',
-          text: '「ファイル」のメニューの「保存」で、zip に書き出す',
+          text: '「ファイル」のメニューの「保存」で、マニュアルのファイル（.emanual）に書き出す',
           expected: '検査にエラーがあれば通知が出る（保存は止まらない）',
-          admonitions: [{ level: 'note', text: 'zip には manual.json と、マニュアルが使っている画像が入ります。この zip を「開く」で選ぶと、画像ごと元に戻ります。' }]
+          admonitions: [{ level: 'note', text: 'ファイルには、マニュアルの中身と、マニュアルが使っている画像が入ります。このファイルを「開く」で選ぶと、画像ごと元に戻ります。' }]
         }
       ]
     },
@@ -429,18 +429,19 @@ const manual = {
       id: 'topic-files',
       kind: 'description',
       title: '保存されるもの',
-      summary: '保存する zip の中身、画像の持ち方、前回の続き、検査。',
+      summary: '保存するファイルの中身、画像の持ち方、前回の続き、検査。',
       blocks: [
         { kind: 'section', id: 'b-json', title: 'JSON の形', children: [
-          { kind: 'para', id: 'b-json-1', text: '「保存」で書き出すのは、manual.json と画像のフォルダー assets/ を 1 つにまとめた zip（名前の末尾は .manual.zip）です。manual.json は experiential-manual-model の Manual です。1 冊のマニュアルに Topic（画面の流れ・手順・説明・困ったとき）が並び、画像は assets に、適用範囲は scopes に入ります。' },
-          { kind: 'para', id: 'b-json-2', text: '2021 年の作品の JSON（purchaseTypes）も開けます。開くと新しい形に変換され、保存すると zip になります。' },
+          { kind: 'para', id: 'b-json-1', text: '「保存」で書き出すのは、マニュアルのファイル（名前の末尾は .emanual）です。中身は、manual.json と画像のフォルダー assets/ を 1 つにまとめた zip で、拡張子を .zip に変えると展開できます。manual.json は experiential-manual-model の Manual です。1 冊のマニュアルに Topic（画面の流れ・手順・説明・困ったとき）が並び、画像は assets に、適用範囲は scopes に入ります。' },
+          { kind: 'para', id: 'b-json-2', text: '2021 年の作品の JSON（purchaseTypes）も開けます。「展開したフォルダーから取り込む」で読むと新しい形に変換され、保存するとマニュアルのファイルになります。' },
           { kind: 'figure', id: 'b-json-3', assetRef: img('bigmap'), title: '2021 年の作品（79 画面・212 ボタン）を開き、遷移の地図を見たところ' }
         ] },
         { kind: 'section', id: 'b-img', title: '画像の持ち方', children: [
           { kind: 'list', id: 'b-img-1', items: [
             '取り込んだ画像は assets/ に入ります。manual.json の source.path に assets/ からの相対パス、width / height に大きさが入ります',
-            '保存する zip に入るのは、マニュアルが使っている画像だけです。素材の一覧から外した画像は入りません',
-            'manual の JSON だけを開いたときは画像がありません。下の「素材」の「画像をまとめて割り当てる」でファイルを選びます（ファイル名で照合します）。manual.json と画像の入ったフォルダーは「フォルダーを開く」で読み込めます'
+            '保存するファイルに入るのは、マニュアルが使っている画像だけです。素材の一覧から外した画像は入りません',
+            '「開く」は、中身が manual.json と assets/ だけのファイルを受け付けます。ほかのものが入っていると、理由を出して開きません',
+            '展開して手で直したフォルダーは「展開したフォルダーから取り込む」で読み込みます。画像が assets/ の外にあれば、assets/ に揃えます。画像が見つからない素材は、下の「素材」の「画像をまとめて割り当てる」でファイルを選びます（ファイル名で照合します）'
           ] },
           { kind: 'figure', id: 'b-img-2', assetRef: img('assets'), title: '素材の引き出し' }
         ] },

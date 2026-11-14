@@ -15,7 +15,7 @@
       "source": {
         "path": "assets/01-start.png",
         "mediaType": "image/png",
-        "hash": "sha256:b485b6adac834da524ab3665f8a3c62e967136d3d7880757af35be62549a66eb",
+        "hash": "sha256:16092f8300133061ca345e899b2d1f10743dd2a3af8daad89fc3125bf0747281",
         "width": 2240,
         "height": 1440
       },
@@ -27,7 +27,7 @@
       "source": {
         "path": "assets/02-filemenu.png",
         "mediaType": "image/png",
-        "hash": "sha256:f7fe188f7ebaef246c2082655414a6085a5a04c4fd0fb0ad37763c75ad82f746",
+        "hash": "sha256:71c6da2247cb673af7801b1fcc7f30a634cef780c736b8e4874a5d00895d16f9",
         "width": 2240,
         "height": 1440
       },
@@ -39,7 +39,7 @@
       "source": {
         "path": "assets/03-help.png",
         "mediaType": "image/png",
-        "hash": "sha256:7b4fdbbcd3953c0d717f7da5dbaea9c592f82b0198fad31f5ba1ea63db9a073a",
+        "hash": "sha256:e71980e3c42641bb84e3f33dcb7d3da2fa43759584432a0121e7a4decf2a0e2d",
         "width": 2240,
         "height": 1440
       },
@@ -51,7 +51,7 @@
       "source": {
         "path": "assets/04-example.png",
         "mediaType": "image/png",
-        "hash": "sha256:f25a149a9436e671c9baa64b2cc2a2b297fbb9f6ff3c3fb60a2a9c02ee1a6293",
+        "hash": "sha256:c093cce72a0e5563bb7f060e1c99d896075e4bd709c272fc1095dcf2e3891054",
         "width": 2240,
         "height": 1440
       },
@@ -63,7 +63,7 @@
       "source": {
         "path": "assets/05-screenflow.png",
         "mediaType": "image/png",
-        "hash": "sha256:45cf24d53f3ebfc63be5da0968c54064dfb49c880ea4b92ab58cdf4436e65686",
+        "hash": "sha256:d6352bfaed335a5f41efe72860df630530197a8ff3ae5842e33c058de2b78c6f",
         "width": 2240,
         "height": 1440
       },
@@ -75,7 +75,7 @@
       "source": {
         "path": "assets/06-hotspot.png",
         "mediaType": "image/png",
-        "hash": "sha256:ec2a0cfce076b3cda6e9dbe8fba3ff8cfdc549a450eadc5db89b0df6b674a6d5",
+        "hash": "sha256:b12cb970eb209fcb9fa9f3ec72a9b4928e01e3289d668b7bc91e8b9223eb3374",
         "width": 2240,
         "height": 1440
       },
@@ -87,7 +87,7 @@
       "source": {
         "path": "assets/07-play.png",
         "mediaType": "image/png",
-        "hash": "sha256:b70c8d3524d69f61526f33e555b220dd5156df9732e06d026d9df5cb692b56c8",
+        "hash": "sha256:27e00f05506c828321cbbc53cc39bfa11448a619b50ec4b2833c5e2ef5b11770",
         "width": 2240,
         "height": 1440
       },
@@ -99,7 +99,7 @@
       "source": {
         "path": "assets/08-map.png",
         "mediaType": "image/png",
-        "hash": "sha256:2de265a9d821bc16ef845210ca81470e0f847866d7db802194028523dd1b454f",
+        "hash": "sha256:9a2271c8142668f5f1445b84a20e24c9081e8a8042621b958769e36d6d7bea39",
         "width": 2240,
         "height": 1440
       },
@@ -111,7 +111,7 @@
       "source": {
         "path": "assets/09-check.png",
         "mediaType": "image/png",
-        "hash": "sha256:149d17a2a084aad9b1173ac4f2cab01820a04b74ea790511caa7611b42f633dc",
+        "hash": "sha256:6a97c2720d5008606ae48360131f7b8a873d3032a25efc4d252f1401210b7573",
         "width": 2240,
         "height": 1440
       },
@@ -123,7 +123,7 @@
       "source": {
         "path": "assets/10-assets.png",
         "mediaType": "image/png",
-        "hash": "sha256:20248771d17b9a9726aa72efcf88472b3b1fd8a1296b6f215dec0b9fcf8d5d85",
+        "hash": "sha256:3a8eb7be09d4da66f2db6a9eddacd2a2d02f23cd90e501fff28859364d6fcf13",
         "width": 2240,
         "height": 1440
       },
@@ -135,7 +135,7 @@
       "source": {
         "path": "assets/11-asset.png",
         "mediaType": "image/png",
-        "hash": "sha256:f4defaa2d393aab8a41303c19ee3ae5cd2b3b3dfca032edad5874bfc581648b0",
+        "hash": "sha256:74da3adb2e938ba2d9d0d30ec610cb651c1d20be0c596808c28f7ef5d38882b7",
         "width": 2240,
         "height": 1440
       },
@@ -147,7 +147,7 @@
       "source": {
         "path": "assets/12-root.png",
         "mediaType": "image/png",
-        "hash": "sha256:7725261da08ea99dd58675731f3d18319d7143623b24ed0ddcb71a57d05824be",
+        "hash": "sha256:57b4004d5bf0d394dc49455f491718aa6405947be5307835f520aaa7b84d7dbd",
         "width": 2240,
         "height": 1440
       },
@@ -159,7 +159,7 @@
       "source": {
         "path": "assets/13-procedure.png",
         "mediaType": "image/png",
-        "hash": "sha256:237afe57a8508729c1805a81190d9dda8d128511cbd6318e2236df350ac69062",
+        "hash": "sha256:7060618c8d4087d3e586061edf003225d9a2e7d3b1f78d2e4195c979af33524b",
         "width": 2240,
         "height": 1440
       },
@@ -171,7 +171,7 @@
       "source": {
         "path": "assets/14-troubleshooting.png",
         "mediaType": "image/png",
-        "hash": "sha256:0215e2214e1cc3e47adf67bf9158105ad514d4eb5dd94707b3e97717fd5ca9ac",
+        "hash": "sha256:5e814ef7b65bd158a3a7cc578fe083e9bfe865d278433270433a54c2e3d6845b",
         "width": 2240,
         "height": 1440
       },
@@ -183,7 +183,7 @@
       "source": {
         "path": "assets/15-bigmap.png",
         "mediaType": "image/png",
-        "hash": "sha256:611b29bd59876d62914dc33e25a21f87a6fc7bb08ce1d2b411f142276dc8a76f",
+        "hash": "sha256:afe5b91bf24ec0431ce972974433f50ab47d0c7ee7afee5fbd622f15b34a2fad",
         "width": 2240,
         "height": 1440
       },
@@ -277,7 +277,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T15:01:49.433Z"
+            "capturedAt": "2026-11-14T19:13:32.131Z"
           }
         },
         {
@@ -302,7 +302,7 @@
             },
             {
               "id": "hs-filemenu-2",
-              "label": "開く（保存した zip か、manual の JSON を選ぶ）",
+              "label": "開く（保存したマニュアルのファイルを選ぶ）",
               "shape": "rect",
               "coords": [
                 28,
@@ -317,22 +317,22 @@
             },
             {
               "id": "hs-filemenu-3",
-              "label": "フォルダーを開く（manual.json と画像の入ったフォルダーを読み込む。フォルダーには書き戻さない）",
+              "label": "保存（開いたファイルに上書き、または保存先を選ぶ。選べないブラウザーではダウンロード）",
               "shape": "rect",
               "coords": [
                 28,
-                214,
+                231,
                 407,
-                288
+                305
               ],
               "action": "read",
               "capture": {
-                "selector": "[data-testid=\"open-folder\"]"
+                "selector": "[data-testid=\"save\"]"
               }
             },
             {
               "id": "hs-filemenu-4",
-              "label": "保存（開いた zip に上書き、または保存先を選ぶ。選べないブラウザーではダウンロード）",
+              "label": "名前を付けて保存（保存先を選び直す）",
               "shape": "rect",
               "coords": [
                 28,
@@ -342,22 +342,22 @@
               ],
               "action": "read",
               "capture": {
-                "selector": "[data-testid=\"save\"]"
+                "selector": "[data-testid=\"save-as\"]"
               }
             },
             {
               "id": "hs-filemenu-5",
-              "label": "名前を付けて保存（保存先を選び直す）",
+              "label": "展開したフォルダーから取り込む（マニュアルのファイルを展開して直したフォルダーを読み込む。フォルダーには書き戻さない）",
               "shape": "rect",
               "coords": [
                 28,
-                363,
+                380,
                 407,
-                437
+                496
               ],
               "action": "read",
               "capture": {
-                "selector": "[data-testid=\"save-as\"]"
+                "selector": "[data-testid=\"import-folder\"]"
               }
             },
             {
@@ -378,14 +378,14 @@
               }
             }
           ],
-          "description": "1 冊のマニュアルは、manual.json と画像（assets/）を 1 つの zip にまとめて保存します。編集中の内容はブラウザーの中の作業場所に置かれ、利用者のファイルは「保存」を選ぶまで変わりません。",
+          "description": "1 冊のマニュアルは、1 つのファイル（名前の末尾は .emanual）に保存します。画像も一緒に入ります。編集中の内容はブラウザーの中の作業場所に置かれ、利用者のファイルは「保存」を選ぶまで変わりません。",
           "capture": {
             "url": "http://127.0.0.1:4174/",
             "viewport": {
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T15:01:50.053Z"
+            "capturedAt": "2026-11-14T19:13:32.782Z"
           }
         },
         {
@@ -433,7 +433,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T15:01:50.659Z"
+            "capturedAt": "2026-11-14T19:13:33.474Z"
           }
         },
         {
@@ -517,7 +517,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T15:01:51.348Z"
+            "capturedAt": "2026-11-14T19:13:34.207Z"
           }
         },
         {
@@ -631,7 +631,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T15:01:51.981Z"
+            "capturedAt": "2026-11-14T19:13:34.950Z"
           }
         },
         {
@@ -717,7 +717,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T15:01:52.576Z"
+            "capturedAt": "2026-11-14T19:13:35.608Z"
           }
         },
         {
@@ -765,7 +765,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T15:01:53.077Z"
+            "capturedAt": "2026-11-14T19:13:36.149Z"
           }
         },
         {
@@ -830,7 +830,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T15:01:53.663Z"
+            "capturedAt": "2026-11-14T19:13:36.753Z"
           }
         },
         {
@@ -880,7 +880,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T15:01:54.136Z"
+            "capturedAt": "2026-11-14T19:13:37.262Z"
           }
         },
         {
@@ -945,7 +945,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T15:01:54.715Z"
+            "capturedAt": "2026-11-14T19:13:37.896Z"
           }
         },
         {
@@ -1008,7 +1008,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T15:01:55.270Z"
+            "capturedAt": "2026-11-14T19:13:38.473Z"
           }
         },
         {
@@ -1056,7 +1056,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T15:01:55.802Z"
+            "capturedAt": "2026-11-14T19:13:39.070Z"
           }
         },
         {
@@ -1136,7 +1136,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T15:01:56.447Z"
+            "capturedAt": "2026-11-14T19:13:39.757Z"
           }
         },
         {
@@ -1199,7 +1199,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T15:01:56.977Z"
+            "capturedAt": "2026-11-14T19:13:40.355Z"
           }
         }
       ]
@@ -1300,12 +1300,12 @@
         },
         {
           "id": "st-save",
-          "text": "「ファイル」のメニューの「保存」で、zip に書き出す",
+          "text": "「ファイル」のメニューの「保存」で、マニュアルのファイル（.emanual）に書き出す",
           "expected": "検査にエラーがあれば通知が出る（保存は止まらない）",
           "admonitions": [
             {
               "level": "note",
-              "text": "zip には manual.json と、マニュアルが使っている画像が入ります。この zip を「開く」で選ぶと、画像ごと元に戻ります。"
+              "text": "ファイルには、マニュアルの中身と、マニュアルが使っている画像が入ります。このファイルを「開く」で選ぶと、画像ごと元に戻ります。"
             }
           ]
         }
@@ -1315,7 +1315,7 @@
       "id": "topic-files",
       "kind": "description",
       "title": "保存されるもの",
-      "summary": "保存する zip の中身、画像の持ち方、前回の続き、検査。",
+      "summary": "保存するファイルの中身、画像の持ち方、前回の続き、検査。",
       "blocks": [
         {
           "kind": "section",
@@ -1325,12 +1325,12 @@
             {
               "kind": "para",
               "id": "b-json-1",
-              "text": "「保存」で書き出すのは、manual.json と画像のフォルダー assets/ を 1 つにまとめた zip（名前の末尾は .manual.zip）です。manual.json は experiential-manual-model の Manual です。1 冊のマニュアルに Topic（画面の流れ・手順・説明・困ったとき）が並び、画像は assets に、適用範囲は scopes に入ります。"
+              "text": "「保存」で書き出すのは、マニュアルのファイル（名前の末尾は .emanual）です。中身は、manual.json と画像のフォルダー assets/ を 1 つにまとめた zip で、拡張子を .zip に変えると展開できます。manual.json は experiential-manual-model の Manual です。1 冊のマニュアルに Topic（画面の流れ・手順・説明・困ったとき）が並び、画像は assets に、適用範囲は scopes に入ります。"
             },
             {
               "kind": "para",
               "id": "b-json-2",
-              "text": "2021 年の作品の JSON（purchaseTypes）も開けます。開くと新しい形に変換され、保存すると zip になります。"
+              "text": "2021 年の作品の JSON（purchaseTypes）も開けます。「展開したフォルダーから取り込む」で読むと新しい形に変換され、保存するとマニュアルのファイルになります。"
             },
             {
               "kind": "figure",
@@ -1350,8 +1350,9 @@
               "id": "b-img-1",
               "items": [
                 "取り込んだ画像は assets/ に入ります。manual.json の source.path に assets/ からの相対パス、width / height に大きさが入ります",
-                "保存する zip に入るのは、マニュアルが使っている画像だけです。素材の一覧から外した画像は入りません",
-                "manual の JSON だけを開いたときは画像がありません。下の「素材」の「画像をまとめて割り当てる」でファイルを選びます（ファイル名で照合します）。manual.json と画像の入ったフォルダーは「フォルダーを開く」で読み込めます"
+                "保存するファイルに入るのは、マニュアルが使っている画像だけです。素材の一覧から外した画像は入りません",
+                "「開く」は、中身が manual.json と assets/ だけのファイルを受け付けます。ほかのものが入っていると、理由を出して開きません",
+                "展開して手で直したフォルダーは「展開したフォルダーから取り込む」で読み込みます。画像が assets/ の外にあれば、assets/ に揃えます。画像が見つからない素材は、下の「素材」の「画像をまとめて割り当てる」でファイルを選びます（ファイル名で照合します）"
               ]
             },
             {

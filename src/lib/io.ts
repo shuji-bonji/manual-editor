@@ -2,7 +2,7 @@
  * 利用者のファイルの読み書き。編集中の 1 冊をブラウザーの中に置く処理は workspace.ts にある。
  *
  * - parseManualText / serializeManual は純粋な関数で、Vitest で試す。
- * - 保存するのは、1 冊を 1 つにまとめた zip（manual.json ＋ assets/。zip.ts と bundle.ts）。
+ * - 保存するのは、1 冊を 1 つにまとめたファイル（.emanual。中身は manual.json ＋ assets/ の zip。zip.ts と bundle.ts）。
  * - ファイルを開く・保存する操作は、File System Access API が使えるブラウザーではそれを使い（同じファイルに上書きできる）、
  *   使えなければ <input type="file"> とダウンロードで行う。
  */
@@ -103,11 +103,13 @@ export const canUseFilePicker = (): boolean =>
   typeof (window as PickerWindow).showOpenFilePicker === 'function' &&
   typeof (window as PickerWindow).showSaveFilePicker === 'function';
 
-/** 「開く」で選べるもの: 1 冊をまとめた zip と、manual の JSON 単体（2021 年の JSON を含む） */
-const OPEN_TYPES = [
-  { description: '体験型マニュアル（zip / JSON）', accept: { 'application/zip': ['.zip'], 'application/json': ['.json'] } }
-];
-const SAVE_TYPES = [{ description: '体験型マニュアル（zip）', accept: { 'application/zip': ['.zip'] } }];
+/**
+ * マニュアルのファイル（.emanual。中身は zip）。「開く」では、拡張子を .zip に変えたものも選べるようにする。
+ * MIME は独自のものにする（application/zip にすると、OS のファイル選択が .emanual を選べないことがあるため）。
+ */
+const EMANUAL_MIME = 'application/vnd.experiential-manual+zip';
+const OPEN_TYPES = [{ description: '体験型マニュアル', accept: { [EMANUAL_MIME]: ['.emanual'], 'application/zip': ['.zip'] } }];
+const SAVE_TYPES = [{ description: '体験型マニュアル', accept: { [EMANUAL_MIME]: ['.emanual'] } }];
 
 /** File System Access API でファイルを開く。利用者が取り消したら undefined */
 export async function pickOpenFile(): Promise<{ file: File; handle: FileHandle } | undefined> {

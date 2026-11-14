@@ -40,7 +40,7 @@ import {
   type Session,
   type WorkspaceStore
 } from './workspace';
-import { buildBundle, bundleNameFrom, splitBundle, suggestedBundleName } from './bundle';
+import { buildBundle, bundleNameFrom, checkBundle, normalizeAssetPaths, referencedPaths, splitBundle, suggestedBundleName } from './bundle';
 import { looksLikeZip, unzip } from './zip';
 import { t } from './i18n';
 
@@ -499,8 +499,9 @@ class EditorState {
    * - data URL が埋め込まれていれば、それをそのまま使う（manual.json に入っているので、作業場所にも残る）。
    * - 作業場所にファイルがあれば、それを読む（前回の続き）。
    * - baseUrl があれば、相対パスの画像を取りに行き、作業場所にコピーする（同梱の例・ヘルプ）。
+   *   path を assets/ の下に揃えたときは、sourcePath が元の相対パスを返す。
    */
-  private async resolveImages(manual: Manual, baseUrl?: string): Promise<void> {
+  private async resolveImages(manual: Manual, baseUrl?: string, sourcePath: (path: string) => string = (p) => p): Promise<void> {
     for (const url of this.blobUrls) URL.revokeObjectURL(url);
     this.blobUrls.clear();
     this.images.clear();
@@ -517,7 +518,7 @@ class EditorState {
         try {
           blob = await this.ws.readFile(bookId, path);
           if (!blob && baseUrl) {
-            const res = await fetch(new URL(path, baseUrl).href);
+            const res = await fetch(new URL(sourcePath(path), baseUrl).href);
             if (res.ok) {
               blob = await res.blob();
               await this.storeImage(path, blob);
@@ -539,27 +540,34 @@ class EditorState {
 
   /**
    * Manual の JSON を読み込んで、新しい 1 冊として開く。
-   * files は、manual.json からの相対パスにした画像など（zip・フォルダーから開いたとき）。先に作業場所へコピーする。
+   * - files は、manual.json からの相対パスにした画像など。作業場所へコピーする。
+   * - strict（マニュアルのファイルを開いたとき）は、2021 年の JSON を受け付けず、path も変えない。
+   *   それ以外（取り込み・同梱の例）は、素材の path を assets/ の下に揃える（保存するファイルの構成を保つため）。
    */
   private async load(
     text: string,
     name: string,
-    from: { handle?: FileHandle; baseUrl?: string; files?: { path: string; data: Blob }[] } = {}
+    from: { handle?: FileHandle; baseUrl?: string; files?: { path: string; data: Blob }[]; strict?: boolean; imported?: boolean } = {}
   ): Promise<void> {
     const parsed = parseManualText(text, {
       newId: () => crypto.randomUUID(),
-      title: name.replace(/\.(manual\.zip|manual\.json|zip|json)$/i, '')
+      title: name.replace(/\.(emanual|manual\.zip|manual\.json|zip|json)$/i, '')
     });
+    if (from.strict && parsed.kind === 'legacy') throw new Error(t('open.notEmanual'));
+    const { manual, moves } = from.strict ? { manual: parsed.manual, moves: [] } : normalizeAssetPaths(parsed.manual);
+    const movedTo = new Map(moves.map((m) => [m.from, m.to]));
+    const movedFrom = new Map(moves.map((m) => [m.to, m.from]));
+
     this.startNewBook();
-    this.manual = parsed.manual;
+    this.manual = manual;
     this.undoStack = [];
     this.redoStack = [];
     this.lastCoalesce = undefined;
     this.handle = from.handle;
     this.handleStamp = undefined;
     this.fileName = bundleNameFrom(name);
-    // 開いた直後は、利用者のファイルと同じ中身。2021 年の JSON だけは変換しているので「未保存」にする
-    this.dirty = parsed.kind === 'legacy';
+    // マニュアルのファイルを開いた直後は、そのファイルと同じ中身。取り込んだもの（フォルダー・2021 年の JSON）は、まだ保存していない
+    this.dirty = parsed.kind === 'legacy' || from.imported === true;
     this.notices = [];
     if (parsed.kind === 'legacy') {
       this.notify('info', t('open.legacy'));
@@ -568,59 +576,71 @@ class EditorState {
     this.selectTopic(this.manual.topics[0]?.id);
     this.mode = 'edit';
     void this.persistManual();
-    for (const f of from.files ?? []) await this.storeImage(f.path, f.data);
-    await this.resolveImages(this.manual, from.baseUrl);
+    // 取り込みでは、Manual が指しているファイルだけをコピーする（フォルダーにある関係のないファイルは持ち込まない）
+    const wanted = new Set(referencedPaths(parsed.manual));
+    for (const f of from.files ?? []) {
+      if (from.strict || wanted.has(f.path)) await this.storeImage(movedTo.get(f.path) ?? f.path, f.data);
+    }
+    await this.resolveImages(this.manual, from.baseUrl, (path) => movedFrom.get(path) ?? path);
     const missing = (this.manual.assets ?? []).filter((a) => a.kind === 'image' && !this.images.has(a.id)).length;
     if (missing > 0) this.notify('warn', t('open.missingImages', { n: missing }));
   }
 
-  /** zip か JSON のファイルを開く。zip なら中の manual.json と画像を、JSON なら JSON だけを読む */
-  private async openAny(file: File, handle?: FileHandle): Promise<void> {
+  /**
+   * マニュアルのファイル（.emanual）を開く。zip であることと、中が manual.json ＋ assets/ の構成であることを確かめ、
+   * 違えば理由を出して開かない（設計書 13.4 節）。
+   */
+  private async openEmanual(file: File, handle?: FileHandle): Promise<void> {
     const bytes = new Uint8Array(await file.arrayBuffer());
-    if (!looksLikeZip(bytes)) {
-      await this.load(new TextDecoder().decode(bytes), file.name);
-      return;
+    if (!looksLikeZip(bytes)) throw new Error(t('open.notEmanual'));
+    const check = checkBundle(await unzip(bytes));
+    if (!check.ok) {
+      if (check.reason === 'no-manual') throw new Error(t('open.noManualInFile'));
+      const names = check.paths.slice(0, 3).join('、') + (check.paths.length > 3 ? ' …' : '');
+      throw new Error(t('open.unexpected', { n: check.paths.length, names }));
     }
-    const parts = splitBundle(await unzip(bytes));
-    if (!parts) throw new Error(t('open.noManual'));
-    await this.load(new TextDecoder().decode(parts.manual.data), file.name, {
+    const { manual, files } = check.parts;
+    await this.load(new TextDecoder().decode(manual.data), file.name, {
       handle,
-      files: parts.files.map((f) => ({ path: f.path, data: new Blob([f.data as BlobPart]) }))
+      strict: true,
+      files: files.map((f) => ({ path: f.path, data: new Blob([f.data as BlobPart]) }))
     });
     if (handle) this.handleStamp = file.lastModified;
   }
 
-  /** <input type="file"> で選ばれたファイル（zip か JSON）を開く */
+  /** <input type="file"> で選ばれたマニュアルのファイルを開く */
   async openFile(file: File): Promise<void> {
     try {
-      await this.openAny(file);
+      await this.openEmanual(file);
     } catch (e) {
       this.notify('error', e instanceof Error ? e.message : String(e));
     }
   }
 
-  /** File System Access API で開く（zip なら、保存のときに同じファイルへ上書きできる） */
+  /** File System Access API で開く（保存のときに同じファイルへ上書きできる） */
   async openWithPicker(): Promise<void> {
     try {
       const r = await pickOpenFile();
-      if (r) await this.openAny(r.file, r.file.name.toLowerCase().endsWith('.zip') ? r.handle : undefined);
+      if (r) await this.openEmanual(r.file, r.handle);
     } catch (e) {
       this.notify('error', e instanceof Error ? e.message : String(e));
     }
   }
 
   /**
-   * フォルダーを開く（<input type="file" webkitdirectory> で選ばれたファイルの一覧）。
-   * manual.json と、そこから相対パスで指す画像を作業場所にコピーする。読むだけで、フォルダーには書き戻さない。
+   * 展開したフォルダーから取り込む（<input type="file" webkitdirectory> で選ばれたファイルの一覧）。
+   * マニュアルのファイルを展開して手で直したフォルダー、スクリプトが書き出したフォルダー、2021 年の JSON のフォルダーを読む。
+   * manual の JSON と、そこから相対パスで指す画像を作業場所にコピーし、画像の path は assets/ の下に揃える。
+   * 読むだけで、フォルダーには書き戻さない。
    */
-  async openFolder(files: File[]): Promise<void> {
+  async importFolder(files: File[]): Promise<void> {
     try {
       const entries = files.map((f) => ({ path: (f as File & { webkitRelativePath?: string }).webkitRelativePath || f.name, data: f }));
       const parts = splitBundle(entries);
       if (!parts) throw new Error(t('open.noManual'));
       const folder = parts.manual.path.split('/').slice(-2, -1)[0];
       const base = parts.manual.path.split('/').pop() ?? 'manual.json';
-      await this.load(await parts.manual.data.text(), base === 'manual.json' && folder ? folder : base, { files: parts.files });
+      await this.load(await parts.manual.data.text(), base === 'manual.json' && folder ? folder : base, { files: parts.files, imported: true });
     } catch (e) {
       this.notify('error', e instanceof Error ? e.message : String(e));
     }
@@ -664,7 +684,7 @@ class EditorState {
   }
 
   /**
-   * いまの 1 冊を zip にする。入れるのは manual.json と、Manual が指している画像（作業場所にあるもの）。
+   * いまの 1 冊を、マニュアルのファイル（zip）にする。入れるのは manual.json と、Manual が指している画像（作業場所にあるもの）。
    * 画像が作業場所に無い素材（JSON 単体を開いて、まだ割り当てていないもの）は入れず、件数を知らせる。
    */
   private async bundle(): Promise<Blob> {
@@ -689,7 +709,7 @@ class EditorState {
   }
 
   /**
-   * 保存する。1 冊を zip（manual.json ＋ 画像）にして書き出す。
+   * 保存する。1 冊をマニュアルのファイル（.emanual。manual.json ＋ assets/ の zip）にして書き出す。
    * File System Access API があれば、開いた・前に保存した zip に上書きし、無ければ保存先を選ぶ（saveAs なら必ず選ぶ）。
    * API が無いブラウザーでは、ダウンロードになる。
    */
