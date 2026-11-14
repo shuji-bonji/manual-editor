@@ -1,4 +1,4 @@
-# 引き継ぎメモ（2026-11-14 09:00 JST 更新）
+# 引き継ぎメモ（2026-11-14 21:30 JST 更新）
 
 新しいチャットで体験型マニュアルの製品（player・editor・cli）の作業を続けるための入口です。設計の本文は `docs/` の 2 文書にあり、このメモはそこへの案内と、決まっていることの要約です。
 
@@ -29,7 +29,7 @@
 | ヘルプ（実例の 1 冊目） | **済み（2026-11-14）**。editor の使い方を editor 自身で作った体験型マニュアル。`scripts/make-help.mjs`（`npm run make:help`）が Playwright で画面を撮り、`data-testid` の位置をホットスポットにして `static/help/` に書く。上の帯の「ヘルプ」で player の外枠の中に開く。「このヘルプを例として開く」で editor に読み込める。**上の帯の「券売機の例を開く」は外し、ヘルプの「例:」に移した**（2026-11-14。上の帯は開いている 1 冊の操作だけ）。ダッシュボード（新規・作ったマニュアルの一覧・設定・ヘルプ）は一通りできてから足す。Vitest 61 件・E2E 4 本。詳細は design/player-and-editor.md 12 節。**UI を変えたら `npm run make:help` で作り直す**（画面と座標が古くなる。作り直しの忘れは `help.test.ts` では検出できない） |
 | 試作 0.1.0 | SvelteKit 2 ＋ Svelte 5 ＋ `adapter-static` ＋ PWA。Topic 一覧、画面エディター（矩形・円）、手順・注意・適用範囲、検査、体験表示、Undo/Redo、下書き。見送り: 説明 Block の編集、故障探求の行き先、多角形、ホットスポットの移動・変形、英語の文言、Playwright |
 | 依存 | `@shuji-bonji/experiential-manual-model` `^0.2.0`（ルートと `packages/player` の両方。2026-11-08 に上げた）。0.2.0 で `AssetFile.path` が任意になり data URL は `source.data` に入るので、試作側は `io.ts` の `embeddedData(file)` / `fileName(file)` で読む（0.1.0 の JSON の `path` に入った data URL も読める） |
-| 名前 | 製品名は未定（s1000d-stack の U-05）。`manual-editor` は仮称。**player と cli を npm に出す前に決める**（npm の名前は後から変えられない。GitHub のリポジトリ名は転送されるので変えてよい） |
+| 名前 | **決定（2026-11-14）**: 製品の共通の語は **Experiential Manual**。作成ツールは Experiential Manual Editor、閲覧部品は Experiential Manual Player、CLI は Experiential Manual CLI（s1000d-stack の DECISIONS.md D-30）。model・player の npm 名と `<experiential-manual>` はそのまま使える。**まだ直していないもの**: README（日英）と `packages/player/README`（日英）の「仮称」、`package.json` の `description`、画面の題名と PWA の manifest の名前、設計書の「仮称」。GitHub のリポジトリ名 `manual-editor` を変えるかは未決（変えても転送される） |
 
 ## 次にやること（design/player-and-editor.md 6 節の順）
 
@@ -46,7 +46,10 @@
 
 設計書 6 節の 8 つの手順はすべて済みました。次の候補（優先順は利用者が決める）:
 
-1. **公開の準備**: 製品名（s1000d-stack の U-05）を決め、`packages/player` の npm 公開（`private: true` を外す）、GitHub Pages への配備（`deploy.yml`。リポジトリを Public にするか）
+> [!IMPORTANT]
+> **2026-11-14 に、データの扱いを取り決めました（未実装）**。編集は常にブラウザーの中の workspace（OPFS）で行い、保存は 1 冊を 1 つの zip（`manual.json` ＋ `assets/`）にして書き出します。配布は閲覧パッケージ（先に単一の HTML、後にフォルダー）で、受け取った側は体験モードで開き、編集するときは複製します。取り決めの全文と作る順序は [design/player-and-editor.md](../design/player-and-editor.md) 13 節です。下の候補より先に、13.7 節の順で進める想定です。
+
+1. **公開の準備**: 製品名は Experiential Manual Editor に決まった（2026-11-14、D-30）。README・画面・manifest の「仮称」を製品名に直し、`packages/player` の npm 公開（`private: true` を外す）、GitHub Pages への配備（`deploy.yml`。リポジトリを Public にするか）
 2. **学習サイトへの埋め込み**: s1000d-stack の `site/` に `dist/element/experiential-manual.js` と券売機の例を置く（手順 3 の残り。置き方は公開の形と合わせて決める）
 3. **後の版に回したもの**: Markdown の貼り付けから Block への分解（E-3）、構成ツリーのドラッグでの並べ替え、P-0 の検索、P-1 の `input` の入力欄の見本、英語の文言（`i18n.ts` に `en` を足す）、マスクの多角形
 4. **基盤への要望**: 手順の図（`Step.assetRefs`）で `Screen` を指せるようにすること（E-2 の「図が Screen を指すときは、その画面を P-1 のステージで開く」のため）
