@@ -92,7 +92,8 @@
       case 'noTransition':
         return t(lang, 'flow.noTransition');
       case 'read':
-        return t(lang, 'flow.read');
+        // 説明のためのホットスポット。ラベルが説明そのものなので、それを出す
+        return t(lang, 'flow.read', { label: last.hotspot.label ?? last.hotspot.id });
       case 'notFound':
         return t(lang, 'flow.notFound', { to: last.to });
       case 'notApplicable':
