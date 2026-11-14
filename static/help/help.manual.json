@@ -27,7 +27,7 @@
       "source": {
         "path": "assets/02-filemenu.png",
         "mediaType": "image/png",
-        "hash": "sha256:71c6da2247cb673af7801b1fcc7f30a634cef780c736b8e4874a5d00895d16f9",
+        "hash": "sha256:389971f6576dfc3454ced84a8ce387506aa2eef33913416a79e34875631671c8",
         "width": 2240,
         "height": 1440
       },
@@ -39,7 +39,7 @@
       "source": {
         "path": "assets/03-help.png",
         "mediaType": "image/png",
-        "hash": "sha256:e71980e3c42641bb84e3f33dcb7d3da2fa43759584432a0121e7a4decf2a0e2d",
+        "hash": "sha256:e78e7ee6555ad6a4984b98abba55a9ba1e006cd47306af0d11cfbd2479d49399",
         "width": 2240,
         "height": 1440
       },
@@ -277,7 +277,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:13:32.131Z"
+            "capturedAt": "2026-11-14T19:35:58.103Z"
           }
         },
         {
@@ -347,7 +347,7 @@
             },
             {
               "id": "hs-filemenu-5",
-              "label": "展開したフォルダーから取り込む（マニュアルのファイルを展開して直したフォルダーを読み込む。フォルダーには書き戻さない）",
+              "label": "HTML としてエクスポート（1 つの HTML に書き出す。受け取った人はブラウザーで開くだけで見られる）",
               "shape": "rect",
               "coords": [
                 28,
@@ -357,11 +357,26 @@
               ],
               "action": "read",
               "capture": {
-                "selector": "[data-testid=\"import-folder\"]"
+                "selector": "[data-testid=\"export-html\"]"
               }
             },
             {
               "id": "hs-filemenu-6",
+              "label": "展開したフォルダーから取り込む（マニュアルのファイルを展開して直したフォルダーを読み込む。フォルダーには書き戻さない）",
+              "shape": "rect",
+              "coords": [
+                28,
+                488,
+                407,
+                603
+              ],
+              "action": "read",
+              "capture": {
+                "selector": "[data-testid=\"import-folder\"]"
+              }
+            },
+            {
+              "id": "hs-filemenu-7",
               "label": "メニューを閉じる",
               "shape": "rect",
               "coords": [
@@ -385,7 +400,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:13:32.782Z"
+            "capturedAt": "2026-11-14T19:35:58.777Z"
           }
         },
         {
@@ -433,7 +448,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:13:33.474Z"
+            "capturedAt": "2026-11-14T19:35:59.468Z"
           }
         },
         {
@@ -517,7 +532,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:13:34.207Z"
+            "capturedAt": "2026-11-14T19:36:00.155Z"
           }
         },
         {
@@ -631,7 +646,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:13:34.950Z"
+            "capturedAt": "2026-11-14T19:36:00.876Z"
           }
         },
         {
@@ -717,7 +732,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:13:35.608Z"
+            "capturedAt": "2026-11-14T19:36:01.553Z"
           }
         },
         {
@@ -765,7 +780,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:13:36.149Z"
+            "capturedAt": "2026-11-14T19:36:02.107Z"
           }
         },
         {
@@ -830,7 +845,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:13:36.753Z"
+            "capturedAt": "2026-11-14T19:36:02.742Z"
           }
         },
         {
@@ -880,7 +895,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:13:37.262Z"
+            "capturedAt": "2026-11-14T19:36:03.269Z"
           }
         },
         {
@@ -945,7 +960,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:13:37.896Z"
+            "capturedAt": "2026-11-14T19:36:03.920Z"
           }
         },
         {
@@ -1008,7 +1023,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:13:38.473Z"
+            "capturedAt": "2026-11-14T19:36:04.554Z"
           }
         },
         {
@@ -1056,7 +1071,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:13:39.070Z"
+            "capturedAt": "2026-11-14T19:36:05.158Z"
           }
         },
         {
@@ -1136,7 +1151,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:13:39.757Z"
+            "capturedAt": "2026-11-14T19:36:05.870Z"
           }
         },
         {
@@ -1199,7 +1214,7 @@
               "width": 1120,
               "height": 720
             },
-            "capturedAt": "2026-11-14T19:13:40.355Z"
+            "capturedAt": "2026-11-14T19:36:06.440Z"
           }
         }
       ]
@@ -1351,6 +1366,7 @@
               "items": [
                 "取り込んだ画像は assets/ に入ります。manual.json の source.path に assets/ からの相対パス、width / height に大きさが入ります",
                 "保存するファイルに入るのは、マニュアルが使っている画像だけです。素材の一覧から外した画像は入りません",
+                "人に見せるだけなら、「HTML としてエクスポート」で 1 つの HTML にします。閲覧部品と画像が入っていて、ブラウザーで開くだけで見られます。編集してもらうときは、マニュアルのファイル（.emanual）を渡します",
                 "「開く」は、中身が manual.json と assets/ だけのファイルを受け付けます。ほかのものが入っていると、理由を出して開きません",
                 "展開して手で直したフォルダーは「展開したフォルダーから取り込む」で読み込みます。画像が assets/ の外にあれば、assets/ に揃えます。画像が見つからない素材は、下の「素材」の「画像をまとめて割り当てる」でファイルを選びます（ファイル名で照合します）"
               ]

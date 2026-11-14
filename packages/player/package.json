@@ -23,7 +23,8 @@
       "svelte": "./src/components/index.ts",
       "default": "./src/components/index.ts"
     },
-    "./element": "./dist/element/experiential-manual.js"
+    "./element": "./dist/element/experiential-manual.js",
+    "./element.iife": "./dist/element/experiential-manual.iife.js"
   },
   "files": [
     "dist",

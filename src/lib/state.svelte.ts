@@ -18,6 +18,7 @@ import {
   downloadBlob,
   embeddedData,
   fileName,
+  fileToDataUrl,
   isDataUrl,
   measureImage,
   parseManualText,
@@ -42,6 +43,7 @@ import {
 } from './workspace';
 import { buildBundle, bundleNameFrom, checkBundle, normalizeAssetPaths, referencedPaths, splitBundle, suggestedBundleName } from './bundle';
 import { looksLikeZip, unzip } from './zip';
+import { buildExportHtml, suggestedHtmlName } from './export-html';
 import { t } from './i18n';
 
 /** 中央のステージの状態。edit は作図・選択、play は体験（player の ScreenFlow） */
@@ -733,6 +735,43 @@ class EditorState {
       this.handle = handle;
       this.handleStamp = (await handle.getFile()).lastModified;
       this.afterSave(handle.name, false);
+    } catch (e) {
+      this.notify('error', e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  /**
+   * 単一の HTML としてエクスポートする（簡易の配布。設計書 13.11 節）。
+   * 閲覧部品とマニュアルの中身（画像は data URL）を 1 つの HTML に埋め込む。ダブルクリックで開いて見られる。
+   * 保存とは別のもので、保存先（.emanual）や「未保存」の印は変えない。
+   */
+  async exportHtml(): Promise<void> {
+    try {
+      await this.writes;
+      const bookId = this.bookId;
+      const embed: Record<string, string> = {};
+      let missing = 0;
+      for (const a of this.manual.assets ?? []) {
+        if (a.kind !== 'image' || embeddedData(a.source)) continue;
+        const blob = isStorablePath(a.source.path) ? await this.ws.readFile(bookId, a.source.path) : undefined;
+        if (blob) embed[a.id] = await fileToDataUrl(blob.type ? blob : new Blob([blob], { type: a.source.mediaType ?? 'image/png' }));
+        else missing++;
+      }
+      // 閲覧部品（モジュールでない形のビルド）は大きいので、エクスポートするときに初めて読み込む
+      const { default: playerScript } = await import('@shuji-bonji/experiential-manual-player/element.iife?raw');
+      const manual = JSON.parse(serializeManual(this.manual, embed)) as Manual;
+      const html = new Blob([buildExportHtml({ manual, playerScript })], { type: 'text/html' });
+      const name = suggestedHtmlName(this.manual.title);
+      if (this.canPick) {
+        const handle = await pickSaveHandle(name, 'html');
+        if (!handle) return;
+        await writeToHandle(handle, html);
+        this.notify('info', t('export.doneFile', { name: handle.name }));
+      } else {
+        downloadBlob(name, html);
+        this.notify('info', t('export.doneDownload', { name }));
+      }
+      if (missing > 0) this.notify('warn', t('export.missingImages', { n: missing }));
     } catch (e) {
       this.notify('error', e instanceof Error ? e.message : String(e));
     }

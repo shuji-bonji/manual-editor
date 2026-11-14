@@ -7,6 +7,7 @@
  * 5. 作業場所（設計書 13 節）: 取り込んだ画像と編集中の内容が、再読み込みの後も残る
  * 6. マニュアルのファイル（.emanual。設計書 13.4 節）: 保存して開き直すと画像ごと戻る。構成の違うものは開かない
  * 7. 展開したフォルダーから取り込む
+ * 8. HTML としてエクスポートしたものを file:// で開き、押して進める
  */
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -23,7 +24,7 @@ const LEGACY_DIR = new URL('../src/lib/fixtures/', import.meta.url).pathname;
 const tempDir = (): string => mkdtempSync(join(tmpdir(), 'eme-e2e-'));
 
 /** 「ファイル」のメニューを開いて、項目を選ぶ */
-async function fileMenu(page: Page, item: 'new' | 'open' | 'import-folder' | 'save'): Promise<void> {
+async function fileMenu(page: Page, item: 'new' | 'open' | 'import-folder' | 'save' | 'export-html'): Promise<void> {
   await page.getByTestId('file-menu').click();
   await page.getByTestId(item).click();
 }
@@ -415,4 +416,63 @@ test('展開したフォルダーから取り込むと、画像の path が asse
   expect(saved.manual.assets?.map((a) => a.source.path)).toEqual(['assets/top.png', 'assets/none.png']);
   await expect(page.getByText('画像の無い素材が 1 件')).toBeVisible();
   await expect(page.getByTestId('filename')).toHaveText('kenbaiki-folder.emanual');
+});
+
+test('HTML としてエクスポートすると、1 つの HTML になり、file:// で開いて押して進める', async ({ page, context }) => {
+  // 画面 2 枚と、STEP1 → STEP2 のホットスポットを作る
+  await fileMenu(page, 'new');
+  await page.getByTestId('tree-root').click();
+  await page.getByTestId('manual-title').fill('Export test');
+  await page.getByTestId('add-topic').click();
+  await page.getByTestId('add-screen-input').setInputFiles([
+    { name: 'step1.png', mimeType: 'image/png', buffer: makePng(800, 500) },
+    { name: 'step2.png', mimeType: 'image/png', buffer: makePng(640, 400, [200, 120, 60]) }
+  ]);
+  await expect(page.getByTestId('tree-screen')).toHaveCount(2);
+  await page.getByTestId('tree-screen').nth(0).click();
+  await page.getByTestId('tool-rect').click();
+  const stage = page.locator('[data-testid="screen-canvas"] img');
+  const box = await stage.boundingBox();
+  if (!box) throw new Error('画面の画像が表示されていません');
+  await page.mouse.move(box.x + box.width * 0.25, box.y + box.height * 0.3);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.6, { steps: 8 });
+  await page.mouse.up();
+  await page.getByTestId('hotspot-label').fill('next');
+  await page.getByTestId('hotspot-transition').selectOption({ label: 'STEP2' });
+
+  // エクスポートしても、保存先と「未保存」の印は変わらない
+  const download = page.waitForEvent('download');
+  await fileMenu(page, 'export-html');
+  const d = await download;
+  expect(d.suggestedFilename()).toBe('Export test.html');
+  const htmlPath = join(tempDir(), 'export.html');
+  await d.saveAs(htmlPath);
+  await expect(page.getByText(/Export test\.html をダウンロードしました/)).toBeVisible();
+  await expect(page.getByTestId('filename')).toHaveText('Export test.emanual ●');
+
+  // 1 つのファイルで完結している（外のファイルを読まない）
+  const html = readFileSync(htmlPath, 'utf8');
+  expect(html).toContain('<title>Export test</title>');
+  expect(html).not.toMatch(/<script[^>]+src=|<link[^>]+href=|sourceMappingURL/);
+  expect(html.match(/data:image\/png;base64,/g)?.length).toBe(2);
+
+  // file:// で開く。ネットワークには何も取りに行かず、ホットスポットを押すと STEP2 へ進む
+  const viewer = await context.newPage();
+  const errors: string[] = [];
+  const requests: string[] = [];
+  viewer.on('pageerror', (e) => errors.push(String(e)));
+  viewer.on('request', (r) => requests.push(r.url()));
+  await viewer.goto(`file://${htmlPath}`);
+  await expect(viewer.locator('experiential-manual')).toBeVisible();
+  await expect(viewer.locator('[data-screen]')).toHaveCount(1);
+  await expect(viewer.locator('experiential-manual')).toContainText('STEP1');
+  const shown = viewer.locator('[data-screen] img').first();
+  await expect.poll(() => shown.evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBe(800);
+  await viewer.locator('[data-hotspot]').first().click();
+  await expect(viewer.locator('experiential-manual')).toContainText('STEP2');
+  await expect.poll(() => viewer.locator('[data-screen] img').first().evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBe(640);
+  expect(requests.filter((u) => !u.startsWith('file://') && !u.startsWith('data:'))).toEqual([]);
+  expect(requests.filter((u) => u.startsWith('file://'))).toHaveLength(1);
+  expect(errors).toEqual([]);
 });

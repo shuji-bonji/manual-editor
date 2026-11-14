@@ -1,4 +1,4 @@
-# 引き継ぎメモ（2026-11-15 04:30 JST 更新）
+# 引き継ぎメモ（2026-11-15 04:45 JST 更新）
 
 新しいチャットで体験型マニュアルの製品（player・editor・cli）の作業を続けるための入口です。設計の本文は `docs/` の 2 文書にあり、このメモはそこへの案内と、決まっていることの要約です。
 
@@ -48,7 +48,7 @@
 
 > [!IMPORTANT]
 > **2026-11-14 に、データの扱いを取り決めました（未実装）**。編集は常にブラウザーの中の workspace（OPFS）で行い、保存は 1 冊を 1 つの zip（`manual.json` ＋ `assets/`）にして書き出します。配布は閲覧パッケージ（先に単一の HTML、後にフォルダー）で、受け取った側は体験モードで開き、編集するときは複製します。取り決めの全文と作る順序は [design/player-and-editor.md](../design/player-and-editor.md) 13 節です。下の候補より先に、13.7 節の順で進める想定です。
-> **13.7 の 1〜3 は済み**（workspace と画像の取り込み、マニュアルのファイルの読み書きと「ファイル」のメニュー、ヘルプの `assets/`。記録は 13.8〜13.10 節。svelte-check 0 件、Vitest 89 件、E2E 7 本）。2026-11-15 に、拡張子を `.emanual` にし、「開く」は構成（`manual.json` ＋ `assets/`）を確かめる形に、フォルダーは「展開したフォルダーから取り込む」に改めた。**次は 13.10 節の「次に作るもの」の 4（player の IIFE のビルド）と 5（エクスポート: player を同梱した zip）**。Mac の Chrome で、上書き保存（開いたファイルにそのまま保存できること）を一度手で確かめる。
+> **データの扱いの実装は一通り済み**（workspace、マニュアルのファイル `.emanual` の読み書きと構成の検査、「ファイル」のメニュー、展開したフォルダーからの取り込み、単一の HTML のエクスポート。記録は 13.8〜13.11 節。svelte-check 0 件、Vitest 96 件、E2E 8 本）。2026-11-15 に、Read Only と player 付きの zip は取り下げ、Player は別に提供して `.emanual` を開く形にすると決めた。**次は 13.11 節の「これから作るもの」**（`.emanual` を読む処理を player のパッケージへ移す → Player で `.emanual` を開く）。Mac の Chrome で、上書き保存と、エクスポートした HTML をダブルクリックで開けることを一度手で確かめる。
 
 1. **公開の準備**: 製品名は Experiential Manual Editor に決まった（2026-11-14、D-30）。README・画面・manifest の「仮称」を製品名に直し、`packages/player` の npm 公開（`private: true` を外す）、GitHub Pages への配備（`deploy.yml`。リポジトリを Public にするか）
 2. **学習サイトへの埋め込み**: s1000d-stack の `site/` に `dist/element/experiential-manual.js` と券売機の例を置く（手順 3 の残り。置き方は公開の形と合わせて決める）
@@ -63,12 +63,12 @@
 
 ```sh
 npm install
-npm run dev        # 開発サーバー
+npm run dev        # 開発サーバー（先に player をビルドする。predev）
 npm run check      # svelte-check
 npm test           # Vitest
 npm run build      # build/（adapter-static、PWA）
 npx playwright install chromium   # 初回だけ
-npm run test:e2e   # ビルドして Playwright（e2e/editor.spec.ts の 7 本）
+npm run test:e2e   # ビルドして Playwright（e2e/editor.spec.ts の 8 本）
 npm run make:help  # ビルドして、ヘルプ（static/help/）を editor の画面から作り直す
 ```
 

@@ -13,7 +13,9 @@
     "packages/*"
   ],
   "scripts": {
+    "predev": "npm run build -w packages/player",
     "dev": "vite dev",
+    "prebuild": "npm run build -w packages/player",
     "build": "vite build",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",

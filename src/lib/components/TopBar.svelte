@@ -1,5 +1,5 @@
 <!--
-  E-0 の上の帯: 「ファイル」のメニュー（新規作成・開く・保存・展開したフォルダーから取り込む）、元に戻す・やり直し、マニュアルの題名、
+  E-0 の上の帯: 「ファイル」のメニュー（新規作成・開く・保存・HTML としてエクスポート・展開したフォルダーから取り込む）、元に戻す・やり直し、マニュアルの題名、
   「編集 | 体験」の切り替え、問題の件数（設計書 13.4 節）。
   ファイルの読み書きは lib/io.ts と state.svelte.ts にあり、ここは呼ぶだけ。
 -->
@@ -101,6 +101,7 @@
             <button type="button" role="menuitem" onclick={() => run(() => editor.save(true))} data-testid="save-as">{t('file.saveAs')}</button>
           {/if}
           <hr />
+          <button type="button" role="menuitem" title={t('file.exportHtmlHelp')} onclick={() => run(() => editor.exportHtml())} data-testid="export-html">{t('file.exportHtml')}</button>
           <button type="button" role="menuitem" title={t('file.importFolderHelp')} onclick={() => run(doImportFolder)} data-testid="import-folder">{t('file.importFolder')}</button>
         </div>
       {/if}

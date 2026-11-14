@@ -564,14 +564,48 @@ flowchart LR
 | ファイルの選択 | 開くは `.emanual` と `.zip`、保存は `.emanual`。File System Access API の `types` の MIME は `application/vnd.experiential-manual+zip` |
 | 確かめ | svelte-check 0 件、Vitest 89 件（`checkBundle` 4 件、`normalizeAssetPaths` 2 件を追加）、E2E 7 本（6 本目に、zip でない・`manual.json` が無い・余分なものが入っている・壊れている・2021 年の JSON が入っている、の 5 通りを開かないことを足した。7 本目は、画像が `img/` にあり関係のないファイルが混ざったフォルダーの取り込み）。5 回続けて 7 本とも通過。ヘルプは作り直した |
 
-次に作るもの（13.7 の 4〜6 を、次の順に置き換える）:
+「次に作るもの」は、同じ日の後の取り決め（13.11）で置き換えた。
+
+### 13.11 道具の分担の整理と、単一の HTML のエクスポート（2026-11-15）
+
+元になるデータを `.emanual` の 1 種類にし、「作る」「見る」「配る」を次のように分ける。13.5（閲覧パッケージと Read Only）は、この節で置き換える。
+
+```mermaid
+flowchart LR
+  E[".emanual<br/>manual.json ＋ assets/"]
+  ED["Experiential Manual Editor<br/>作る・直す"]
+  PL["Experiential Manual Player<br/>見る（別に提供）"]
+  H["単一の HTML<br/>簡易の配布"]
+  ED -- 保存 --> E
+  E -- 開く --> ED
+  E -- 開く --> PL
+  ED -- エクスポート --> H
+```
+
+| 決めたこと | 内容 |
+|---|---|
+| 単一の HTML | Editor の「HTML としてエクスポート…」で書き出す。簡易の配布のためのもので、出すだけ。Editor で開き直すことはしない |
+| player 付きの zip | 作らない |
+| Player | 別に提供する。再生の元になるデータは `.emanual`。Editor で開いて確かめるか、Player で開いて見るかの違いにする |
+| Read Only と「複製して編集」 | 取り下げた。見るだけの人は Player か HTML を使い、Editor で開く人は手元の `.emanual` を編集する。配布のときのライセンスの警告として要るなら、後から足す。そのときは `manual.json` を対象にしたチェックサム（改ざんの検出まで求めるなら署名）も一緒に考える。画像のハッシュ（`assets[].source.hash`、sha256）は既に入っている |
+| サイトへの埋め込み | 後で決める。単一の HTML を `<iframe>` で置くか、player をライブラリとして `import` し `.emanual` を指定するか |
+
+実装（13.7 の 4 にあたる部分）:
+
+| 項目 | 実装 |
+|---|---|
+| player の IIFE のビルド | `packages/player/vite.config.ts` の `formats` を `['es', 'iife']` にし、`dist/element/experiential-manual.iife.js`（110 KB、gzip 36 KB）を出す。`<script>` で読むと `<experiential-manual>` が登録され、runtime の関数は `window.ExperientialManual` に入る。`package.json` の `exports` に `./element.iife` を足した |
+| HTML の組み立て | `src/lib/export-html.ts` の `buildExportHtml`（純粋な関数）。`<experiential-manual>`、`<script type="application/json">` に入れた Manual、player のスクリプト、`manual` プロパティに渡す 1 行、の順に並べる。Manual の `<` は `\u003c` に、スクリプトの `</script`・`<!--` は `<\/script`・`<\!--` にして、中身で HTML が途中で切れないようにする。player の末尾の `sourceMappingURL` は外す |
+| 画像 | 作業場所の画像を data URL にして `source.data` に入れる（`serializeManual` の `embed`）。`source.path` は残す |
+| player の読み込み | `editor.exportHtml()` が、エクスポートのときに初めて `import('@shuji-bonji/experiential-manual-player/element.iife?raw')` で文字列として読む（別の chunk になる）。このため、editor の `dev` と `build` の前に player のビルドが要る。ルートの `package.json` に `predev` / `prebuild`（`npm run build -w packages/player`）を足した |
+| 保存先 | File System Access API があれば保存先を選び、無ければダウンロード。ファイル名は `<題名>.html`。エクスポートしても、保存先（`.emanual`）と「未保存」の印は変えない |
+| 確かめ | svelte-check 0 件、Vitest 96 件（`export-html.test.ts` 7 件）、E2E 8 本。8 本目は、エクスポートした HTML に外部のファイルの参照が無いこと、`file://` で開いてホットスポットを押すと次の画面へ進むこと、その間にネットワークへ何も取りに行かないことを確かめる。ヘルプ（画面 15 枚）をエクスポートすると 6.2 MB になる |
+
+これから作るもの:
 
 | 順 | 作業 | 内容 |
 |---|---|---|
-| 4 | player の、モジュールでない形（IIFE）のビルド | `file://` で読み込めるようにする（いまは `formats: ['es']`） |
-| 5 | エクスポート | 「ファイル」のメニューに、保存とは別の項目として足す。出すのは player を同梱した zip（`index.html` ＋ player のスクリプト ＋ `manual.json` ＋ `assets/`）。展開して `index.html` を開けば見られる形にする（`file://` では `manual.json` を `fetch` で読めないので、`index.html` に中身を埋め込む。画像は `<img>` の相対パスで読める） |
-| 6 | エクスポートしたものを editor で開く | `checkBundle` が、エクスポートの構成（`index.html` と player のスクリプトが加わる）を見分ける。開いたら体験モード（Read Only）にし、編集に切り替えるときは警告を出して複製する（13.5 のとおり） |
-| 7 | `.emanual` の関連付け | PWA の manifest の `file_handlers` と `launchQueue`。インストールした PWA でしか確かめられないので、配備の後に作る。対応状況は実装の前に確かめる |
-
-決めていないこと: エクスポートに、単一の HTML（1 ファイルに全部を埋め込む形。13.5）も用意するか。zip の形だけで足りるなら作らない。
-
+| 1 | `.emanual` を読む処理を player のパッケージへ移す | `zip.ts` と `checkBundle` を `packages/player` に置き、Editor はそこから使う。Editor と Player が同じ処理で読み、「Editor では開けるのに Player では開けない」を起こさない |
+| 2 | Player で `.emanual` を開く | `<experiential-manual src="guide.emanual">` と、閲覧用のアプリ（PWA）。提供の形（ライブラリか、アプリか、両方か）はここで決める |
+| 3 | `.emanual` の関連付け | PWA の manifest の `file_handlers` と `launchQueue`。インストールした PWA でしか確かめられないので、配備の後に作る。対応状況は実装の前に確かめる |
+| 4 | 製品名の表記 | 画面の題名、manifest、README の「仮称」、ヘルプの中の「manual-editor」を Experiential Manual Editor に直す |

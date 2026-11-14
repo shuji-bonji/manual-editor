@@ -124,12 +124,14 @@ export async function pickOpenFile(): Promise<{ file: File; handle: FileHandle }
   }
 }
 
-/** 保存先を選ぶ。File System Access API が無い・取り消したときは undefined */
-export async function pickSaveHandle(suggestedName: string): Promise<FileHandle | undefined> {
+const HTML_TYPES = [{ description: 'HTML', accept: { 'text/html': ['.html'] } }];
+
+/** 保存先を選ぶ。kind は、マニュアルのファイル（emanual）か、エクスポートする HTML か。File System Access API が無い・取り消したときは undefined */
+export async function pickSaveHandle(suggestedName: string, kind: 'emanual' | 'html' = 'emanual'): Promise<FileHandle | undefined> {
   const w = window as PickerWindow;
   if (!w.showSaveFilePicker) return undefined;
   try {
-    return await w.showSaveFilePicker({ suggestedName, types: SAVE_TYPES });
+    return await w.showSaveFilePicker({ suggestedName, types: kind === 'html' ? HTML_TYPES : SAVE_TYPES });
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') return undefined;
     throw e;
