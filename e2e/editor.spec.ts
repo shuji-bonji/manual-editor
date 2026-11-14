@@ -9,6 +9,7 @@
  * 7. 展開したフォルダーから取り込む
  * 8. HTML としてエクスポートしたものを file:// で開き、押して進める
  * 9. 知らせ: 「保存しました」は 5 秒で消え、エラーは「閉じる」を押すまで残る
+ * 10. 体験で、手順・説明・困ったときの図（素材の画像）が表示される
  */
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -512,4 +513,33 @@ test('知らせ: 「保存しました」は 5 秒で消え、エラーは「閉
   await expect(error).toBeVisible();
   await error.getByRole('button').click();
   await expect(error).toBeHidden();
+});
+
+test('体験で、手順と説明の図が表示される（画像は作業場所から読む）', async ({ page }) => {
+  const dir = join(tempDir(), 'figures');
+  mkdirSync(`${dir}/assets`, { recursive: true });
+  const manual: Manual = {
+    id: 'figure-test',
+    title: '図の例',
+    version: { number: '1.0' },
+    language: 'ja',
+    assets: [{ id: 'img-1', kind: 'image', source: { path: 'assets/fig.png', mediaType: 'image/png' }, alt: '図 1' }],
+    topics: [
+      { id: 't-proc', kind: 'procedure', title: '手順', steps: [{ id: 's1', text: 'スイッチを入れる', assetRefs: ['img-1'] }] },
+      { id: 't-desc', kind: 'description', title: '説明', blocks: [{ kind: 'figure', id: 'b1', assetRef: 'img-1', title: '図 1' }] },
+      { id: 't-fault', kind: 'troubleshooting', title: '困ったとき', steps: [{ id: 'r1', text: '電源を確かめる', assetRefs: ['img-1'] }] }
+    ]
+  } as Manual;
+  writeFileSync(`${dir}/manual.json`, JSON.stringify(manual));
+  writeFileSync(`${dir}/assets/fig.png`, makePng(320, 200));
+
+  await page.getByTestId('import-folder-input').setInputFiles(dir);
+  await expect(page.getByTestId('tree-topic')).toHaveCount(3);
+  await page.getByTestId('mode-play').click();
+  for (const n of [0, 1, 2]) {
+    await page.getByTestId('tree-topic').nth(n).click();
+    const img = page.locator('.em-fig.image img').first();
+    await expect(img).toBeVisible();
+    await expect.poll(() => img.evaluate((el) => (el as HTMLImageElement).naturalWidth), { message: `Topic ${n} の図` }).toBe(320);
+  }
 });

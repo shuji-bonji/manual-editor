@@ -20,10 +20,12 @@
     startStep?: string;
     scope?: ScopeSelection;
     baseUrl?: string | URL;
+    /** 素材の URL と大きさを外から与える（editor は画像を Manual の外に持つ）。与えたときは、その結果だけを使う */
+    resolveAsset?: (assetRef: string) => { url?: string; width?: number; height?: number } | undefined;
     lang?: Lang;
     onleave?: (target: Target) => void;
   }
-  let { manual, topic, startStep, scope = {}, baseUrl, lang = 'ja', onleave }: Props = $props();
+  let { manual, topic, startStep, scope = {}, baseUrl, lang = 'ja', onleave, resolveAsset }: Props = $props();
 
   const proc = $derived.by(() => {
     const options = startStep !== undefined ? { startStep, scope } : { scope };
@@ -99,7 +101,7 @@
               <Admonitions items={n.step.admonitions} {lang} />
               {#if n.step.assetRefs?.length}
                 <div class="figures">
-                  {#each n.step.assetRefs as ref (ref)}<Figure {manual} assetRef={ref} {baseUrl} {lang} />{/each}
+                  {#each n.step.assetRefs as ref (ref)}<Figure {manual} assetRef={ref} {baseUrl} {resolveAsset} {lang} />{/each}
                 </div>
               {/if}
               {#if isCurrent(n) && view.branches.length > 0}
@@ -120,7 +122,7 @@
         <p class="big">{n.step.text}</p>
         {#if n.step.expected}<p class="expected">{t(lang, 'proc.expected', { text: n.step.expected })}</p>{/if}
         <Admonitions items={n.step.admonitions} {lang} />
-        {#each n.step.assetRefs ?? [] as ref (ref)}<Figure {manual} assetRef={ref} {baseUrl} {lang} large />{/each}
+        {#each n.step.assetRefs ?? [] as ref (ref)}<Figure {manual} assetRef={ref} {baseUrl} {resolveAsset} {lang} large />{/each}
         {#if view.branches.length > 0}
           <div class="branches">
             {#each view.branches as b, i (i)}

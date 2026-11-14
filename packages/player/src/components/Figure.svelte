@@ -19,12 +19,14 @@
     lang?: Lang;
     /** 最初から大きく出す（P-3 の figure） */
     large?: boolean;
+    /** 素材の URL と大きさを外から与える（editor は画像を Manual の外に持つ）。与えたときは、その結果だけを使う */
+    resolveAsset?: (assetRef: string) => { url?: string; width?: number; height?: number } | undefined;
   }
-  let { manual, assetRef, title, baseUrl, lang = 'ja', large = false }: Props = $props();
+  let { manual, assetRef, title, baseUrl, lang = 'ja', large = false, resolveAsset }: Props = $props();
 
   const screen = $derived(findScreen(manual, assetRef));
   const asset = $derived(findAsset(manual, assetRef));
-  const url = $derived(assetUrl(manual, assetRef, baseUrl));
+  const url = $derived(resolveAsset ? resolveAsset(assetRef)?.url : assetUrl(manual, assetRef, baseUrl));
   let open = $state(false);
   $effect(() => {
     open = large;
@@ -37,7 +39,7 @@
       {open ? t(lang, 'proc.closeScreen') : t(lang, 'proc.openScreen')}: {screen.screen.caption ?? screen.screen.id}
     </button>
     {#if open}
-      <Stage {manual} screen={screen.screen} {baseUrl} hints />
+      <Stage {manual} screen={screen.screen} {baseUrl} hints {resolveAsset} />
     {/if}
     {#if title}<figcaption>{title}</figcaption>{/if}
   </figure>

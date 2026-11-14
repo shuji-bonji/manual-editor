@@ -17,10 +17,12 @@
     topic: Topic;
     scope?: ScopeSelection;
     baseUrl?: string | URL;
+    /** 素材の URL と大きさを外から与える（editor は画像を Manual の外に持つ）。与えたときは、その結果だけを使う */
+    resolveAsset?: (assetRef: string) => { url?: string; width?: number; height?: number } | undefined;
     lang?: Lang;
     onleave?: (target: Target) => void;
   }
-  let { manual, topic, scope = {}, baseUrl, lang = 'ja', onleave }: Props = $props();
+  let { manual, topic, scope = {}, baseUrl, lang = 'ja', onleave, resolveAsset }: Props = $props();
 
   const ts = $derived(createTroubleshooting(manual, topic.id, { scope }));
   let view = $state<TroubleshootingState | undefined>();
@@ -77,7 +79,7 @@
             <p class="text">{resolvedHere.step.text}</p>
             {#if resolvedHere.step.expected}<p class="expected">{t(lang, 'proc.expected', { text: resolvedHere.step.expected })}</p>{/if}
             <Admonitions items={resolvedHere.step.admonitions} {lang} />
-            {#each resolvedHere.step.assetRefs ?? [] as ref (ref)}<Figure {manual} assetRef={ref} {baseUrl} {lang} large />{/each}
+            {#each resolvedHere.step.assetRefs ?? [] as ref (ref)}<Figure {manual} assetRef={ref} {baseUrl} {resolveAsset} {lang} large />{/each}
           {:else}
             {@const target = view.resolution}
             {#if target.kind === 'step'}<p class="text">{target.step.text}</p>{/if}

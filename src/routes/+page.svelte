@@ -153,7 +153,7 @@
       {:else if editor.mode === 'play'}
         {#key topic.id}
           <div class="play em-root" data-testid="play">
-            <TopicView manual={editor.manual} {topic} startStep={editor.selection.stepId} onleave={leave} />
+            <TopicView manual={editor.manual} {topic} startStep={editor.selection.stepId} {resolveAsset} onleave={leave} />
           </div>
         {/key}
       {:else}

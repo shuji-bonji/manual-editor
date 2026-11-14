@@ -22,26 +22,28 @@
     scope?: ScopeSelection;
     hints?: boolean;
     baseUrl?: string | URL;
+    /** 素材の URL と大きさを外から与える（editor は画像を Manual の外に持つ）。与えたときは、その結果だけを使う */
+    resolveAsset?: (assetRef: string) => { url?: string; width?: number; height?: number } | undefined;
     lang?: Lang;
     onleave?: (target: Target) => void;
   }
-  let { manual, topic, startScreen, startStep, scope = {}, hints = $bindable(false), baseUrl, lang = 'ja', onleave }: Props =
+  let { manual, topic, startScreen, startStep, scope = {}, hints = $bindable(false), baseUrl, lang = 'ja', onleave, resolveAsset }: Props =
     $props();
 
   const blocks = $derived(applicableBlocks(manual, topic.blocks ?? [], scope));
 </script>
 
 {#if topic.kind === 'screenFlow'}
-  <ScreenFlow {manual} topicId={topic.id} {startScreen} {scope} bind:hints {baseUrl} {lang} {onleave} />
+  <ScreenFlow {manual} topicId={topic.id} {startScreen} {scope} bind:hints {baseUrl} {resolveAsset} {lang} {onleave} />
 {:else if topic.kind === 'procedure'}
-  <ProcedureView {manual} {topic} {startStep} {scope} {baseUrl} {lang} {onleave} />
+  <ProcedureView {manual} {topic} {startStep} {scope} {baseUrl} {resolveAsset} {lang} {onleave} />
 {:else if topic.kind === 'troubleshooting'}
-  <FaultTree {manual} {topic} {scope} {baseUrl} {lang} {onleave} />
+  <FaultTree {manual} {topic} {scope} {baseUrl} {resolveAsset} {lang} {onleave} />
 {:else if topic.kind === 'description'}
   <section class="em-topic">
     <h2>{topic.title}</h2>
     {#if topic.summary}<p class="summary">{topic.summary}</p>{/if}
-    <BlockView {manual} {blocks} {baseUrl} {lang} />
+    <BlockView {manual} {blocks} {baseUrl} {resolveAsset} {lang} />
   </section>
 {:else}
   <section class="em-topic">

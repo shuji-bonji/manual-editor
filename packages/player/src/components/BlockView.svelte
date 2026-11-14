@@ -14,11 +14,13 @@
     manual: Manual;
     blocks: Block[];
     baseUrl?: string | URL;
+    /** 素材の URL と大きさを外から与える（editor は画像を Manual の外に持つ）。与えたときは、その結果だけを使う */
+    resolveAsset?: (assetRef: string) => { url?: string; width?: number; height?: number } | undefined;
     lang?: Lang;
     /** 見出しの深さ（0 で h3） */
     depth?: number;
   }
-  let { manual, blocks, baseUrl, lang = 'ja', depth = 0 }: Props = $props();
+  let { manual, blocks, baseUrl, lang = 'ja', depth = 0, resolveAsset }: Props = $props();
   const level = $derived(Math.min(6, 3 + depth));
 </script>
 
@@ -30,7 +32,7 @@
           <svelte:element this={`h${level}`} class="heading">{b.title}</svelte:element>
         {/if}
         {#if b.text}<p>{b.text}</p>{/if}
-        {#if b.children}<BlockView {manual} blocks={b.children} {baseUrl} {lang} depth={depth + 1} />{/if}
+        {#if b.children}<BlockView {manual} blocks={b.children} {baseUrl} {resolveAsset} {lang} depth={depth + 1} />{/if}
       </section>
     {:else if b.kind === 'para'}
       <p>{b.text}</p>
@@ -54,7 +56,7 @@
         </tbody>
       </table>
     {:else if b.kind === 'figure'}
-      {#if b.assetRef}<Figure {manual} assetRef={b.assetRef} title={b.title} {baseUrl} {lang} large />{/if}
+      {#if b.assetRef}<Figure {manual} assetRef={b.assetRef} title={b.title} {baseUrl} {resolveAsset} {lang} large />{/if}
     {:else if b.kind === 'admonition'}
       <Admonitions items={[{ level: b.level ?? 'note', text: b.text ?? '', ...(b.title ? { title: b.title } : {}) }]} {lang} />
     {/if}
